@@ -7,17 +7,19 @@ Modular Bitcoin transaction analysis and construction toolkit in Rust.
 ```
 txray/
 ├── txray-core      Shared primitives: tx/block parsing, script classification,
-│                   address derivation, weight estimation
+│                   address derivation, weight estimation, script debugger
 ├── txray-lens      Transaction and block analysis with warnings and
 │                   plain-English explanations
-├── txray-sherlock  Chain analysis heuristics: CIOH, change detection,
-│                   CoinJoin, consolidation, address reuse
-├── txray-smith     PSBT building, coin selection, fee estimation
+├── txray-sherlock  Chain analysis heuristics, wallet fingerprinting,
+│                   Boltzmann entropy, privacy advisor
+├── txray-smith     PSBT building, coin selection, fee estimation,
+│                   PSBT inspector
 ├── txray-net       Fetch blocks/txs from mempool.space and Esplora
 │                   with retry and disk cache
 ├── txray-corpus    8 historically significant blocks with educational
 │                   annotations
-└── txray-cli      Unified CLI: parse, analyze, build, fetch, explain
+└── txray-cli      Unified CLI: parse, analyze, build, fetch, explain,
+                    fingerprint, entropy, debug-script, inspect, advise
 ```
 
 <p align="center">
@@ -53,6 +55,21 @@ txray build fixture.json
 
 # explain a transaction in plain English
 txray explain fixture.json
+
+# wallet fingerprinting (BIP69, low-R, anti-fee-sniping)
+txray fingerprint fixture.json
+
+# Boltzmann entropy analysis (input→output ambiguity)
+txray entropy fixture.json
+
+# step-through script debugger
+txray debug-script 76a914<hash>88ac --script-sig <hex>
+
+# inspect a PSBT (signing status, fee analysis)
+txray inspect <base64-psbt>
+
+# privacy advisor (combined score + recommendations)
+txray advise fixture.json
 ```
 
 ## Crates
@@ -66,6 +83,7 @@ Shared Bitcoin primitives. Parses transactions and blocks from raw bytes.
 - **Address derivation**: Base58Check, Bech32, Bech32m
 - **Undo data**: Bitcoin Core `rev*.dat` parsing, compressed script decompression
 - **Weight estimation**: WU/vbyte with segwit discount
+- **Script debugger**: opcode-by-opcode execution with stack snapshots (P2PKH, P2WPKH)
 
 ### `txray-lens`
 Transaction and block analysis engine.
@@ -76,7 +94,7 @@ Transaction and block analysis engine.
 - Plain-English transaction explanations
 
 ### `txray-sherlock`
-Chain analysis heuristic engine (8 detectors):
+Chain analysis heuristic engine with advanced privacy analysis:
 
 | Heuristic | Description |
 |-----------|-------------|
@@ -89,6 +107,12 @@ Chain analysis heuristic engine (8 detectors):
 | OP_RETURN | Analyzes data carrier outputs |
 | Round Number | Flags round-number payment heuristic |
 
+**Advanced analysis modules:**
+
+- **Wallet fingerprinting** — BIP69, low-R grinding, anti-fee-sniping, RBF signaling, change position; identifies Bitcoin Core, Electrum, Sparrow/Specter, Ledger
+- **Boltzmann entropy** — subset-sum interpretation counting, link probability matrix, A–F privacy grading
+- **Privacy advisor** — combines heuristics + entropy + fingerprint into a 1–10 score with actionable recommendations
+
 ### `txray-smith`
 PSBT construction with coin selection.
 
@@ -97,6 +121,7 @@ PSBT construction with coin selection.
 - Weight-accurate fee estimation per script type
 - Dust threshold enforcement
 - Warnings for high fees, missing RBF, dust change
+- **PSBT inspector** — parsing, signing status, fee analysis, next-step recommendations
 
 ### `txray-net`
 Fetch raw blocks and transactions from public APIs.
@@ -117,7 +142,7 @@ Each entry explains why it's interesting and what to look for when parsing.
 
 ```bash
 cargo build --workspace
-cargo test --workspace     # 235 tests
+cargo test --workspace     # 282 tests
 cargo clippy --workspace   # zero warnings
 ```
 

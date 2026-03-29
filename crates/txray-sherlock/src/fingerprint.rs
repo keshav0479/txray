@@ -261,10 +261,7 @@ fn check_rbf_signaling(tx: &RawTransaction) -> bool {
 // ============== Change Position ==============
 
 /// Detect where the likely change output is positioned.
-fn detect_change_position(
-    tx: &RawTransaction,
-    prevouts: Option<&[UndoPrevout]>,
-) -> ChangePosition {
+fn detect_change_position(tx: &RawTransaction, prevouts: Option<&[UndoPrevout]>) -> ChangePosition {
     if tx.outputs.len() < 2 {
         return ChangePosition::Indeterminate;
     }
@@ -390,10 +387,7 @@ fn identify_wallet(
 
     // Bitcoin Core ≥0.17: low-R + anti-fee-sniping + non-BIP69 + RBF
     if has_sigs && low_r && fp.anti_fee_sniping && !fp.bip69_compliant && fp.rbf_signaling {
-        return (
-            Some("Bitcoin Core (≥0.17)".to_string()),
-            Confidence::High,
-        );
+        return (Some("Bitcoin Core (≥0.17)".to_string()), Confidence::High);
     }
 
     // Electrum: BIP69 + no low-R + no anti-fee-sniping
@@ -403,10 +397,7 @@ fn identify_wallet(
 
     // Sparrow/Specter: non-BIP69 + low-R + P2WPKH only
     if has_sigs && !fp.bip69_compliant && low_r && all_p2wpkh {
-        return (
-            Some("Sparrow/Specter".to_string()),
-            Confidence::Medium,
-        );
+        return (Some("Sparrow/Specter".to_string()), Confidence::Medium);
     }
 
     // Ledger Live: BIP69 + P2SH-P2WPKH

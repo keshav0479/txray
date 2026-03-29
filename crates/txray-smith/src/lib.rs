@@ -6,10 +6,10 @@
 //! Main entry point: `build_psbt_from_fixture()` — reads a fixture JSON string,
 //! performs coin selection, builds a PSBT, and returns the report as JSON.
 
-pub mod inspect;
 pub(crate) mod coin_selection;
 pub(crate) mod error;
 pub(crate) mod fixture;
+pub mod inspect;
 pub(crate) mod psbt;
 pub(crate) mod report;
 pub(crate) mod transaction;

@@ -58,7 +58,9 @@ pub fn advise_transaction(
     let mut recommendations = Vec::new();
 
     // --- Address reuse: -3 ---
-    if heuristics.heuristics.get("address_reuse")
+    if heuristics
+        .heuristics
+        .get("address_reuse")
         .and_then(|v| v.get("detected"))
         .and_then(|v| v.as_bool())
         .unwrap_or(false)
@@ -73,11 +75,12 @@ pub fn advise_transaction(
     // --- Change detection: -2 (high) or -1 (medium) ---
     let change_heuristic = heuristics.heuristics.get("change_detection");
     if let Some(cd) = change_heuristic {
-        if cd.get("detected").and_then(|v| v.as_bool()).unwrap_or(false) {
-            let confidence = cd
-                .get("confidence")
-                .and_then(|v| v.as_str())
-                .unwrap_or("");
+        if cd
+            .get("detected")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false)
+        {
+            let confidence = cd.get("confidence").and_then(|v| v.as_str()).unwrap_or("");
             match confidence {
                 "high" => {
                     score -= 2;
@@ -91,7 +94,8 @@ pub fn advise_transaction(
                     score -= 1;
                     issues.push(PrivacyIssue::ChangeDetectedMedium);
                     recommendations.push(
-                        "Avoid round-number payments to make change output less obvious".to_string(),
+                        "Avoid round-number payments to make change output less obvious"
+                            .to_string(),
                     );
                 }
                 _ => {}
@@ -100,7 +104,9 @@ pub fn advise_transaction(
     }
 
     // --- Round number payment: -2 ---
-    if heuristics.heuristics.get("round_number_payment")
+    if heuristics
+        .heuristics
+        .get("round_number_payment")
         .and_then(|v| v.get("detected"))
         .and_then(|v| v.as_bool())
         .unwrap_or(false)
@@ -151,9 +157,7 @@ pub fn advise_transaction(
     }
 
     // --- Trivial structure: -1 ---
-    if heuristics.output_script_types.len() <= 1
-        && !heuristics.is_coinbase
-    {
+    if heuristics.output_script_types.len() <= 1 && !heuristics.is_coinbase {
         score -= 1;
         issues.push(PrivacyIssue::TrivialStructure);
         recommendations.push(
@@ -262,9 +266,10 @@ mod tests {
 
     #[test]
     fn address_reuse_penalty() {
-        let analysis = make_analysis(vec![
-            ("address_reuse", serde_json::json!({"detected": true})),
-        ]);
+        let analysis = make_analysis(vec![(
+            "address_reuse",
+            serde_json::json!({"detected": true}),
+        )]);
         let advice = advise_transaction(&analysis, None, None);
         assert!(advice.score <= 7);
         assert!(advice.issues.contains(&PrivacyIssue::AddressReuse));
@@ -272,9 +277,10 @@ mod tests {
 
     #[test]
     fn round_number_penalty() {
-        let analysis = make_analysis(vec![
-            ("round_number_payment", serde_json::json!({"detected": true})),
-        ]);
+        let analysis = make_analysis(vec![(
+            "round_number_payment",
+            serde_json::json!({"detected": true}),
+        )]);
         let advice = advise_transaction(&analysis, None, None);
         assert!(advice.score <= 8);
         assert!(advice.issues.contains(&PrivacyIssue::RoundNumberPayment));
@@ -282,9 +288,7 @@ mod tests {
 
     #[test]
     fn coinjoin_bonus() {
-        let mut analysis = make_analysis(vec![
-            ("coinjoin", serde_json::json!({"detected": true})),
-        ]);
+        let mut analysis = make_analysis(vec![("coinjoin", serde_json::json!({"detected": true}))]);
         analysis.classification = "coinjoin".to_string();
         analysis.output_script_types = vec![
             "p2wpkh".to_string(),
@@ -300,13 +304,19 @@ mod tests {
     fn combined_issues_stack() {
         let analysis = make_analysis(vec![
             ("address_reuse", serde_json::json!({"detected": true})),
-            ("round_number_payment", serde_json::json!({"detected": true})),
-            ("change_detection", serde_json::json!({
-                "detected": true,
-                "confidence": "high",
-                "likely_change_index": 1,
-                "method": "script_type_match"
-            })),
+            (
+                "round_number_payment",
+                serde_json::json!({"detected": true}),
+            ),
+            (
+                "change_detection",
+                serde_json::json!({
+                    "detected": true,
+                    "confidence": "high",
+                    "likely_change_index": 1,
+                    "method": "script_type_match"
+                }),
+            ),
         ]);
 
         let fp = WalletFingerprint {
@@ -349,8 +359,14 @@ mod tests {
     fn score_never_below_1() {
         let analysis = make_analysis(vec![
             ("address_reuse", serde_json::json!({"detected": true})),
-            ("round_number_payment", serde_json::json!({"detected": true})),
-            ("change_detection", serde_json::json!({"detected": true, "confidence": "high"})),
+            (
+                "round_number_payment",
+                serde_json::json!({"detected": true}),
+            ),
+            (
+                "change_detection",
+                serde_json::json!({"detected": true, "confidence": "high"}),
+            ),
         ]);
         let mut single_output_analysis = analysis;
         single_output_analysis.output_script_types = vec!["p2wpkh".to_string()];
@@ -377,11 +393,7 @@ mod tests {
             too_complex: false,
         };
 
-        let advice = advise_transaction(
-            &single_output_analysis,
-            Some(&entropy),
-            Some(&fp),
-        );
+        let advice = advise_transaction(&single_output_analysis, Some(&entropy), Some(&fp));
         assert_eq!(advice.score, 1); // clamped to minimum
         assert_eq!(advice.grade, "Critical");
     }

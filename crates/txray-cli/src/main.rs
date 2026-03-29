@@ -124,7 +124,11 @@ async fn main() -> Result<()> {
         Commands::Explain { fixture } => cmd_explain(&fixture)?,
         Commands::Fingerprint { fixture } => cmd_fingerprint(&fixture)?,
         Commands::Entropy { fixture } => cmd_entropy(&fixture)?,
-        Commands::DebugScript { script_hex, script_sig, witness } => {
+        Commands::DebugScript {
+            script_hex,
+            script_sig,
+            witness,
+        } => {
             cmd_debug_script(&script_hex, &script_sig, &witness)?;
         }
         Commands::Inspect { psbt } => cmd_inspect(&psbt)?,
@@ -175,8 +179,7 @@ fn cmd_explain(fixture_path: &str) -> Result<()> {
 }
 
 fn cmd_fingerprint(fixture_path: &str) -> Result<()> {
-    let json_str =
-        std::fs::read_to_string(fixture_path).context("failed to read fixture file")?;
+    let json_str = std::fs::read_to_string(fixture_path).context("failed to read fixture file")?;
     let report: serde_json::Value =
         serde_json::from_str(&json_str).context("failed to parse fixture JSON")?;
 
@@ -204,17 +207,13 @@ fn cmd_fingerprint(fixture_path: &str) -> Result<()> {
                 .collect()
         });
 
-    let fp = txray_sherlock::fingerprint::fingerprint_transaction(
-        &parsed,
-        prevouts.as_deref(),
-    );
+    let fp = txray_sherlock::fingerprint::fingerprint_transaction(&parsed, prevouts.as_deref());
     println!("{}", fp);
     Ok(())
 }
 
 fn cmd_entropy(fixture_path: &str) -> Result<()> {
-    let json_str =
-        std::fs::read_to_string(fixture_path).context("failed to read fixture file")?;
+    let json_str = std::fs::read_to_string(fixture_path).context("failed to read fixture file")?;
     let report: serde_json::Value =
         serde_json::from_str(&json_str).context("failed to parse fixture JSON")?;
 
@@ -294,8 +293,7 @@ fn cmd_inspect(psbt_input: &str) -> Result<()> {
 }
 
 fn cmd_advise(fixture_path: &str) -> Result<()> {
-    let json_str =
-        std::fs::read_to_string(fixture_path).context("failed to read fixture file")?;
+    let json_str = std::fs::read_to_string(fixture_path).context("failed to read fixture file")?;
     let report: serde_json::Value =
         serde_json::from_str(&json_str).context("failed to parse fixture JSON")?;
 

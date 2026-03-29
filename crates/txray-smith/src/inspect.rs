@@ -99,7 +99,9 @@ pub fn inspect_psbt(base64_str: &str) -> Result<PsbtInspection, String> {
     for (i, psbt_input) in psbt.inputs.iter().enumerate() {
         let has_utxo = psbt_input.witness_utxo.is_some() || psbt_input.non_witness_utxo.is_some();
         let partial_sig_count = psbt_input.partial_sigs.len();
-        let is_signed = partial_sig_count > 0 || psbt_input.final_script_sig.is_some() || psbt_input.final_script_witness.is_some();
+        let is_signed = partial_sig_count > 0
+            || psbt_input.final_script_sig.is_some()
+            || psbt_input.final_script_witness.is_some();
 
         if is_signed {
             any_signed = true;
@@ -231,10 +233,7 @@ fn generate_next_steps(status: &PsbtStatus, inputs: &[InputInspection]) -> Vec<S
                 .collect();
 
             if !missing_utxo.is_empty() {
-                steps.push(format!(
-                    "Attach UTXO data for input(s): {:?}",
-                    missing_utxo
-                ));
+                steps.push(format!("Attach UTXO data for input(s): {:?}", missing_utxo));
             }
             steps.push("Sign with the required key(s)".to_string());
         }
@@ -244,10 +243,7 @@ fn generate_next_steps(status: &PsbtStatus, inputs: &[InputInspection]) -> Vec<S
                 .filter(|inp| !inp.is_signed)
                 .map(|inp| inp.index)
                 .collect();
-            steps.push(format!(
-                "Sign remaining input(s): {:?}",
-                unsigned
-            ));
+            steps.push(format!("Sign remaining input(s): {:?}", unsigned));
         }
         PsbtStatus::FullySigned => {
             steps.push("Finalize the PSBT".to_string());
@@ -288,10 +284,7 @@ fn generate_warnings(
         if total_output > 0 {
             let fee_pct = fee as f64 / total_output as f64 * 100.0;
             if fee_pct > 10.0 {
-                warnings.push(format!(
-                    "Fee is {:.1}% of total output value",
-                    fee_pct
-                ));
+                warnings.push(format!("Fee is {:.1}% of total output value", fee_pct));
             }
         }
     }
@@ -433,10 +426,7 @@ mod tests {
         let result = inspect_psbt(&psbt_b64).unwrap();
 
         assert!(!result.next_steps.is_empty());
-        assert!(result
-            .next_steps
-            .iter()
-            .any(|s| s.contains("Sign")));
+        assert!(result.next_steps.iter().any(|s| s.contains("Sign")));
     }
 
     #[test]
@@ -445,10 +435,7 @@ mod tests {
         let result = inspect_psbt(&psbt_b64).unwrap();
 
         // At least one output should have a recognized script type
-        assert!(result
-            .outputs
-            .iter()
-            .any(|o| o.script_type != "unknown"));
+        assert!(result.outputs.iter().any(|o| o.script_type != "unknown"));
     }
 
     #[test]

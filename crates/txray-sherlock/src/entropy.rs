@@ -233,14 +233,22 @@ impl std::fmt::Display for BoltzmannResult {
         writeln!(f)?;
 
         if self.too_complex {
-            writeln!(f, "  Transaction too complex for exact analysis (>{} inputs+outputs)", MAX_IO_COUNT)?;
+            writeln!(
+                f,
+                "  Transaction too complex for exact analysis (>{} inputs+outputs)",
+                MAX_IO_COUNT
+            )?;
             return Ok(());
         }
 
         writeln!(f, "  Interpretations:    {}", self.interpretations)?;
         writeln!(f, "  Entropy:            {:.2} bits", self.entropy_bits)?;
         writeln!(f, "  Max entropy:        {:.2} bits", self.max_entropy)?;
-        writeln!(f, "  Entropy density:    {:.1}%", self.entropy_density * 100.0)?;
+        writeln!(
+            f,
+            "  Entropy density:    {:.1}%",
+            self.entropy_density * 100.0
+        )?;
         writeln!(f, "  Privacy grade:      {}", self.privacy_grade)?;
         writeln!(f)?;
 
@@ -321,11 +329,8 @@ mod tests {
     #[test]
     fn coinjoin_pattern_high_entropy() {
         // 3 inputs (100k each), 3 outputs (100k each) → many interpretations
-        let result = compute_entropy(
-            &[100_000, 100_000, 100_000],
-            &[100_000, 100_000, 100_000],
-        )
-        .unwrap();
+        let result =
+            compute_entropy(&[100_000, 100_000, 100_000], &[100_000, 100_000, 100_000]).unwrap();
         // 3! = 6 interpretations (any permutation works)
         assert_eq!(result.interpretations, 6);
         assert!((result.entropy_bits - 2.585).abs() < 0.01); // log2(6) ≈ 2.585
