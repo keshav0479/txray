@@ -1,13 +1,13 @@
 //! # txray-smith
 //!
 //! PSBT building, coin selection, and transaction construction.
-//! Bridges txray-core hand-parsed primitives with the `bitcoin` crate for PSBT support.
+//! Uses the `bitcoin` crate for PSBT serialization.
 //!
 //! Main entry point: `build_psbt_from_fixture()` — reads a fixture JSON string,
 //! performs coin selection, builds a PSBT, and returns the report as JSON.
 
 pub(crate) mod coin_selection;
-pub mod error;
+pub(crate) mod error;
 pub(crate) mod fixture;
 pub(crate) mod psbt;
 pub(crate) mod report;
@@ -16,14 +16,13 @@ pub(crate) mod weight;
 
 // Selective re-exports for downstream consumers
 pub use coin_selection::CoinSelectionResult;
+pub use error::BuilderError;
 pub use fixture::{
     parse_fixture, validate_fixture, ChangeTemplate, Fixture, Payment, Policy, Utxo,
 };
 pub use psbt::{build_outputs, build_psbt, OutputEntry};
 pub use report::{generate_warnings, Warning};
 pub use transaction::{resolve_rbf_locktime, TxParams};
-
-use error::BuilderError;
 
 /// Build a PSBT from a fixture JSON string.
 /// Returns the report as a pretty-printed JSON string.
