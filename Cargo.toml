@@ -7,6 +7,7 @@ members = [
     "crates/txray-smith",
     "crates/txray-net",
     "crates/txray-corpus",
+    "crates/txray-cli",
 ]
 
 [workspace.package]
@@ -38,3 +39,8 @@ thiserror = "2"
 # Async + HTTP (used by txray-net)
 reqwest = { version = "0.12", features = ["json"] }
 tokio = { version = "1", features = ["full"] }
+
+# CLI (used by txray-cli)
+clap = { version = "4", features = ["derive"] }
+colored = "3"
+anyhow = "1"
