@@ -1,0 +1,34 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/txray-core",
+    "crates/txray-lens",
+    "crates/txray-sherlock",
+    "crates/txray-smith",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/keshav0479/txray"
+description = "X-ray Bitcoin transactions — parse, analyze, build, learn"
+
+[workspace.dependencies]
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Bitcoin primitives (hand-parsed — educational)
+sha2 = "0.10"
+ripemd = "0.1"
+hex = "0.4"
+bech32 = "0.11"
+bs58 = { version = "0.5", features = ["check"] }
+k256 = { version = "0.13", features = ["arithmetic"] }
+
+# Bitcoin crate (used only by txray-smith for PSBT building)
+bitcoin = { version = "0.32", features = ["serde", "base64"] }
+
+# Error handling
+thiserror = "2"

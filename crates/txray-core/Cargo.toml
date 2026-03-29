@@ -1,0 +1,18 @@
+[package]
+name = "txray-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Core Bitcoin primitives — transaction parsing, script classification, address derivation, block parsing"
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+ripemd.workspace = true
+hex.workspace = true
+bech32.workspace = true
+bs58.workspace = true
+k256.workspace = true
+thiserror.workspace = true
