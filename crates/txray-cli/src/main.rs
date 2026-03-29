@@ -52,6 +52,11 @@ enum Commands {
         /// Optional: search by name or height
         query: Option<String>,
     },
+    /// Explain a transaction in plain English
+    Explain {
+        /// Path to fixture JSON file
+        fixture: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -85,6 +90,7 @@ async fn main() -> Result<()> {
         Commands::Build { fixture } => cmd_build(&fixture)?,
         Commands::Fetch { block, tx, source } => cmd_fetch(block, tx, &source).await?,
         Commands::Famous { query } => cmd_famous(query.as_deref())?,
+        Commands::Explain { fixture } => cmd_explain(&fixture)?,
     }
 
     Ok(())
@@ -117,6 +123,16 @@ fn cmd_build(fixture_path: &str) -> Result<()> {
     let result =
         txray_smith::build_psbt_from_fixture(&json_str).map_err(|e| anyhow::anyhow!("{}", e))?;
     println!("{}", result);
+    Ok(())
+}
+
+fn cmd_explain(fixture_path: &str) -> Result<()> {
+    let json_str =
+        txray_lens::analyze_transaction(fixture_path).context("failed to parse transaction")?;
+    let report: serde_json::Value =
+        serde_json::from_str(&json_str).context("failed to parse analysis JSON")?;
+    let explanation = txray_lens::explain::explain_transaction(&report);
+    println!("{}", explanation);
     Ok(())
 }
 

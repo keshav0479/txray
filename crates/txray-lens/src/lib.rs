@@ -7,6 +7,7 @@
 //! - `analyze_transaction()` — parse a fixture JSON, analyze the tx, return JSON
 //! - `analyze_block()` — read block/undo/xor files, analyze all txs, return JSON
 
+pub mod explain;
 pub mod warnings;
 
 use std::collections::HashMap;
