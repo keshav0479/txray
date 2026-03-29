@@ -78,6 +78,11 @@ enum Commands {
         #[arg(long, default_value = "")]
         witness: String,
     },
+    /// Inspect a PSBT (base64 or file path)
+    Inspect {
+        /// Base64-encoded PSBT string or path to a file containing one
+        psbt: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -117,6 +122,7 @@ async fn main() -> Result<()> {
         Commands::DebugScript { script_hex, script_sig, witness } => {
             cmd_debug_script(&script_hex, &script_sig, &witness)?;
         }
+        Commands::Inspect { psbt } => cmd_inspect(&psbt)?,
     }
 
     Ok(())
@@ -263,6 +269,21 @@ fn cmd_debug_script(script_hex: &str, script_sig_hex: &str, witness_hex: &str) -
         println!("{}", step);
     }
     println!();
+    Ok(())
+}
+
+fn cmd_inspect(psbt_input: &str) -> Result<()> {
+    // Try reading as a file first, fall back to treating as base64
+    let psbt_b64 = if std::path::Path::new(psbt_input).exists() {
+        std::fs::read_to_string(psbt_input).context("failed to read PSBT file")?
+    } else {
+        psbt_input.to_string()
+    };
+
+    match txray_smith::inspect::inspect_psbt(&psbt_b64) {
+        Ok(inspection) => println!("{}", inspection),
+        Err(e) => anyhow::bail!("PSBT inspection failed: {}", e),
+    }
     Ok(())
 }
 
