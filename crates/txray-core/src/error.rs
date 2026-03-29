@@ -1,4 +1,8 @@
-//! Unified error types for txray-core.
+//! Unified error type for the txray workspace.
+//!
+//! Every crate in the workspace uses TxrayError for fallible operations.
+//! The struct carries a machine-readable code and a human-readable message,
+//! and can serialize to JSON for CLI output via `to_json()`.
 
 use std::fmt;
 
@@ -19,6 +23,8 @@ impl TxrayError {
         }
     }
 
+    // -- transaction errors --
+
     pub fn invalid_tx(msg: impl Into<String>) -> Self {
         Self::new("INVALID_TX", msg)
     }
@@ -27,6 +33,8 @@ impl TxrayError {
         Self::new("INVALID_HEX", msg)
     }
 
+    // -- block errors --
+
     pub fn invalid_block(msg: impl Into<String>) -> Self {
         Self::new("INVALID_BLOCK", msg)
     }
@@ -34,6 +42,16 @@ impl TxrayError {
     pub fn invalid_undo(msg: impl Into<String>) -> Self {
         Self::new("INVALID_UNDO", msg)
     }
+
+    pub fn coinbase_invalid(msg: impl Into<String>) -> Self {
+        Self::new("COINBASE_INVALID", msg)
+    }
+
+    pub fn merkle_mismatch(msg: impl Into<String>) -> Self {
+        Self::new("MERKLE_MISMATCH", msg)
+    }
+
+    // -- prevout errors (used during tx analysis with undo data) --
 
     pub fn prevout_missing(msg: impl Into<String>) -> Self {
         Self::new("PREVOUT_MISSING", msg)
@@ -47,22 +65,27 @@ impl TxrayError {
         Self::new("PREVOUT_EXTRA", msg)
     }
 
-    pub fn merkle_mismatch(msg: impl Into<String>) -> Self {
-        Self::new("MERKLE_MISMATCH", msg)
-    }
+    // -- IO and fixture errors --
 
-    pub fn coinbase_invalid(msg: impl Into<String>) -> Self {
-        Self::new("COINBASE_INVALID", msg)
+    pub fn file_not_found(msg: impl Into<String>) -> Self {
+        Self::new("FILE_NOT_FOUND", msg)
     }
 
     pub fn invalid_fixture(msg: impl Into<String>) -> Self {
         Self::new("INVALID_FIXTURE", msg)
     }
 
-    pub fn file_not_found(msg: impl Into<String>) -> Self {
-        Self::new("FILE_NOT_FOUND", msg)
+    // -- general errors --
+
+    pub fn invalid_args(msg: impl Into<String>) -> Self {
+        Self::new("INVALID_ARGS", msg)
     }
 
+    pub fn parse_error(msg: impl Into<String>) -> Self {
+        Self::new("PARSE_ERROR", msg)
+    }
+
+    /// Serialize to JSON for CLI output.
     pub fn to_json(&self) -> String {
         serde_json::json!({
             "ok": false,
