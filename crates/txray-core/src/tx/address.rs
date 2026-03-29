@@ -1,16 +1,3 @@
-use ripemd::Ripemd160;
-use sha2::{Digest, Sha256};
-
-/// HASH160: RIPEMD160(SHA256(data))
-#[allow(dead_code)]
-fn hash160(data: &[u8]) -> [u8; 20] {
-    let sha = Sha256::digest(data);
-    let ripemd = Ripemd160::digest(sha);
-    let mut result = [0u8; 20];
-    result.copy_from_slice(&ripemd);
-    result
-}
-
 /// Derive a Bitcoin address from a scriptPubKey and its classified type.
 pub fn derive_address(script: &[u8], script_type: &str) -> Option<String> {
     match script_type {

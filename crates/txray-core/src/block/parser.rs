@@ -37,7 +37,6 @@ pub struct BlockHeader {
     pub bits: u32,
     pub nonce: u32,
     pub block_hash: [u8; 32], // raw bytes = dsha256(header_bytes)
-    #[allow(dead_code)]
     pub raw_header: [u8; 80],
 }
 

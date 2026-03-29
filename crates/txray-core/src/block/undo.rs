@@ -161,11 +161,6 @@ impl<'a> UndoCursor<'a> {
         Self { data, pos: 0 }
     }
 
-    #[allow(dead_code)]
-    fn remaining(&self) -> usize {
-        self.data.len().saturating_sub(self.pos)
-    }
-
     fn read_byte(&mut self) -> Result<u8, TxrayError> {
         if self.pos >= self.data.len() {
             return Err(TxrayError::invalid_undo("Unexpected end of undo data"));

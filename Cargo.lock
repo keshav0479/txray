@@ -606,7 +606,6 @@ dependencies = [
  "hex",
  "serde",
  "serde_json",
- "txray-core",
 ]
 
 [[package]]

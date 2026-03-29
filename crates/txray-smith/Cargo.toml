@@ -7,7 +7,6 @@ repository.workspace = true
 description = "PSBT building, coin selection, and transaction construction"
 
 [dependencies]
-txray-core = { path = "../txray-core" }
 bitcoin.workspace = true
 serde.workspace = true
 serde_json.workspace = true

@@ -6,13 +6,22 @@
 //! Main entry point: `build_psbt_from_fixture()` — reads a fixture JSON string,
 //! performs coin selection, builds a PSBT, and returns the report as JSON.
 
-pub mod coin_selection;
+pub(crate) mod coin_selection;
 pub mod error;
-pub mod fixture;
-pub mod psbt;
-pub mod report;
-pub mod transaction;
-pub mod weight;
+pub(crate) mod fixture;
+pub(crate) mod psbt;
+pub(crate) mod report;
+pub(crate) mod transaction;
+pub(crate) mod weight;
+
+// Selective re-exports for downstream consumers
+pub use coin_selection::CoinSelectionResult;
+pub use fixture::{
+    parse_fixture, validate_fixture, ChangeTemplate, Fixture, Payment, Policy, Utxo,
+};
+pub use psbt::{build_outputs, build_psbt, OutputEntry};
+pub use report::{generate_warnings, Warning};
+pub use transaction::{resolve_rbf_locktime, TxParams};
 
 use error::BuilderError;
 
