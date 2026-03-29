@@ -62,6 +62,11 @@ enum Commands {
         /// Path to fixture JSON file
         fixture: String,
     },
+    /// Calculate Boltzmann entropy of a transaction
+    Entropy {
+        /// Path to fixture JSON file
+        fixture: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -97,6 +102,7 @@ async fn main() -> Result<()> {
         Commands::Famous { query } => cmd_famous(query.as_deref())?,
         Commands::Explain { fixture } => cmd_explain(&fixture)?,
         Commands::Fingerprint { fixture } => cmd_fingerprint(&fixture)?,
+        Commands::Entropy { fixture } => cmd_entropy(&fixture)?,
     }
 
     Ok(())
@@ -177,6 +183,44 @@ fn cmd_fingerprint(fixture_path: &str) -> Result<()> {
         prevouts.as_deref(),
     );
     println!("{}", fp);
+    Ok(())
+}
+
+fn cmd_entropy(fixture_path: &str) -> Result<()> {
+    let json_str =
+        std::fs::read_to_string(fixture_path).context("failed to read fixture file")?;
+    let report: serde_json::Value =
+        serde_json::from_str(&json_str).context("failed to parse fixture JSON")?;
+
+    // Build a RawTransaction from raw_hex
+    let raw_hex = report["raw_hex"]
+        .as_str()
+        .ok_or_else(|| anyhow::anyhow!("fixture missing 'raw_hex' field"))?;
+    let raw_bytes = hex::decode(raw_hex).context("failed to decode raw_hex")?;
+    let parsed = txray_core::tx::parser::parse_raw_tx(&raw_bytes)
+        .map_err(|e| anyhow::anyhow!("failed to parse transaction: {}", e))?;
+
+    // Get output amounts from the parsed transaction
+    let output_amounts: Vec<u64> = parsed.outputs.iter().map(|o| o.value).collect();
+
+    // Get input amounts from prevouts in the fixture
+    let input_amounts: Vec<u64> = report["prevouts"]
+        .as_array()
+        .map(|arr| {
+            arr.iter()
+                .map(|p| p["value_sats"].as_u64().unwrap_or(0))
+                .collect()
+        })
+        .unwrap_or_default();
+
+    if input_amounts.is_empty() {
+        anyhow::bail!("fixture missing 'prevouts' array with input amounts");
+    }
+
+    match txray_sherlock::entropy::compute_entropy(&input_amounts, &output_amounts) {
+        Some(result) => println!("{}", result),
+        None => println!("Cannot compute entropy: empty inputs or outputs"),
+    }
     Ok(())
 }
 
