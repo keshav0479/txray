@@ -6,6 +6,7 @@
 //! Main entry point: `analyze_block_file()` reads block/undo/xor files,
 //! runs all 8 heuristics on every transaction, and returns structured results.
 
+pub mod fingerprint;
 pub mod heuristics;
 
 use heuristics::{analyze_transaction, TxAnalysis, TxContext, ALL_HEURISTIC_IDS};

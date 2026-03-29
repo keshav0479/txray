@@ -57,6 +57,11 @@ enum Commands {
         /// Path to fixture JSON file
         fixture: String,
     },
+    /// Analyze wallet fingerprint of a transaction
+    Fingerprint {
+        /// Path to fixture JSON file
+        fixture: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -91,6 +96,7 @@ async fn main() -> Result<()> {
         Commands::Fetch { block, tx, source } => cmd_fetch(block, tx, &source).await?,
         Commands::Famous { query } => cmd_famous(query.as_deref())?,
         Commands::Explain { fixture } => cmd_explain(&fixture)?,
+        Commands::Fingerprint { fixture } => cmd_fingerprint(&fixture)?,
     }
 
     Ok(())
@@ -133,6 +139,44 @@ fn cmd_explain(fixture_path: &str) -> Result<()> {
         serde_json::from_str(&json_str).context("failed to parse analysis JSON")?;
     let explanation = txray_lens::explain::explain_transaction(&report);
     println!("{}", explanation);
+    Ok(())
+}
+
+fn cmd_fingerprint(fixture_path: &str) -> Result<()> {
+    let json_str =
+        std::fs::read_to_string(fixture_path).context("failed to read fixture file")?;
+    let report: serde_json::Value =
+        serde_json::from_str(&json_str).context("failed to parse fixture JSON")?;
+
+    // Build a RawTransaction from the fixture data
+    let raw_hex = report["raw_hex"]
+        .as_str()
+        .ok_or_else(|| anyhow::anyhow!("fixture missing 'raw_hex' field"))?;
+    let raw_bytes = hex::decode(raw_hex).context("failed to decode raw_hex")?;
+    let parsed = txray_core::tx::parser::parse_raw_tx(&raw_bytes)
+        .map_err(|e| anyhow::anyhow!("failed to parse transaction: {}", e))?;
+
+    // Build prevouts from fixture if available
+    let prevouts: Option<Vec<txray_core::block::undo::UndoPrevout>> =
+        report["prevouts"].as_array().map(|arr| {
+            arr.iter()
+                .map(|p| {
+                    let value = p["value_sats"].as_u64().unwrap_or(0);
+                    let script_hex = p["script_pubkey_hex"].as_str().unwrap_or("");
+                    let script = hex::decode(script_hex).unwrap_or_default();
+                    txray_core::block::undo::UndoPrevout {
+                        value_sats: value,
+                        script_pubkey: script,
+                    }
+                })
+                .collect()
+        });
+
+    let fp = txray_sherlock::fingerprint::fingerprint_transaction(
+        &parsed,
+        prevouts.as_deref(),
+    );
+    println!("{}", fp);
     Ok(())
 }
 
