@@ -10,3 +10,4 @@ description = "Transaction and block analysis — parse, explain, and generate w
 txray-core = { path = "../txray-core" }
 serde.workspace = true
 serde_json.workspace = true
+hex.workspace = true
