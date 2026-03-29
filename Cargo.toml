@@ -5,6 +5,7 @@ members = [
     "crates/txray-lens",
     "crates/txray-sherlock",
     "crates/txray-smith",
+    "crates/txray-net",
 ]
 
 [workspace.package]
@@ -32,3 +33,7 @@ bitcoin = { version = "0.32", features = ["serde", "base64"] }
 
 # Error handling
 thiserror = "2"
+
+# Async + HTTP (used by txray-net)
+reqwest = { version = "0.12", features = ["json"] }
+tokio = { version = "1", features = ["full"] }

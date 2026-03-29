@@ -1,0 +1,12 @@
+[package]
+name = "txray-net"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Fetch raw Bitcoin blocks and transactions from public APIs"
+
+[dependencies]
+reqwest = { workspace = true }
+tokio = { workspace = true }
+thiserror = { workspace = true }
+hex = { workspace = true }
