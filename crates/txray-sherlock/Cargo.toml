@@ -10,3 +10,4 @@ description = "Chain analysis heuristics — CIOH, change detection, CoinJoin, w
 txray-core = { path = "../txray-core" }
 serde.workspace = true
 serde_json.workspace = true
+hex.workspace = true

@@ -592,6 +592,7 @@ dependencies = [
 name = "txray-sherlock"
 version = "0.1.0"
 dependencies = [
+ "hex",
  "serde",
  "serde_json",
  "txray-core",

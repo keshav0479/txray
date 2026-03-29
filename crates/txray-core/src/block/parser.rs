@@ -128,6 +128,103 @@ pub fn parse_first_block(data: &[u8]) -> Result<RawBlock, TxrayError> {
     })
 }
 
+/// Parse ALL blocks from a blk*.dat file.
+/// Format: repeated [magic: 4 bytes] [size: 4 bytes LE] [block_payload: size bytes]
+pub fn parse_all_blocks(data: &[u8]) -> Result<Vec<RawBlock>, TxrayError> {
+    let magic = [0xf9, 0xbe, 0xb4, 0xd9];
+    let mut pos = 0;
+    let mut blocks = Vec::new();
+
+    while pos + 8 <= data.len() {
+        if data[pos..pos + 4] != magic {
+            return Err(TxrayError::invalid_block(format!(
+                "Invalid magic bytes at offset {}: {:02x}{:02x}{:02x}{:02x}",
+                pos,
+                data[pos],
+                data[pos + 1],
+                data[pos + 2],
+                data[pos + 3]
+            )));
+        }
+
+        let block_size =
+            u32::from_le_bytes([data[pos + 4], data[pos + 5], data[pos + 6], data[pos + 7]])
+                as usize;
+        pos += 8;
+
+        if pos + block_size > data.len() {
+            return Err(TxrayError::invalid_block(format!(
+                "Block payload at offset {} extends past end of file (need {}, have {})",
+                pos - 8,
+                block_size,
+                data.len() - pos
+            )));
+        }
+
+        let block_data = &data[pos..pos + block_size];
+        pos += block_size;
+
+        if block_data.len() < 80 {
+            return Err(TxrayError::invalid_block("Block too short for header"));
+        }
+
+        let mut raw_header = [0u8; 80];
+        raw_header.copy_from_slice(&block_data[0..80]);
+
+        let version =
+            i32::from_le_bytes([block_data[0], block_data[1], block_data[2], block_data[3]]);
+
+        let mut prev_block_hash = [0u8; 32];
+        prev_block_hash.copy_from_slice(&block_data[4..36]);
+
+        let mut merkle_root = [0u8; 32];
+        merkle_root.copy_from_slice(&block_data[36..68]);
+
+        let timestamp = u32::from_le_bytes([
+            block_data[68],
+            block_data[69],
+            block_data[70],
+            block_data[71],
+        ]);
+        let bits = u32::from_le_bytes([
+            block_data[72],
+            block_data[73],
+            block_data[74],
+            block_data[75],
+        ]);
+        let nonce = u32::from_le_bytes([
+            block_data[76],
+            block_data[77],
+            block_data[78],
+            block_data[79],
+        ]);
+
+        let block_hash = dsha256(&raw_header);
+
+        let header = BlockHeader {
+            version,
+            prev_block_hash,
+            merkle_root,
+            timestamp,
+            bits,
+            nonce,
+            block_hash,
+            raw_header,
+        };
+
+        blocks.push(RawBlock {
+            header,
+            payload: block_data.to_vec(),
+        });
+    }
+
+    if blocks.is_empty() {
+        return Err(TxrayError::invalid_block("No valid blocks found in file"));
+    }
+
+    Ok(blocks)
+}
+
 /// Reversed hex string for display (standard Bitcoin convention)
 pub fn reversed_hex(hash: &[u8; 32]) -> String {
     let mut reversed = *hash;
