@@ -160,7 +160,7 @@ async fn cmd_fetch(block: Option<String>, tx: Option<String>, source: &str) -> R
         println!("{} {} bytes fetched", "✓".green().bold(), bytes.len());
 
         // Try to parse the block header
-        match txray_core::block::parser::parse_first_block(&bytes) {
+        match txray_core::block::parser::parse_raw_block(&bytes) {
             Ok(raw_block) => {
                 let hash = txray_core::block::parser::reversed_hex(&raw_block.header.block_hash);
                 let prev =

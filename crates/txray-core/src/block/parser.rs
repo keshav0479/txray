@@ -127,6 +127,47 @@ pub fn parse_first_block(data: &[u8]) -> Result<RawBlock, TxrayError> {
     })
 }
 
+/// Parse a raw block payload (no magic/size prefix).
+/// Used for blocks fetched from APIs like mempool.space or Esplora.
+pub fn parse_raw_block(data: &[u8]) -> Result<RawBlock, TxrayError> {
+    if data.len() < 80 {
+        return Err(TxrayError::invalid_block("Block too short for header"));
+    }
+
+    let mut raw_header = [0u8; 80];
+    raw_header.copy_from_slice(&data[0..80]);
+
+    let version = i32::from_le_bytes([data[0], data[1], data[2], data[3]]);
+
+    let mut prev_block_hash = [0u8; 32];
+    prev_block_hash.copy_from_slice(&data[4..36]);
+
+    let mut merkle_root = [0u8; 32];
+    merkle_root.copy_from_slice(&data[36..68]);
+
+    let timestamp = u32::from_le_bytes([data[68], data[69], data[70], data[71]]);
+    let bits = u32::from_le_bytes([data[72], data[73], data[74], data[75]]);
+    let nonce = u32::from_le_bytes([data[76], data[77], data[78], data[79]]);
+
+    let block_hash = dsha256(&raw_header);
+
+    let header = BlockHeader {
+        version,
+        prev_block_hash,
+        merkle_root,
+        timestamp,
+        bits,
+        nonce,
+        block_hash,
+        raw_header,
+    };
+
+    Ok(RawBlock {
+        header,
+        payload: data.to_vec(),
+    })
+}
+
 /// Parse ALL blocks from a blk*.dat file.
 /// Format: repeated [magic: 4 bytes] [size: 4 bytes LE] [block_payload: size bytes]
 pub fn parse_all_blocks(data: &[u8]) -> Result<Vec<RawBlock>, TxrayError> {
