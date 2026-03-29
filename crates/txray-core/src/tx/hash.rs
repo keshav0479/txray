@@ -1,4 +1,5 @@
-use sha2::{Digest, Sha256};
+use ripemd::{Digest as RipemdDigest, Ripemd160};
+use sha2::Sha256;
 
 /// Double-SHA256 hash
 pub fn dsha256(data: &[u8]) -> [u8; 32] {
@@ -28,6 +29,13 @@ pub fn compute_wtxid(raw_bytes: &[u8]) -> String {
 /// Compute txid raw hash (non-reversed bytes) for merkle root computation
 pub fn compute_txid_raw(base_bytes: &[u8]) -> [u8; 32] {
     dsha256(base_bytes)
+}
+
+/// RIPEMD160(SHA256(data)) — used by OP_HASH160 and P2PKH/P2WPKH addresses
+pub fn hash160(data: &[u8]) -> Vec<u8> {
+    let sha = Sha256::digest(data);
+    let ripe = Ripemd160::digest(sha);
+    ripe.to_vec()
 }
 
 #[cfg(test)]

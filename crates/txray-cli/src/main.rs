@@ -67,6 +67,17 @@ enum Commands {
         /// Path to fixture JSON file
         fixture: String,
     },
+    /// Step through Bitcoin script execution
+    DebugScript {
+        /// Hex-encoded scriptPubKey to execute
+        script_hex: String,
+        /// Optional hex-encoded scriptSig
+        #[arg(long, default_value = "")]
+        script_sig: String,
+        /// Optional hex-encoded witness items (comma-separated)
+        #[arg(long, default_value = "")]
+        witness: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -103,6 +114,9 @@ async fn main() -> Result<()> {
         Commands::Explain { fixture } => cmd_explain(&fixture)?,
         Commands::Fingerprint { fixture } => cmd_fingerprint(&fixture)?,
         Commands::Entropy { fixture } => cmd_entropy(&fixture)?,
+        Commands::DebugScript { script_hex, script_sig, witness } => {
+            cmd_debug_script(&script_hex, &script_sig, &witness)?;
+        }
     }
 
     Ok(())
@@ -221,6 +235,34 @@ fn cmd_entropy(fixture_path: &str) -> Result<()> {
         Some(result) => println!("{}", result),
         None => println!("Cannot compute entropy: empty inputs or outputs"),
     }
+    Ok(())
+}
+
+fn cmd_debug_script(script_hex: &str, script_sig_hex: &str, witness_hex: &str) -> Result<()> {
+    let script_pubkey = hex::decode(script_hex).context("failed to decode scriptPubKey hex")?;
+    let script_sig = if script_sig_hex.is_empty() {
+        vec![]
+    } else {
+        hex::decode(script_sig_hex).context("failed to decode scriptSig hex")?
+    };
+    let witness: Vec<Vec<u8>> = if witness_hex.is_empty() {
+        vec![]
+    } else {
+        witness_hex
+            .split(',')
+            .map(|item| hex::decode(item.trim()).context("failed to decode witness item hex"))
+            .collect::<Result<Vec<_>>>()?
+    };
+
+    let steps = txray_core::tx::script_exec::execute_script(&script_pubkey, &script_sig, &witness);
+
+    println!("{}", "Script Execution Trace".bold().cyan());
+    println!("{}", "═".repeat(70).dimmed());
+    println!();
+    for step in &steps {
+        println!("{}", step);
+    }
+    println!();
     Ok(())
 }
 

@@ -438,6 +438,11 @@ pub fn decode_op_return(script: &[u8]) -> (String, Option<String>, &'static str)
     (data_hex, data_utf8, protocol)
 }
 
+/// Get the standard opcode name for a given byte (public API for script_exec).
+pub fn opcode_name_from_byte(opcode: u8) -> String {
+    opcode_name(opcode)
+}
+
 /// Get the standard opcode name for a given byte
 fn opcode_name(opcode: u8) -> String {
     match opcode {
