@@ -1670,6 +1670,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "txray-corpus"
+version = "0.1.0"
+
+[[package]]
 name = "txray-lens"
 version = "0.1.0"
 dependencies = [

@@ -1,0 +1,6 @@
+[package]
+name = "txray-corpus"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Curated corpus of historically significant Bitcoin blocks"

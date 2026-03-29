@@ -6,6 +6,7 @@ members = [
     "crates/txray-sherlock",
     "crates/txray-smith",
     "crates/txray-net",
+    "crates/txray-corpus",
 ]
 
 [workspace.package]
