@@ -83,6 +83,11 @@ enum Commands {
         /// Base64-encoded PSBT string or path to a file containing one
         psbt: String,
     },
+    /// Get privacy advice for a transaction
+    Advise {
+        /// Path to fixture JSON file
+        fixture: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -123,6 +128,7 @@ async fn main() -> Result<()> {
             cmd_debug_script(&script_hex, &script_sig, &witness)?;
         }
         Commands::Inspect { psbt } => cmd_inspect(&psbt)?,
+        Commands::Advise { fixture } => cmd_advise(&fixture)?,
     }
 
     Ok(())
@@ -284,6 +290,69 @@ fn cmd_inspect(psbt_input: &str) -> Result<()> {
         Ok(inspection) => println!("{}", inspection),
         Err(e) => anyhow::bail!("PSBT inspection failed: {}", e),
     }
+    Ok(())
+}
+
+fn cmd_advise(fixture_path: &str) -> Result<()> {
+    let json_str =
+        std::fs::read_to_string(fixture_path).context("failed to read fixture file")?;
+    let report: serde_json::Value =
+        serde_json::from_str(&json_str).context("failed to parse fixture JSON")?;
+
+    // Parse the raw transaction
+    let raw_hex = report["raw_hex"]
+        .as_str()
+        .ok_or_else(|| anyhow::anyhow!("fixture missing 'raw_hex' field"))?;
+    let raw_bytes = hex::decode(raw_hex).context("failed to decode raw_hex")?;
+    let parsed = txray_core::tx::parser::parse_raw_tx(&raw_bytes)
+        .map_err(|e| anyhow::anyhow!("failed to parse transaction: {}", e))?;
+
+    // Build prevouts
+    let prevouts: Option<Vec<txray_core::block::undo::UndoPrevout>> =
+        report["prevouts"].as_array().map(|arr| {
+            arr.iter()
+                .map(|p| {
+                    let value = p["value_sats"].as_u64().unwrap_or(0);
+                    let script_hex = p["script_pubkey_hex"].as_str().unwrap_or("");
+                    let script = hex::decode(script_hex).unwrap_or_default();
+                    txray_core::block::undo::UndoPrevout {
+                        value_sats: value,
+                        script_pubkey: script,
+                    }
+                })
+                .collect()
+        });
+
+    // 1. Run heuristics
+    let txid = txray_core::tx::hash::compute_txid(&parsed.base_bytes);
+    let ctx = txray_sherlock::heuristics::TxContext {
+        tx: &parsed,
+        txid,
+        is_coinbase: false,
+        prevouts: prevouts.as_deref(),
+        fee_rate: 0.0,
+    };
+    let analysis = txray_sherlock::heuristics::analyze_transaction(&ctx);
+
+    // 2. Run entropy (if prevouts available)
+    let entropy = prevouts.as_ref().and_then(|ps| {
+        let input_amounts: Vec<u64> = ps.iter().map(|p| p.value_sats).collect();
+        let output_amounts: Vec<u64> = parsed.outputs.iter().map(|o| o.value).collect();
+        txray_sherlock::entropy::compute_entropy(&input_amounts, &output_amounts)
+    });
+
+    // 3. Run fingerprinting
+    let fingerprint =
+        txray_sherlock::fingerprint::fingerprint_transaction(&parsed, prevouts.as_deref());
+
+    // 4. Get advice
+    let advice = txray_sherlock::advisor::advise_transaction(
+        &analysis,
+        entropy.as_ref(),
+        Some(&fingerprint),
+    );
+
+    println!("{}", advice);
     Ok(())
 }
 

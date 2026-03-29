@@ -6,6 +6,7 @@
 //! Main entry point: `analyze_block_file()` reads block/undo/xor files,
 //! runs all 8 heuristics on every transaction, and returns structured results.
 
+pub mod advisor;
 pub mod entropy;
 pub mod fingerprint;
 pub mod heuristics;
