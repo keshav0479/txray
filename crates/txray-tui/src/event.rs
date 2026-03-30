@@ -7,6 +7,8 @@ use crate::app::{App, InputMode};
 
 /// Poll for a key event with a timeout. Returns true if the app should keep running.
 pub fn handle_events(app: &mut App) -> anyhow::Result<bool> {
+    app.tick();
+
     // auto-run: advance debugger one step per tick
     if let Some(ref mut dbg) = app.debugger {
         if dbg.auto_run && !dbg.is_finished() {
@@ -138,12 +140,12 @@ fn handle_key(app: &mut App, key: KeyEvent) -> bool {
         }
 
         // number keys switch tabs
-        KeyCode::Char('1') => app.active_tab = crate::app::Tab::Dashboard,
-        KeyCode::Char('2') => app.active_tab = crate::app::Tab::TxDetail,
-        KeyCode::Char('3') => app.active_tab = crate::app::Tab::Heuristics,
-        KeyCode::Char('4') => app.active_tab = crate::app::Tab::FamousBlocks,
-        KeyCode::Char('5') => app.active_tab = crate::app::Tab::ScriptDebugger,
-        KeyCode::Char('6') => app.active_tab = crate::app::Tab::Learn,
+        KeyCode::Char('1') => app.set_active_tab(crate::app::Tab::Dashboard),
+        KeyCode::Char('2') => app.set_active_tab(crate::app::Tab::TxDetail),
+        KeyCode::Char('3') => app.set_active_tab(crate::app::Tab::Heuristics),
+        KeyCode::Char('4') => app.set_active_tab(crate::app::Tab::FamousBlocks),
+        KeyCode::Char('5') => app.set_active_tab(crate::app::Tab::ScriptDebugger),
+        KeyCode::Char('6') => app.set_active_tab(crate::app::Tab::Learn),
 
         _ => {}
     }

@@ -254,6 +254,7 @@ impl DebuggerState {
 /// Top-level application state.
 pub struct App {
     pub active_tab: Tab,
+    pub ui_tick: u64,
     pub should_quit: bool,
     pub show_help: bool,
     pub status_message: String,
@@ -280,6 +281,8 @@ pub struct App {
     pub learn_block_data: Option<FamousBlockData>,
     pub learn_fetch_in_progress: bool,
     learn_fetch_rx: Option<Receiver<Result<FamousBlockData, String>>>,
+    tab_transition_from: Tab,
+    tab_transition_ticks: u8,
 
     // script debugger state
     pub debugger: Option<DebuggerState>,
@@ -289,6 +292,7 @@ impl App {
     pub fn new() -> Self {
         Self {
             active_tab: Tab::Dashboard,
+            ui_tick: 0,
             should_quit: false,
             show_help: false,
             status_message: "Press ? for help, Tab to switch views, q to quit".to_string(),
@@ -307,16 +311,45 @@ impl App {
             learn_block_data: None,
             learn_fetch_in_progress: false,
             learn_fetch_rx: None,
+            tab_transition_from: Tab::Dashboard,
+            tab_transition_ticks: 0,
             debugger: None,
         }
     }
 
+    pub fn tick(&mut self) {
+        self.ui_tick = self.ui_tick.wrapping_add(1);
+        if self.tab_transition_ticks > 0 {
+            self.tab_transition_ticks -= 1;
+        }
+    }
+
+    pub fn set_active_tab(&mut self, tab: Tab) {
+        if tab != self.active_tab {
+            self.tab_transition_from = self.active_tab;
+            self.active_tab = tab;
+            self.tab_transition_ticks = 4;
+        }
+    }
+
+    pub fn tab_transition(&self) -> Option<(Tab, Tab, u8)> {
+        if self.tab_transition_ticks > 0 {
+            Some((
+                self.tab_transition_from,
+                self.active_tab,
+                self.tab_transition_ticks,
+            ))
+        } else {
+            None
+        }
+    }
+
     pub fn next_tab(&mut self) {
-        self.active_tab = self.active_tab.next();
+        self.set_active_tab(self.active_tab.next());
     }
 
     pub fn prev_tab(&mut self) {
-        self.active_tab = self.active_tab.prev();
+        self.set_active_tab(self.active_tab.prev());
     }
 
     pub fn toggle_help(&mut self) {
