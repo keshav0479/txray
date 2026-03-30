@@ -1182,71 +1182,274 @@ fn draw_famous_blocks(frame: &mut Frame, app: &App, area: Rect) {
 // ─── Learn Mode ─────────────────────────────────────────────────────────────
 
 fn draw_learn(frame: &mut Frame, app: &App, area: Rect) {
-    let lessons = [
-        ("1", "What's Inside a Block?", "Parse the genesis block"),
-        (
-            "2",
-            "Anatomy of a Transaction",
-            "Decode Satoshi to Hal Finney",
-        ),
-        ("3", "Script Types Explained", "P2PKH to P2TR evolution"),
-        ("4", "SegWit & Weight", "Witness discount and savings"),
-        ("5", "Privacy Heuristics 101", "Analyze a real CoinJoin"),
-        ("6", "Build Your First PSBT", "Step-by-step PSBT creation"),
-        ("7", "Wallet Fingerprinting", "Identify wallet software"),
-    ];
+    let lessons = App::learn_lessons();
 
-    let mut lines: Vec<Line> = Vec::new();
-    lines.push(Line::from(Span::styled(
-        "Interactive Bitcoin Lessons",
-        Style::default()
-            .fg(theme::ORANGE_TEXT)
-            .add_modifier(Modifier::BOLD),
-    )));
-    lines.push(Line::default());
+    if !app.learn_active {
+        let (completed, total) = app.learn_progress();
+        let mut lines: Vec<Line> = vec![
+            Line::from(Span::styled(
+                "Interactive Bitcoin Lessons",
+                Style::default()
+                    .fg(theme::ORANGE_TEXT)
+                    .add_modifier(Modifier::BOLD),
+            )),
+            Line::from(vec![
+                Span::styled("Progress: ", Style::default().fg(theme::TEXT_DIM)),
+                Span::styled(
+                    format!("{}/{} completed", completed, total),
+                    Style::default().fg(theme::GREEN_TEXT),
+                ),
+            ]),
+            Line::default(),
+        ];
 
-    for (i, (num, title, desc)) in lessons.iter().enumerate() {
-        let marker = if i == app.learn_selected { ">" } else { " " };
-        let style = if i == app.learn_selected {
-            Style::default()
-                .fg(theme::CYAN)
-                .add_modifier(Modifier::BOLD)
-        } else {
-            Style::default().fg(theme::TEXT)
-        };
+        for (i, lesson) in lessons.iter().enumerate() {
+            let marker = if i == app.learn_selected { ">" } else { " " };
+            let done = app.learn_completed[i];
+            let done_style = if done {
+                Style::default().fg(theme::GREEN_TEXT)
+            } else {
+                Style::default().fg(theme::TEXT_MUTED)
+            };
+            let style = if i == app.learn_selected {
+                Style::default()
+                    .fg(theme::CYAN)
+                    .add_modifier(Modifier::BOLD)
+            } else {
+                Style::default().fg(theme::TEXT)
+            };
 
-        lines.push(Line::from(vec![
-            Span::styled(format!("{} ", marker), style),
-            Span::styled(
-                format!("Lesson {} - ", num),
-                Style::default().fg(theme::GREEN_TEXT),
-            ),
-            Span::styled(*title, style),
-        ]));
+            lines.push(Line::from(vec![
+                Span::styled(format!("{} ", marker), style),
+                Span::styled(if done { "[✓] " } else { "[ ] " }, done_style),
+                Span::styled(
+                    format!("Lesson {} - ", i + 1),
+                    Style::default().fg(theme::GREEN_TEXT),
+                ),
+                Span::styled(lesson.title, style),
+            ]));
 
-        if i == app.learn_selected {
-            lines.push(Line::from(Span::styled(
-                format!("    {}", desc),
-                Style::default().fg(theme::TEXT_DIM),
-            )));
-            lines.push(Line::from(Span::styled(
-                "    Press Enter to start (coming in Commit 4.6)",
-                Style::default().fg(theme::TEXT_MUTED),
-            )));
-            lines.push(Line::default());
+            if i == app.learn_selected {
+                lines.push(Line::from(Span::styled(
+                    format!("    {}", lesson.subtitle),
+                    Style::default().fg(theme::TEXT_DIM),
+                )));
+                lines.push(Line::from(Span::styled(
+                    "    Press Enter to start lesson",
+                    Style::default().fg(theme::TEXT_MUTED),
+                )));
+                lines.push(Line::default());
+            }
         }
+
+        let panel = Paragraph::new(lines)
+            .block(
+                Block::default()
+                    .title(Span::styled(" Learn ", theme::header()))
+                    .borders(Borders::ALL)
+                    .border_style(theme::border_active())
+                    .padding(Padding::horizontal(1)),
+            )
+            .wrap(Wrap { trim: false });
+        frame.render_widget(panel, area);
+        return;
     }
 
-    let panel = Paragraph::new(lines)
+    let lesson = app.current_lesson();
+    let cols = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([Constraint::Percentage(60), Constraint::Percentage(40)])
+        .split(area);
+
+    let left_rows = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Percentage(68), Constraint::Percentage(32)])
+        .split(cols[0]);
+
+    let step_total = lesson.steps.len();
+    let step_idx = app.learn_step.min(step_total.saturating_sub(1));
+    let step_text = lesson.steps[step_idx];
+
+    let mut lesson_lines = vec![
+        Line::from(Span::styled(
+            lesson.title,
+            Style::default()
+                .fg(theme::CYAN)
+                .add_modifier(Modifier::BOLD),
+        )),
+        Line::from(Span::styled(
+            lesson.subtitle,
+            Style::default().fg(theme::TEXT_DIM),
+        )),
+        Line::default(),
+        Line::from(vec![
+            Span::styled("Step ", Style::default().fg(theme::TEXT_DIM)),
+            Span::styled(
+                format!("{}/{}", step_idx + 1, step_total),
+                Style::default().fg(theme::GREEN_TEXT),
+            ),
+        ]),
+        Line::from(Span::styled(step_text, Style::default().fg(theme::TEXT))),
+        Line::default(),
+        Line::from(vec![
+            Span::styled(
+                "n",
+                Style::default()
+                    .fg(theme::CYAN)
+                    .add_modifier(Modifier::BOLD),
+            ),
+            Span::styled(" next  ", Style::default().fg(theme::TEXT_DIM)),
+            Span::styled(
+                "p",
+                Style::default()
+                    .fg(theme::CYAN)
+                    .add_modifier(Modifier::BOLD),
+            ),
+            Span::styled(" prev  ", Style::default().fg(theme::TEXT_DIM)),
+            Span::styled(
+                "Esc",
+                Style::default()
+                    .fg(theme::CYAN)
+                    .add_modifier(Modifier::BOLD),
+            ),
+            Span::styled(" exit", Style::default().fg(theme::TEXT_DIM)),
+        ]),
+    ];
+
+    if let Some(ref feedback) = app.learn_quiz_feedback {
+        lesson_lines.push(Line::default());
+        lesson_lines.push(Line::from(Span::styled(
+            feedback,
+            Style::default().fg(theme::GREEN_TEXT),
+        )));
+    }
+
+    let lesson_panel = Paragraph::new(lesson_lines)
         .block(
             Block::default()
-                .title(Span::styled(" Learn ", theme::header()))
+                .title(Span::styled(" Lesson ", theme::header()))
                 .borders(Borders::ALL)
                 .border_style(theme::border_active())
                 .padding(Padding::horizontal(1)),
         )
         .wrap(Wrap { trim: false });
-    frame.render_widget(panel, area);
+    frame.render_widget(lesson_panel, left_rows[0]);
+
+    let mut quiz_lines = vec![
+        Line::from(Span::styled(
+            lesson.quiz_question,
+            Style::default().fg(theme::ORANGE_TEXT),
+        )),
+        Line::default(),
+        Line::from(vec![
+            Span::styled("a)", Style::default().fg(theme::CYAN)),
+            Span::styled(
+                format!(" {}", lesson.quiz_options[0]),
+                Style::default().fg(theme::TEXT),
+            ),
+        ]),
+        Line::from(vec![
+            Span::styled("b)", Style::default().fg(theme::CYAN)),
+            Span::styled(
+                format!(" {}", lesson.quiz_options[1]),
+                Style::default().fg(theme::TEXT),
+            ),
+        ]),
+        Line::from(vec![
+            Span::styled("c)", Style::default().fg(theme::CYAN)),
+            Span::styled(
+                format!(" {}", lesson.quiz_options[2]),
+                Style::default().fg(theme::TEXT),
+            ),
+        ]),
+    ];
+
+    if let Some(choice) = app.learn_quiz_choice {
+        quiz_lines.push(Line::default());
+        quiz_lines.push(Line::from(vec![
+            Span::styled("Selected: ", Style::default().fg(theme::TEXT_DIM)),
+            Span::styled(
+                ["a", "b", "c"][choice.min(2)].to_string(),
+                Style::default().fg(theme::CYAN),
+            ),
+        ]));
+    }
+
+    let quiz_panel = Paragraph::new(quiz_lines)
+        .block(
+            Block::default()
+                .title(Span::styled(" Quiz ", theme::header()))
+                .borders(Borders::ALL)
+                .border_style(theme::border_active())
+                .padding(Padding::horizontal(1)),
+        )
+        .wrap(Wrap { trim: false });
+    frame.render_widget(quiz_panel, left_rows[1]);
+
+    let mut side_lines = Vec::new();
+    if let Some(ref blk) = app.learn_block_data {
+        side_lines.push(Line::from(vec![
+            Span::styled("Block: ", Style::default().fg(theme::TEXT_DIM)),
+            Span::styled(&blk.name, Style::default().fg(theme::TEXT)),
+        ]));
+        side_lines.push(Line::from(vec![
+            Span::styled("Height: ", Style::default().fg(theme::TEXT_DIM)),
+            Span::styled(format!("{}", blk.height), Style::default().fg(theme::CYAN)),
+        ]));
+        side_lines.push(Line::from(vec![
+            Span::styled("Tx count: ", Style::default().fg(theme::TEXT_DIM)),
+            Span::styled(
+                format!("{}", blk.tx_count),
+                Style::default().fg(theme::TEXT),
+            ),
+        ]));
+        side_lines.push(Line::from(vec![
+            Span::styled("Hash: ", Style::default().fg(theme::TEXT_DIM)),
+            Span::styled(
+                if blk.hash_matches {
+                    "match"
+                } else {
+                    "mismatch"
+                },
+                Style::default().fg(if blk.hash_matches {
+                    theme::GREEN_TEXT
+                } else {
+                    theme::ERROR
+                }),
+            ),
+        ]));
+    } else if app.learn_fetch_in_progress {
+        side_lines.push(Line::from(Span::styled(
+            "Fetching block data...",
+            Style::default().fg(theme::ORANGE_TEXT),
+        )));
+    } else {
+        side_lines.push(Line::from(Span::styled(
+            "No block data fetched for this lesson.",
+            Style::default().fg(theme::TEXT_MUTED),
+        )));
+    }
+
+    let (completed, total) = app.learn_progress();
+    side_lines.push(Line::default());
+    side_lines.push(Line::from(vec![
+        Span::styled("Progress: ", Style::default().fg(theme::TEXT_DIM)),
+        Span::styled(
+            format!("{}/{}", completed, total),
+            Style::default().fg(theme::GREEN_TEXT),
+        ),
+    ]));
+
+    let side_panel = Paragraph::new(side_lines)
+        .block(
+            Block::default()
+                .title(Span::styled(" Lesson Data ", theme::header()))
+                .borders(Borders::ALL)
+                .border_style(theme::border_active())
+                .padding(Padding::horizontal(1)),
+        )
+        .wrap(Wrap { trim: false });
+    frame.render_widget(side_panel, cols[1]);
 }
 
 // ─── Script Debugger ───────────────────────────────────────────────────────

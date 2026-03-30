@@ -16,6 +16,9 @@ pub fn handle_events(app: &mut App) -> anyhow::Result<bool> {
         }
     }
 
+    // poll async/background work
+    app.poll_background_tasks();
+
     if event::poll(Duration::from_millis(100))? {
         if let Event::Key(key) = event::read()? {
             if key.kind != event::KeyEventKind::Press {

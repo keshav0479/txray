@@ -12,7 +12,11 @@ pub fn base_url(source: &ApiSource) -> &str {
 
 /// GET request returning raw bytes, with retry and exponential backoff.
 pub async fn fetch_bytes_with_retry(url: &str, max_retries: u32) -> Result<Vec<u8>, NetError> {
-    let client = reqwest::Client::new();
+    let client = reqwest::Client::builder()
+        .connect_timeout(std::time::Duration::from_secs(4))
+        .timeout(std::time::Duration::from_secs(8))
+        .build()
+        .map_err(|e| NetError::Http(format!("client build failed: {}", e)))?;
     let mut last_err = None;
 
     for attempt in 0..max_retries {
@@ -52,7 +56,11 @@ pub async fn fetch_bytes_with_retry(url: &str, max_retries: u32) -> Result<Vec<u
 
 /// GET request returning text, with retry and exponential backoff.
 pub async fn fetch_text_with_retry(url: &str, max_retries: u32) -> Result<String, NetError> {
-    let client = reqwest::Client::new();
+    let client = reqwest::Client::builder()
+        .connect_timeout(std::time::Duration::from_secs(4))
+        .timeout(std::time::Duration::from_secs(8))
+        .build()
+        .map_err(|e| NetError::Http(format!("client build failed: {}", e)))?;
     let mut last_err = None;
 
     for attempt in 0..max_retries {

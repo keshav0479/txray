@@ -1,6 +1,8 @@
 //! App state and tab management for the txray TUI.
 
 use crate::data::{AnalysisData, TxAnalysis};
+use std::sync::mpsc::{self, Receiver, TryRecvError};
+use std::thread;
 use txray_core::tx::script_exec::{ScriptStep, StepStatus};
 
 /// Fetched metadata for a famous block selected in the TUI.
@@ -276,6 +278,8 @@ pub struct App {
     pub learn_quiz_feedback: Option<String>,
     pub learn_completed: [bool; 7],
     pub learn_block_data: Option<FamousBlockData>,
+    pub learn_fetch_in_progress: bool,
+    learn_fetch_rx: Option<Receiver<Result<FamousBlockData, String>>>,
 
     // script debugger state
     pub debugger: Option<DebuggerState>,
@@ -301,6 +305,8 @@ impl App {
             learn_quiz_feedback: None,
             learn_completed: [false; 7],
             learn_block_data: None,
+            learn_fetch_in_progress: false,
+            learn_fetch_rx: None,
             debugger: None,
         }
     }
@@ -442,22 +448,24 @@ impl App {
         self.learn_step = 0;
         self.learn_quiz_choice = None;
         self.learn_quiz_feedback = None;
+        self.learn_fetch_in_progress = false;
+        self.learn_fetch_rx = None;
 
         let lesson = self.current_lesson();
         self.learn_block_data = None;
         if let Some(height) = lesson.block_height {
-            let expected = txray_corpus::find_by_height(height).map(|b| b.hash);
-            match self.fetch_block_snapshot(lesson.title, height, expected) {
-                Ok(data) => {
-                    self.learn_block_data = Some(data);
-                    self.status_message = format!(
-                        "Started lesson: {} (block {} fetched)",
-                        lesson.title, height
-                    );
-                }
-                Err(e) => {
-                    self.status_message = format!("Started lesson: {} ({})", lesson.title, e);
-                }
+            if cfg!(test) {
+                self.status_message = format!(
+                    "Started lesson: {} (test mode: fetch skipped)",
+                    lesson.title
+                );
+            } else {
+                let expected = txray_corpus::find_by_height(height).map(|b| b.hash.to_string());
+                self.start_learn_block_fetch(lesson.title.to_string(), height, expected);
+                self.status_message = format!(
+                    "Started lesson: {} (fetching block {}...)",
+                    lesson.title, height
+                );
             }
         } else {
             self.status_message = format!("Started lesson: {}", lesson.title);
@@ -470,7 +478,62 @@ impl App {
         self.learn_quiz_choice = None;
         self.learn_quiz_feedback = None;
         self.learn_block_data = None;
+        self.learn_fetch_in_progress = false;
+        self.learn_fetch_rx = None;
         self.status_message = "Exited lesson view".to_string();
+    }
+
+    pub fn poll_background_tasks(&mut self) {
+        if !self.learn_fetch_in_progress {
+            return;
+        }
+
+        let result = match self.learn_fetch_rx.as_ref() {
+            Some(rx) => match rx.try_recv() {
+                Ok(result) => Some(result),
+                Err(TryRecvError::Empty) => None,
+                Err(TryRecvError::Disconnected) => {
+                    Some(Err("lesson fetch worker disconnected".to_string()))
+                }
+            },
+            None => Some(Err("lesson fetch channel missing".to_string())),
+        };
+
+        if let Some(result) = result {
+            self.learn_fetch_in_progress = false;
+            self.learn_fetch_rx = None;
+            let lesson_title = self.current_lesson().title.to_string();
+
+            match result {
+                Ok(data) => {
+                    let height = data.height;
+                    self.learn_block_data = Some(data);
+                    self.status_message = format!(
+                        "Started lesson: {} (block {} fetched)",
+                        lesson_title, height
+                    );
+                }
+                Err(e) => {
+                    self.status_message = format!("Started lesson: {} ({})", lesson_title, e);
+                }
+            }
+        }
+    }
+
+    fn start_learn_block_fetch(
+        &mut self,
+        lesson_title: String,
+        height: u64,
+        expected_hash: Option<String>,
+    ) {
+        let (tx, rx) = mpsc::channel();
+        self.learn_fetch_in_progress = true;
+        self.learn_fetch_rx = Some(rx);
+
+        thread::spawn(move || {
+            let result = App::fetch_block_snapshot(&lesson_title, height, expected_hash.as_deref());
+            let _ = tx.send(result);
+        });
     }
 
     pub fn next_learn_step(&mut self) {
@@ -504,7 +567,6 @@ impl App {
     }
 
     fn fetch_block_snapshot(
-        &self,
         name: &str,
         height: u64,
         expected_hash: Option<&str>,
@@ -559,7 +621,7 @@ impl App {
 
         self.status_message = format!("Fetching block {} from mempool.space...", block.height);
 
-        match self.fetch_block_snapshot(block.name, block.height, Some(block.hash)) {
+        match App::fetch_block_snapshot(block.name, block.height, Some(block.hash)) {
             Ok(data) => {
                 let tx_count = data.tx_count;
                 self.famous_block_data = Some(data);
