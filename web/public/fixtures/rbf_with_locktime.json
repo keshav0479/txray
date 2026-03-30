@@ -1,0 +1,32 @@
+{
+  "network": "mainnet",
+  "utxos": [
+    {
+      "txid": "d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1",
+      "vout": 0,
+      "value_sats": 200000,
+      "script_pubkey_hex": "0014d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1",
+      "script_type": "p2wpkh",
+      "address": "bc1q68gar5w368gar5w368gar5w368gar5w32he3ks"
+    }
+  ],
+  "payments": [
+    {
+      "address": "bc1q6tfd95kj6tfd95kj6tfd95kj6tfd95kjmnl5ax",
+      "script_pubkey_hex": "0014d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2",
+      "script_type": "p2wpkh",
+      "value_sats": 150000
+    }
+  ],
+  "change": {
+    "address": "bc1q60fa857n60fa857n60fa857n60fa857n6r74h8",
+    "script_pubkey_hex": "0014d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3",
+    "script_type": "p2wpkh"
+  },
+  "fee_rate_sat_vb": 5,
+  "rbf": true,
+  "locktime": 870000,
+  "policy": {
+    "max_inputs": 5
+  }
+}

@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SmithBackground } from "@/components/smith/SmithBackground";
+import { Footer } from "@/components/shared/Footer";
 
 const PRESETS = [
   {
@@ -49,7 +50,7 @@ const PRESETS = [
   },
 ];
 
-export default function SmithPage() {
+export default function BuildPage() {
   const router = useRouter();
   const [isBuilding, setIsBuilding] = useState(false);
   const [activePreset, setActivePreset] = useState<string | null>(null);
@@ -66,16 +67,17 @@ export default function SmithPage() {
     setTimeout(() => router.push(path), 400);
   };
 
+  // load fixture from /public/fixtures/ instead of /api/demo
   const handlePreset = async (fixtureId: string) => {
     setIsBuilding(true);
     setActivePreset(fixtureId);
     setErrorMsg(null);
     try {
-      const res = await fetch(`/api/demo?fixture=${fixtureId}`);
+      const res = await fetch(`/fixtures/${fixtureId}.json`);
       if (!res.ok) throw new Error("Could not load fixture");
       const jsonStr = await res.text();
       sessionStorage.setItem("coinsmith_fixture", jsonStr);
-      navigateTo("/smith/build");
+      navigateTo("/build/result");
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : "Error loading fixture");
       setIsBuilding(false);
@@ -93,7 +95,7 @@ export default function SmithPage() {
         throw new Error("Invalid fixture: missing fee_rate_sat_vb or utxos");
       }
       sessionStorage.setItem("coinsmith_fixture", pasteContent);
-      navigateTo("/smith/build");
+      navigateTo("/build/result");
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : "Invalid JSON");
       setIsBuilding(false);
@@ -113,7 +115,7 @@ export default function SmithPage() {
         const parsed = JSON.parse(text);
         if (!parsed.fee_rate_sat_vb || !parsed.utxos) throw new Error("Invalid fixture");
         sessionStorage.setItem("coinsmith_fixture", text);
-        navigateTo("/smith/build");
+        navigateTo("/build/result");
       } catch (err) {
         setErrorMsg(err instanceof Error ? err.message : "Invalid JSON");
         setIsBuilding(false);
@@ -138,11 +140,14 @@ export default function SmithPage() {
           animate={{ opacity: 1, y: 0 }}
           className="w-full max-w-2xl text-center mb-12 z-10"
         >
+          <div className="text-[10px] font-mono uppercase tracking-widest text-smith-400 font-bold mb-3">
+            Smith
+          </div>
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-4">
             Load the Forge
           </h1>
           <p className="text-zinc-400 text-lg max-w-md mx-auto">
-            Choose your raw materials — a wallet of coins and a list of payments. Pick a preset or supply your own fixture.
+            Choose your raw materials -- a wallet of coins and a list of payments. Pick a preset or supply your own fixture.
           </p>
         </motion.div>
 
@@ -166,15 +171,15 @@ export default function SmithPage() {
                 onClick={() => handlePreset(preset.id)}
                 className={cn(
                   "group relative p-5 rounded-2xl border text-left transition-all duration-300",
-                  "bg-zinc-900/80 backdrop-blur-md border-white/10 hover:border-white/20 hover:bg-zinc-900/90",
+                  "bg-zinc-900/80 backdrop-blur-md border-white/10 hover:border-smith-500/30 hover:bg-zinc-900/90",
                   "disabled:opacity-50 disabled:cursor-wait",
                 )}
               >
-                <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-3 group-hover:bg-brand-500/10 group-hover:border-brand-500/20 transition-colors">
+                <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-3 group-hover:bg-smith-500/10 group-hover:border-smith-500/20 transition-colors">
                   {loading ? (
-                    <Loader2 className="w-5 h-5 text-brand-400 animate-spin" />
+                    <Loader2 className="w-5 h-5 text-smith-400 animate-spin" />
                   ) : (
-                    <Icon className="w-5 h-5 text-zinc-400 group-hover:text-brand-400 transition-colors" />
+                    <Icon className="w-5 h-5 text-zinc-400 group-hover:text-smith-400 transition-colors" />
                   )}
                 </div>
                 <h3 className="text-sm font-bold text-white mb-1">{preset.label}</h3>
@@ -230,7 +235,7 @@ export default function SmithPage() {
                 <div
                   className={cn(
                     "border-2 border-dashed rounded-xl transition-all relative",
-                    dragActive ? "border-brand-500 bg-brand-500/5" : "border-surface-border hover:border-brand-500/30",
+                    dragActive ? "border-smith-500 bg-smith-500/5" : "border-surface-border hover:border-smith-500/30",
                     isBuilding && "opacity-50 pointer-events-none"
                   )}
                   onDragEnter={(e) => { e.preventDefault(); setDragActive(true); }}
@@ -266,7 +271,7 @@ export default function SmithPage() {
                   <button
                     onClick={handleCustomSubmit}
                     disabled={!pasteContent.trim() || isBuilding}
-                    className="bg-white text-black font-bold px-6 py-2.5 rounded-full text-sm disabled:opacity-50 hover:scale-105 active:scale-95 transition-all"
+                    className="bg-smith-500 text-white font-bold px-6 py-2.5 rounded-full text-sm disabled:opacity-50 hover:bg-smith-600 active:scale-95 transition-all"
                   >
                     Build Transaction
                   </button>
@@ -275,7 +280,26 @@ export default function SmithPage() {
             </motion.div>
           )}
         </motion.div>
+
+        {/* Explore link */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="mt-12 z-10 text-center"
+        >
+          <p className="text-xs text-zinc-600 mb-2">
+            Want to analyze an existing transaction instead?
+          </p>
+          <a
+            href="/explore/famous"
+            className="text-xs text-smith-400 hover:text-smith-300 transition-colors"
+          >
+            Browse famous transactions →
+          </a>
+        </motion.div>
       </div>
+      <Footer />
     </>
   );
 }

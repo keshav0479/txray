@@ -1,18 +1,18 @@
 @import "tailwindcss";
 
 @theme {
-  /* ─── Shared Surface Palette (all 3 challenges) ─── */
+  /* ─── Shared Surface Palette ─── */
   --color-surface-bg: #000000;
   --color-surface-card: #09090b;
   --color-surface-hover: #18181b;
   --color-surface-border: #27272a;
 
-  /* ─── Text (shared) ─── */
+  /* ─── Text ─── */
   --color-text-primary: #f8fafc;
   --color-text-secondary: #94a3b8;
   --color-text-muted: #475569;
 
-  /* ─── Lens Brand (Blue — tx parsing & analysis) ─── */
+  /* ─── Lens Brand (Blue — structure & parsing) ─── */
   --color-lens-50: #eff6ff;
   --color-lens-300: #93c5fd;
   --color-lens-400: #60a5fa;
@@ -30,16 +30,16 @@
   --color-sherlock-700: #92400e;
   --color-sherlock-900: #451a03;
 
-  /* ─── Smith Brand (Blue, same family as Lens) ─── */
-  --color-smith-50: #eff6ff;
-  --color-smith-300: #93c5fd;
-  --color-smith-400: #60a5fa;
-  --color-smith-500: #3b82f6;
-  --color-smith-600: #2563eb;
-  --color-smith-700: #1d4ed8;
-  --color-smith-900: #1e3a8a;
+  /* ─── Smith Brand (Emerald — construction & forging) ─── */
+  --color-smith-50: #ecfdf5;
+  --color-smith-300: #6ee7b7;
+  --color-smith-400: #34d399;
+  --color-smith-500: #10b981;
+  --color-smith-600: #059669;
+  --color-smith-700: #047857;
+  --color-smith-900: #064e3b;
 
-  /* ─── Classification Colors (from Sherlock) ─── */
+  /* ─── Classification Colors (Sherlock) ─── */
   --color-class-coinjoin: #a855f7;
   --color-class-consolidation: #3b82f6;
   --color-class-self-transfer: #22d3ee;
@@ -93,42 +93,60 @@ pre,
 
 /* ─── Scrollbar ─── */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-surface-bg);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--color-surface-border);
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-text-muted);
 }
 
-/* ─── Utility Classes ─── */
+/* ─── Glass Card ─── */
 .glass-card {
   background: rgba(9, 9, 11, 0.7);
   backdrop-filter: blur(12px);
   border: 1px solid var(--color-surface-border);
 }
 
+/* ─── Per-Brand Glows ─── */
 .glow-lens {
   box-shadow: 0 0 40px -10px rgba(59, 130, 246, 0.3);
+}
+.glow-lens:hover {
+  box-shadow: 0 0 60px -15px rgba(59, 130, 246, 0.5);
 }
 
 .glow-sherlock {
   box-shadow: 0 0 40px -10px rgba(212, 165, 70, 0.3);
 }
-
-.glow-lens:hover {
-  box-shadow: 0 0 60px -15px rgba(59, 130, 246, 0.5);
-}
-
 .glow-sherlock:hover {
   box-shadow: 0 0 60px -15px rgba(212, 165, 70, 0.5);
 }
+
+.glow-smith {
+  box-shadow: 0 0 40px -10px rgba(16, 185, 129, 0.3);
+}
+.glow-smith:hover {
+  box-shadow: 0 0 60px -15px rgba(16, 185, 129, 0.5);
+}
+
+/* ─── Search input focus ring ─── */
+.search-input:focus {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+/* ─── Category pill colors ─── */
+.cat-genesis { --cat: #f59e0b; }
+.cat-milestone { --cat: #3b82f6; }
+.cat-privacy { --cat: #a855f7; }
+.cat-technical { --cat: #06b6d4; }
+.cat-cultural { --cat: #f43f5e; }

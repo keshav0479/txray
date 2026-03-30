@@ -49,7 +49,7 @@ export default function BuildPage() {
   useEffect(() => {
     const fixture = sessionStorage.getItem("coinsmith_fixture");
     if (!fixture) {
-      router.push("/smith");
+      router.push("/build");
       return;
     }
 
@@ -207,7 +207,7 @@ export default function BuildPage() {
           <h2 className="text-xl font-bold text-white mb-2">Build Failed</h2>
           <p className="text-red-400 text-sm mb-6">{errorMsg}</p>
           <button
-            onClick={() => router.push("/smith")}
+            onClick={() => router.push("/build")}
             className="px-6 py-2 rounded-full bg-white text-black font-semibold text-sm hover:bg-zinc-200 transition-colors"
           >
             ← Try Again
@@ -246,7 +246,7 @@ export default function BuildPage() {
       {/* Top action bar */}
       <div className="w-full max-w-7xl mx-auto px-6 py-3 flex justify-between items-center z-50 relative pt-20">
         <button
-          onClick={() => router.push("/smith")}
+          onClick={() => router.push("/build")}
           className="text-sm font-medium text-zinc-400 hover:text-white border border-white/10 hover:border-white/20 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full transition-all flex items-center gap-2"
         >
           <ArrowLeft className="w-4 h-4" /> New Build
