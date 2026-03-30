@@ -3,13 +3,12 @@
 use ratatui::crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
 use std::time::Duration;
 
-use crate::app::App;
+use crate::app::{App, InputMode};
 
 /// Poll for a key event with a timeout. Returns true if the app should keep running.
 pub fn handle_events(app: &mut App) -> anyhow::Result<bool> {
     if event::poll(Duration::from_millis(16))? {
         if let Event::Key(key) = event::read()? {
-            // ignore key release events on Windows
             if key.kind != event::KeyEventKind::Press {
                 return Ok(true);
             }
@@ -24,6 +23,11 @@ fn handle_key(app: &mut App, key: KeyEvent) -> bool {
     // Ctrl+C always quits
     if key.modifiers.contains(KeyModifiers::CONTROL) && key.code == KeyCode::Char('c') {
         return false;
+    }
+
+    // input mode handles its own keys
+    if let InputMode::FixturePath(ref _buf) = app.input_mode {
+        return handle_input_mode(app, key);
     }
 
     // help overlay intercepts all keys
@@ -44,11 +48,17 @@ fn handle_key(app: &mut App, key: KeyEvent) -> bool {
         KeyCode::Tab => app.next_tab(),
         KeyCode::BackTab => app.prev_tab(),
 
-        // vim-style navigation for lists
+        // vim-style navigation
         KeyCode::Char('j') | KeyCode::Down => handle_scroll_down(app),
         KeyCode::Char('k') | KeyCode::Up => handle_scroll_up(app),
 
-        // number keys switch tabs directly
+        // load fixture
+        KeyCode::Char('f') => {
+            app.input_mode = InputMode::FixturePath(String::new());
+            app.status_message = "Enter fixture path (Enter to confirm, Esc to cancel)".to_string();
+        }
+
+        // number keys switch tabs
         KeyCode::Char('1') => app.active_tab = crate::app::Tab::Dashboard,
         KeyCode::Char('2') => app.active_tab = crate::app::Tab::TxDetail,
         KeyCode::Char('3') => app.active_tab = crate::app::Tab::Heuristics,
@@ -56,6 +66,39 @@ fn handle_key(app: &mut App, key: KeyEvent) -> bool {
         KeyCode::Char('5') => app.active_tab = crate::app::Tab::ScriptDebugger,
         KeyCode::Char('6') => app.active_tab = crate::app::Tab::Learn,
 
+        _ => {}
+    }
+
+    true
+}
+
+/// Handle keys in fixture path input mode.
+fn handle_input_mode(app: &mut App, key: KeyEvent) -> bool {
+    let buf = match &mut app.input_mode {
+        InputMode::FixturePath(b) => b,
+        _ => return true,
+    };
+
+    match key.code {
+        KeyCode::Esc => {
+            app.input_mode = InputMode::Normal;
+            app.status_message = "Cancelled.".to_string();
+        }
+        KeyCode::Enter => {
+            let path = buf.clone();
+            app.input_mode = InputMode::Normal;
+            if path.is_empty() {
+                app.status_message = "No path entered.".to_string();
+            } else {
+                app.load_fixture(&path);
+            }
+        }
+        KeyCode::Backspace => {
+            buf.pop();
+        }
+        KeyCode::Char(c) => {
+            buf.push(c);
+        }
         _ => {}
     }
 
@@ -75,6 +118,14 @@ fn handle_scroll_down(app: &mut App) {
                 app.learn_selected += 1;
             }
         }
+        crate::app::Tab::Dashboard => {
+            if let Some(tx) = app.tx_analysis() {
+                let max_items = tx.input_count + tx.output_count;
+                if app.tx_list_selected < max_items.saturating_sub(1) {
+                    app.tx_list_selected += 1;
+                }
+            }
+        }
         _ => {
             app.tx_list_offset = app.tx_list_offset.saturating_add(1);
         }
@@ -88,6 +139,9 @@ fn handle_scroll_up(app: &mut App) {
         }
         crate::app::Tab::Learn => {
             app.learn_selected = app.learn_selected.saturating_sub(1);
+        }
+        crate::app::Tab::Dashboard => {
+            app.tx_list_selected = app.tx_list_selected.saturating_sub(1);
         }
         _ => {
             app.tx_list_offset = app.tx_list_offset.saturating_sub(1);
@@ -140,7 +194,6 @@ mod tests {
         let key = KeyEvent::new(KeyCode::Char('?'), KeyModifiers::NONE);
         handle_key(&mut app, key);
         assert!(app.show_help);
-        // pressing ? again closes it
         handle_key(&mut app, key);
         assert!(!app.show_help);
     }
@@ -156,5 +209,41 @@ mod tests {
         let up = KeyEvent::new(KeyCode::Char('k'), KeyModifiers::NONE);
         handle_key(&mut app, up);
         assert_eq!(app.famous_selected, 0);
+    }
+
+    #[test]
+    fn f_key_enters_input_mode() {
+        let mut app = App::new();
+        let key = KeyEvent::new(KeyCode::Char('f'), KeyModifiers::NONE);
+        handle_key(&mut app, key);
+        assert_eq!(app.input_mode, InputMode::FixturePath(String::new()));
+    }
+
+    #[test]
+    fn input_mode_typing() {
+        let mut app = App::new();
+        app.input_mode = InputMode::FixturePath(String::new());
+
+        // type "ab"
+        handle_key(
+            &mut app,
+            KeyEvent::new(KeyCode::Char('a'), KeyModifiers::NONE),
+        );
+        handle_key(
+            &mut app,
+            KeyEvent::new(KeyCode::Char('b'), KeyModifiers::NONE),
+        );
+        assert_eq!(app.input_mode, InputMode::FixturePath("ab".to_string()));
+
+        // backspace
+        handle_key(
+            &mut app,
+            KeyEvent::new(KeyCode::Backspace, KeyModifiers::NONE),
+        );
+        assert_eq!(app.input_mode, InputMode::FixturePath("a".to_string()));
+
+        // escape cancels
+        handle_key(&mut app, KeyEvent::new(KeyCode::Esc, KeyModifiers::NONE));
+        assert_eq!(app.input_mode, InputMode::Normal);
     }
 }

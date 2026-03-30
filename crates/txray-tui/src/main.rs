@@ -2,6 +2,7 @@
 #![allow(dead_code)]
 
 mod app;
+mod data;
 mod event;
 mod theme;
 mod ui;
@@ -16,6 +17,8 @@ use ratatui::prelude::CrosstermBackend;
 use ratatui::Terminal;
 
 fn main() -> anyhow::Result<()> {
+    let fixture_path = std::env::args().nth(1);
+
     // set up terminal
     enable_raw_mode()?;
     let mut stdout = io::stdout();
@@ -25,6 +28,11 @@ fn main() -> anyhow::Result<()> {
     terminal.clear()?;
 
     let mut app = app::App::new();
+
+    // if a fixture was passed on the command line, load it
+    if let Some(path) = fixture_path {
+        app.load_fixture(&path);
+    }
 
     // main loop
     let result = run_loop(&mut terminal, &mut app);
