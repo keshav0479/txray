@@ -48,6 +48,45 @@ fn handle_key(app: &mut App, key: KeyEvent) -> bool {
         return true;
     }
 
+    // learn mode controls
+    if app.active_tab == crate::app::Tab::Learn {
+        match key.code {
+            KeyCode::Enter => {
+                if app.learn_active {
+                    app.next_learn_step();
+                } else {
+                    app.start_selected_lesson();
+                }
+                return true;
+            }
+            KeyCode::Esc if app.learn_active => {
+                app.exit_learn_lesson();
+                return true;
+            }
+            KeyCode::Char('n') if app.learn_active => {
+                app.next_learn_step();
+                return true;
+            }
+            KeyCode::Char('p') if app.learn_active => {
+                app.prev_learn_step();
+                return true;
+            }
+            KeyCode::Char('a') if app.learn_active => {
+                app.answer_learn_quiz(0);
+                return true;
+            }
+            KeyCode::Char('b') if app.learn_active => {
+                app.answer_learn_quiz(1);
+                return true;
+            }
+            KeyCode::Char('c') if app.learn_active => {
+                app.answer_learn_quiz(2);
+                return true;
+            }
+            _ => {}
+        }
+    }
+
     match key.code {
         KeyCode::Char('q') | KeyCode::Esc => {
             app.should_quit = true;
@@ -151,7 +190,9 @@ fn handle_scroll_down(app: &mut App) {
             }
         }
         crate::app::Tab::Learn => {
-            if app.learn_selected < 6 {
+            if app.learn_active {
+                app.next_learn_step();
+            } else if app.learn_selected < 6 {
                 app.learn_selected += 1;
             }
         }
@@ -175,7 +216,11 @@ fn handle_scroll_up(app: &mut App) {
             app.famous_selected = app.famous_selected.saturating_sub(1);
         }
         crate::app::Tab::Learn => {
-            app.learn_selected = app.learn_selected.saturating_sub(1);
+            if app.learn_active {
+                app.prev_learn_step();
+            } else {
+                app.learn_selected = app.learn_selected.saturating_sub(1);
+            }
         }
         crate::app::Tab::Dashboard => {
             app.tx_list_selected = app.tx_list_selected.saturating_sub(1);
@@ -368,5 +413,52 @@ mod tests {
             KeyEvent::new(KeyCode::Char('n'), KeyModifiers::NONE),
         );
         // no panic = pass
+    }
+
+    #[test]
+    fn learn_enter_starts_lesson() {
+        let mut app = App::new();
+        app.active_tab = Tab::Learn;
+        app.learn_selected = 0;
+
+        handle_key(&mut app, KeyEvent::new(KeyCode::Enter, KeyModifiers::NONE));
+        assert!(app.learn_active);
+    }
+
+    #[test]
+    fn learn_keys_advance_and_answer_quiz() {
+        let mut app = App::new();
+        app.active_tab = Tab::Learn;
+        app.learn_selected = 0;
+        app.start_selected_lesson();
+
+        let before = app.learn_step;
+        handle_key(
+            &mut app,
+            KeyEvent::new(KeyCode::Char('n'), KeyModifiers::NONE),
+        );
+        assert!(app.learn_step >= before);
+
+        let answer = app.current_lesson().quiz_answer;
+        let key = match answer {
+            0 => KeyCode::Char('a'),
+            1 => KeyCode::Char('b'),
+            _ => KeyCode::Char('c'),
+        };
+        handle_key(&mut app, KeyEvent::new(key, KeyModifiers::NONE));
+        assert!(app.learn_quiz_feedback.is_some());
+    }
+
+    #[test]
+    fn esc_exits_learn_session_not_app() {
+        let mut app = App::new();
+        app.active_tab = Tab::Learn;
+        app.start_selected_lesson();
+        assert!(app.learn_active);
+
+        let keep_running = handle_key(&mut app, KeyEvent::new(KeyCode::Esc, KeyModifiers::NONE));
+        assert!(keep_running);
+        assert!(!app.learn_active);
+        assert!(!app.should_quit);
     }
 }

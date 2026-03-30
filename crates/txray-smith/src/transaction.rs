@@ -123,7 +123,7 @@ mod tests {
         let params = resolve_rbf_locktime(&fixture);
         assert_eq!(params.n_sequence, 0xFFFF_FFFF);
         assert_eq!(params.n_lock_time, 0);
-        assert_eq!(params.rbf_signaling, false);
+        assert!(!params.rbf_signaling);
         assert_eq!(params.locktime_type, "none");
     }
 
@@ -133,7 +133,7 @@ mod tests {
         let params = resolve_rbf_locktime(&fixture);
         assert_eq!(params.n_sequence, 0xFFFF_FFFF);
         assert_eq!(params.n_lock_time, 0);
-        assert_eq!(params.rbf_signaling, false);
+        assert!(!params.rbf_signaling);
     }
 
     // ── Row 2: rbf=false/absent, locktime present ──
@@ -144,7 +144,7 @@ mod tests {
         let params = resolve_rbf_locktime(&fixture);
         assert_eq!(params.n_sequence, 0xFFFF_FFFE);
         assert_eq!(params.n_lock_time, 800_000);
-        assert_eq!(params.rbf_signaling, false);
+        assert!(!params.rbf_signaling);
         assert_eq!(params.locktime_type, "block_height");
     }
 
@@ -154,7 +154,7 @@ mod tests {
         let params = resolve_rbf_locktime(&fixture);
         assert_eq!(params.n_sequence, 0xFFFF_FFFE);
         assert_eq!(params.n_lock_time, 1_700_000_000);
-        assert_eq!(params.rbf_signaling, false);
+        assert!(!params.rbf_signaling);
         assert_eq!(params.locktime_type, "unix_timestamp");
     }
 
@@ -166,7 +166,7 @@ mod tests {
         let params = resolve_rbf_locktime(&fixture);
         assert_eq!(params.n_sequence, 0xFFFF_FFFD);
         assert_eq!(params.n_lock_time, 850_000);
-        assert_eq!(params.rbf_signaling, true);
+        assert!(params.rbf_signaling);
         assert_eq!(params.locktime_type, "block_height");
     }
 
@@ -178,7 +178,7 @@ mod tests {
         let params = resolve_rbf_locktime(&fixture);
         assert_eq!(params.n_sequence, 0xFFFF_FFFD);
         assert_eq!(params.n_lock_time, 900_000);
-        assert_eq!(params.rbf_signaling, true);
+        assert!(params.rbf_signaling);
         assert_eq!(params.locktime_type, "block_height");
     }
 
@@ -198,7 +198,7 @@ mod tests {
         let params = resolve_rbf_locktime(&fixture);
         assert_eq!(params.n_sequence, 0xFFFF_FFFD);
         assert_eq!(params.n_lock_time, 0);
-        assert_eq!(params.rbf_signaling, true);
+        assert!(params.rbf_signaling);
         assert_eq!(params.locktime_type, "none");
     }
 

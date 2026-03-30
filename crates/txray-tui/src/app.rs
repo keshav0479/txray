@@ -15,6 +15,132 @@ pub struct FamousBlockData {
     pub hash_matches: bool,
 }
 
+/// Interactive lesson content model for Learn mode.
+pub struct LearnLesson {
+    pub title: &'static str,
+    pub subtitle: &'static str,
+    pub block_height: Option<u64>,
+    pub steps: &'static [&'static str],
+    pub quiz_question: &'static str,
+    pub quiz_options: [&'static str; 3],
+    pub quiz_answer: usize,
+    pub quiz_explanation: &'static str,
+}
+
+const LEARN_LESSONS: [LearnLesson; 7] = [
+    LearnLesson {
+        title: "What's Inside a Block?",
+        subtitle: "Parse the genesis block",
+        block_height: Some(0),
+        steps: &[
+            "A block has an 80-byte header plus transactions payload.",
+            "Key header fields: version, prev hash, merkle root, timestamp, bits, nonce.",
+            "Genesis block is special: prev hash is all zeros and has exactly one coinbase tx.",
+        ],
+        quiz_question: "Which field links a block to the previous block?",
+        quiz_options: ["Merkle root", "Previous block hash", "Nonce"],
+        quiz_answer: 1,
+        quiz_explanation: "Previous block hash creates the chain link between blocks.",
+    },
+    LearnLesson {
+        title: "Anatomy of a Transaction",
+        subtitle: "Decode Satoshi to Hal Finney",
+        block_height: Some(170),
+        steps: &[
+            "Transactions consume inputs and create outputs.",
+            "Input references a previous outpoint (txid:vout).",
+            "Output defines value plus locking script (scriptPubKey).",
+        ],
+        quiz_question: "What identifies a spent output uniquely?",
+        quiz_options: ["Address only", "txid + vout", "Script type"],
+        quiz_answer: 1,
+        quiz_explanation: "Bitcoin spends are keyed by txid and output index (vout).",
+    },
+    LearnLesson {
+        title: "Script Types Explained",
+        subtitle: "P2PKH to P2TR evolution",
+        block_height: Some(709635),
+        steps: &[
+            "Common script types: p2pkh, p2sh, p2wpkh, p2wsh, p2tr.",
+            "Witness programs reduce weight and separate signatures from base data.",
+            "Taproot (p2tr) enables key-path spends and better privacy/efficiency.",
+        ],
+        quiz_question: "Which script type corresponds to Taproot outputs?",
+        quiz_options: ["p2wpkh", "p2sh", "p2tr"],
+        quiz_answer: 2,
+        quiz_explanation: "Taproot outputs are p2tr (OP_1 + 32-byte key).",
+    },
+    LearnLesson {
+        title: "SegWit & Weight",
+        subtitle: "Witness discount and savings",
+        block_height: Some(481824),
+        steps: &[
+            "Block weight combines base bytes (x4) and witness bytes (x1).",
+            "vbytes = ceil(weight / 4), fee rates are usually sat/vB.",
+            "SegWit made malleability fixes possible and enabled Lightning growth.",
+        ],
+        quiz_question: "How is vbytes derived from weight?",
+        quiz_options: ["weight / 2", "weight / 4", "base size only"],
+        quiz_answer: 1,
+        quiz_explanation: "Virtual bytes are computed from weight divided by 4.",
+    },
+    LearnLesson {
+        title: "Privacy Heuristics 101",
+        subtitle: "Analyze a real CoinJoin",
+        block_height: Some(530484),
+        steps: &[
+            "Heuristics are signals, not proofs. Combine multiple indicators.",
+            "Equal-value outputs and many inputs can indicate CoinJoin behavior.",
+            "Entropy and deterministic links help estimate privacy quality.",
+        ],
+        quiz_question: "What usually increases transaction privacy score?",
+        quiz_options: [
+            "Higher deterministic links",
+            "Higher entropy",
+            "Single output only",
+        ],
+        quiz_answer: 1,
+        quiz_explanation: "Higher entropy means more plausible input-output mappings.",
+    },
+    LearnLesson {
+        title: "Build Your First PSBT",
+        subtitle: "Step-by-step PSBT creation",
+        block_height: Some(57043),
+        steps: &[
+            "PSBT separates construction/signing/finalization into clean stages.",
+            "Collect UTXOs and outputs first, then compute target fee and change.",
+            "Inspector checks missing signatures and spending readiness.",
+        ],
+        quiz_question: "What is PSBT best used for?",
+        quiz_options: [
+            "Mempool querying",
+            "Collaborative transaction signing",
+            "Block hashing",
+        ],
+        quiz_answer: 1,
+        quiz_explanation: "PSBT is designed for safe, portable multi-stage signing workflows.",
+    },
+    LearnLesson {
+        title: "Wallet Fingerprinting",
+        subtitle: "Identify wallet software",
+        block_height: Some(709635),
+        steps: &[
+            "Fingerprinting combines ordering, locktime, change and script behavior.",
+            "Signals like BIP69 ordering or anti-fee-sniping can suggest wallet family.",
+            "Confidence is probabilistic, not guaranteed identification.",
+        ],
+        quiz_question: "What does fingerprint confidence represent?",
+        quiz_options: [
+            "Certainty of identity",
+            "Probability based on observed heuristics",
+            "Fee certainty",
+        ],
+        quiz_answer: 1,
+        quiz_explanation:
+            "Wallet confidence estimates likelihood from observed transaction patterns.",
+    },
+];
+
 /// Active tab in the TUI.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Tab {
@@ -144,6 +270,12 @@ pub struct App {
 
     // learn mode state
     pub learn_selected: usize,
+    pub learn_active: bool,
+    pub learn_step: usize,
+    pub learn_quiz_choice: Option<usize>,
+    pub learn_quiz_feedback: Option<String>,
+    pub learn_completed: [bool; 7],
+    pub learn_block_data: Option<FamousBlockData>,
 
     // script debugger state
     pub debugger: Option<DebuggerState>,
@@ -163,6 +295,12 @@ impl App {
             famous_selected: 0,
             famous_block_data: None,
             learn_selected: 0,
+            learn_active: false,
+            learn_step: 0,
+            learn_quiz_choice: None,
+            learn_quiz_feedback: None,
+            learn_completed: [false; 7],
+            learn_block_data: None,
             debugger: None,
         }
     }
@@ -289,6 +427,126 @@ impl App {
         }
     }
 
+    pub fn learn_lessons() -> &'static [LearnLesson] {
+        &LEARN_LESSONS
+    }
+
+    pub fn current_lesson(&self) -> &'static LearnLesson {
+        &LEARN_LESSONS[self
+            .learn_selected
+            .min(LEARN_LESSONS.len().saturating_sub(1))]
+    }
+
+    pub fn start_selected_lesson(&mut self) {
+        self.learn_active = true;
+        self.learn_step = 0;
+        self.learn_quiz_choice = None;
+        self.learn_quiz_feedback = None;
+
+        let lesson = self.current_lesson();
+        self.learn_block_data = None;
+        if let Some(height) = lesson.block_height {
+            let expected = txray_corpus::find_by_height(height).map(|b| b.hash);
+            match self.fetch_block_snapshot(lesson.title, height, expected) {
+                Ok(data) => {
+                    self.learn_block_data = Some(data);
+                    self.status_message = format!(
+                        "Started lesson: {} (block {} fetched)",
+                        lesson.title, height
+                    );
+                }
+                Err(e) => {
+                    self.status_message = format!("Started lesson: {} ({})", lesson.title, e);
+                }
+            }
+        } else {
+            self.status_message = format!("Started lesson: {}", lesson.title);
+        }
+    }
+
+    pub fn exit_learn_lesson(&mut self) {
+        self.learn_active = false;
+        self.learn_step = 0;
+        self.learn_quiz_choice = None;
+        self.learn_quiz_feedback = None;
+        self.learn_block_data = None;
+        self.status_message = "Exited lesson view".to_string();
+    }
+
+    pub fn next_learn_step(&mut self) {
+        let max_step = self.current_lesson().steps.len().saturating_sub(1);
+        if self.learn_step < max_step {
+            self.learn_step += 1;
+        }
+    }
+
+    pub fn prev_learn_step(&mut self) {
+        self.learn_step = self.learn_step.saturating_sub(1);
+    }
+
+    pub fn answer_learn_quiz(&mut self, choice: usize) {
+        let lesson = self.current_lesson();
+        self.learn_quiz_choice = Some(choice);
+
+        if choice == lesson.quiz_answer {
+            self.learn_completed[self.learn_selected] = true;
+            self.learn_quiz_feedback = Some(format!("Correct. {}", lesson.quiz_explanation));
+            self.status_message = format!("Lesson complete: {}", lesson.title);
+        } else {
+            self.learn_quiz_feedback = Some(format!("Not quite. {}", lesson.quiz_explanation));
+            self.status_message = "Quiz answer submitted".to_string();
+        }
+    }
+
+    pub fn learn_progress(&self) -> (usize, usize) {
+        let completed = self.learn_completed.iter().filter(|done| **done).count();
+        (completed, self.learn_completed.len())
+    }
+
+    fn fetch_block_snapshot(
+        &self,
+        name: &str,
+        height: u64,
+        expected_hash: Option<&str>,
+    ) -> Result<FamousBlockData, String> {
+        let runtime = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .map_err(|e| format!("fetch setup failed: {}", e))?;
+
+        let raw_block = runtime
+            .block_on(async {
+                txray_net::fetch_raw_block(
+                    &txray_net::ApiSource::MempoolSpace,
+                    &txray_net::BlockId::Height(height),
+                )
+                .await
+            })
+            .map_err(|e| format!("fetch failed: {}", e))?;
+
+        let parsed = txray_core::block::parser::parse_raw_block(&raw_block)
+            .map_err(|e| format!("block parse failed: {}", e))?;
+
+        let tx_count = txray_core::block::parser::extract_raw_transactions(&parsed.payload)
+            .map_err(|e| format!("transaction extract failed: {}", e))?
+            .len();
+
+        let fetched_hash = txray_core::block::parser::reversed_hex(&parsed.header.block_hash);
+        let expected_hash = expected_hash.unwrap_or(&fetched_hash).to_string();
+        let hash_matches = fetched_hash == expected_hash;
+
+        Ok(FamousBlockData {
+            name: name.to_string(),
+            height,
+            expected_hash,
+            fetched_hash,
+            tx_count,
+            timestamp: parsed.header.timestamp,
+            size_bytes: parsed.payload.len(),
+            hash_matches,
+        })
+    }
+
     /// Fetch metadata for the currently selected famous block from mempool.space.
     pub fn fetch_selected_famous_block(&mut self) {
         let block = match txray_corpus::FAMOUS_BLOCKS.get(self.famous_selected) {
@@ -301,67 +559,19 @@ impl App {
 
         self.status_message = format!("Fetching block {} from mempool.space...", block.height);
 
-        let runtime = match tokio::runtime::Builder::new_current_thread()
-            .enable_all()
-            .build()
-        {
-            Ok(rt) => rt,
-            Err(e) => {
-                self.status_message = format!("Fetch setup failed: {}", e);
-                return;
+        match self.fetch_block_snapshot(block.name, block.height, Some(block.hash)) {
+            Ok(data) => {
+                let tx_count = data.tx_count;
+                self.famous_block_data = Some(data);
+                self.status_message = format!(
+                    "Fetched {} (height {}, {} txs)",
+                    block.name, block.height, tx_count
+                );
             }
-        };
-
-        let raw_block_result = runtime.block_on(async {
-            txray_net::fetch_raw_block(
-                &txray_net::ApiSource::MempoolSpace,
-                &txray_net::BlockId::Height(block.height),
-            )
-            .await
-        });
-
-        let raw_block = match raw_block_result {
-            Ok(bytes) => bytes,
             Err(e) => {
-                self.status_message = format!("Fetch failed: {}", e);
-                return;
+                self.status_message = e;
             }
-        };
-
-        let parsed = match txray_core::block::parser::parse_raw_block(&raw_block) {
-            Ok(p) => p,
-            Err(e) => {
-                self.status_message = format!("Block parse failed: {}", e);
-                return;
-            }
-        };
-
-        let tx_count = match txray_core::block::parser::extract_raw_transactions(&parsed.payload) {
-            Ok(txs) => txs.len(),
-            Err(e) => {
-                self.status_message = format!("Transaction extract failed: {}", e);
-                return;
-            }
-        };
-
-        let fetched_hash = txray_core::block::parser::reversed_hex(&parsed.header.block_hash);
-        let hash_matches = fetched_hash == block.hash;
-
-        self.famous_block_data = Some(FamousBlockData {
-            name: block.name.to_string(),
-            height: block.height,
-            expected_hash: block.hash.to_string(),
-            fetched_hash,
-            tx_count,
-            timestamp: parsed.header.timestamp,
-            size_bytes: parsed.payload.len(),
-            hash_matches,
-        });
-
-        self.status_message = format!(
-            "Fetched {} (height {}, {} txs)",
-            block.name, block.height, tx_count
-        );
+        }
     }
 }
 
@@ -421,7 +631,26 @@ mod tests {
         assert!(!app.show_help);
         assert!(app.analysis.is_none());
         assert!(app.famous_block_data.is_none());
+        assert!(!app.learn_active);
+        assert_eq!(app.learn_step, 0);
+        assert!(app.learn_quiz_choice.is_none());
+        assert!(app.learn_quiz_feedback.is_none());
+        assert!(app.learn_block_data.is_none());
+        assert_eq!(app.learn_progress(), (0, 7));
         assert_eq!(app.input_mode, InputMode::Normal);
+    }
+
+    #[test]
+    fn learn_quiz_completion_tracking() {
+        let mut app = App::new();
+        app.learn_selected = 0;
+        app.start_selected_lesson();
+        let answer = app.current_lesson().quiz_answer;
+        app.answer_learn_quiz(answer);
+
+        assert!(app.learn_completed[0]);
+        assert!(app.learn_quiz_feedback.is_some());
+        assert_eq!(app.learn_progress().0, 1);
     }
 
     #[test]
