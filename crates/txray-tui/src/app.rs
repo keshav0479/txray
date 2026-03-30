@@ -122,11 +122,13 @@ impl App {
         self.show_help = !self.show_help;
     }
 
-    /// Load a transaction fixture file and analyze it.
+    /// Load a transaction fixture file, run lens + sherlock analysis.
     pub fn load_fixture(&mut self, path: &str) {
         match txray_lens::analyze_transaction(path) {
             Ok(json_str) => match crate::data::parse_tx_json(&json_str) {
-                Ok(tx) => {
+                Ok(mut tx) => {
+                    // run sherlock analysis on the same fixture
+                    tx.sherlock = crate::data::run_sherlock_analysis(path);
                     self.status_message = format!("Loaded: {} ({})", tx.txid, path);
                     self.analysis = Some(AnalysisData::SingleTx(tx));
                 }
@@ -138,6 +140,50 @@ impl App {
                 self.status_message = format!("Analysis error: {}", e);
             }
         }
+    }
+
+    /// Export current analysis to JSON. Returns the path written, or an error message.
+    pub fn export_json(&self) -> Result<String, String> {
+        let tx = self.tx_analysis().ok_or("No transaction loaded")?;
+
+        let mut export = serde_json::Map::new();
+        export.insert("txid".into(), serde_json::Value::String(tx.txid.clone()));
+        export.insert(
+            "network".into(),
+            serde_json::Value::String(tx.network.clone()),
+        );
+        export.insert("segwit".into(), serde_json::Value::Bool(tx.segwit));
+        export.insert("fee_sats".into(), serde_json::json!(tx.fee_sats));
+        export.insert(
+            "fee_rate_sat_vb".into(),
+            serde_json::json!(tx.fee_rate_sat_vb),
+        );
+        export.insert("weight".into(), serde_json::json!(tx.weight));
+        export.insert("vbytes".into(), serde_json::json!(tx.vbytes));
+
+        if let Some(ref fp) = tx.sherlock.fingerprint {
+            export.insert(
+                "fingerprint".into(),
+                serde_json::to_value(fp).unwrap_or_default(),
+            );
+        }
+        if let Some(ref ent) = tx.sherlock.entropy {
+            export.insert(
+                "entropy".into(),
+                serde_json::to_value(ent).unwrap_or_default(),
+            );
+        }
+        if let Some(ref adv) = tx.sherlock.advice {
+            export.insert(
+                "advice".into(),
+                serde_json::to_value(adv).unwrap_or_default(),
+            );
+        }
+
+        let json = serde_json::to_string_pretty(&export).map_err(|e| e.to_string())?;
+        let filename = format!("txray-export-{}.json", &tx.txid[..8.min(tx.txid.len())]);
+        std::fs::write(&filename, &json).map_err(|e| e.to_string())?;
+        Ok(filename)
     }
 
     /// Get the loaded tx analysis, if any.
@@ -200,5 +246,27 @@ mod tests {
         app.load_fixture("/nonexistent/path.json");
         assert!(app.analysis.is_none());
         assert!(app.status_message.contains("error"));
+    }
+
+    #[test]
+    fn export_json_no_tx_loaded() {
+        let app = App::new();
+        let result = app.export_json();
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), "No transaction loaded");
+    }
+
+    #[test]
+    fn load_real_fixture_has_sherlock() {
+        let fixture = "/home/nitro/Documents/OpenSource/SoB/Challenges/2026-developer-challenge-1-chain-lens-keshav0479/fixtures/transactions/multi_input_segwit.json";
+        if !std::path::Path::new(fixture).exists() {
+            return;
+        }
+        let mut app = App::new();
+        app.load_fixture(fixture);
+        let tx = app.tx_analysis().expect("should have loaded tx");
+        assert!(tx.sherlock.fingerprint.is_some());
+        assert!(tx.sherlock.entropy.is_some());
+        assert!(tx.sherlock.advice.is_some());
     }
 }

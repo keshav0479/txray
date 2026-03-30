@@ -52,6 +52,12 @@ fn handle_key(app: &mut App, key: KeyEvent) -> bool {
         KeyCode::Char('j') | KeyCode::Down => handle_scroll_down(app),
         KeyCode::Char('k') | KeyCode::Up => handle_scroll_up(app),
 
+        // export to JSON
+        KeyCode::Char('e') => match app.export_json() {
+            Ok(path) => app.status_message = format!("Exported to {}", path),
+            Err(e) => app.status_message = format!("Export failed: {}", e),
+        },
+
         // load fixture
         KeyCode::Char('f') => {
             app.input_mode = InputMode::FixturePath(String::new());
@@ -217,6 +223,16 @@ mod tests {
         let key = KeyEvent::new(KeyCode::Char('f'), KeyModifiers::NONE);
         handle_key(&mut app, key);
         assert_eq!(app.input_mode, InputMode::FixturePath(String::new()));
+    }
+
+    #[test]
+    fn e_key_export_no_tx() {
+        let mut app = App::new();
+        let key = KeyEvent::new(KeyCode::Char('e'), KeyModifiers::NONE);
+        handle_key(&mut app, key);
+        assert!(
+            app.status_message.contains("failed") || app.status_message.contains("No transaction")
+        );
     }
 
     #[test]

@@ -583,6 +583,33 @@ fn draw_tx_detail(frame: &mut Frame, app: &App, area: Rect) {
 
 fn draw_heuristics(frame: &mut Frame, app: &App, area: Rect) {
     if let Some(tx) = app.tx_analysis() {
+        // split into left (heuristics + fingerprint) and right (entropy + privacy)
+        let cols = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
+            .split(area);
+
+        draw_heuristics_left(frame, tx, cols[0]);
+        draw_heuristics_right(frame, tx, cols[1]);
+    } else {
+        draw_placeholder(
+            frame,
+            "Heuristics",
+            "Load a fixture to see heuristic analysis.\n\nPress 'f' to load a fixture file.",
+            area,
+        );
+    }
+}
+
+/// Left column: basic heuristics + wallet fingerprint.
+fn draw_heuristics_left(frame: &mut Frame, tx: &crate::data::TxAnalysis, area: Rect) {
+    let rows = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Percentage(45), Constraint::Percentage(55)])
+        .split(area);
+
+    // top-left: basic heuristics
+    {
         let mut lines = vec![
             Line::from(Span::styled(
                 "Transaction Heuristics",
@@ -593,7 +620,6 @@ fn draw_heuristics(frame: &mut Frame, app: &App, area: Rect) {
             Line::default(),
         ];
 
-        // script type analysis
         let all_same_type = tx
             .input_script_types
             .iter()
@@ -605,35 +631,25 @@ fn draw_heuristics(frame: &mut Frame, app: &App, area: Rect) {
 
         lines.push(heuristic_line(
             "Script uniformity",
-            if all_same_type {
-                "Uniform"
-            } else {
-                "Mixed types"
-            },
+            if all_same_type { "Uniform" } else { "Mixed" },
             if all_same_type {
                 theme::GREEN_TEXT
             } else {
                 theme::WARNING
             },
         ));
-
         lines.push(heuristic_line(
             "RBF signaling",
-            if tx.rbf_signaling {
-                "Yes (replaceable)"
-            } else {
-                "No"
-            },
+            if tx.rbf_signaling { "Yes" } else { "No" },
             if tx.rbf_signaling {
                 theme::WARNING
             } else {
                 theme::TEXT
             },
         ));
-
         lines.push(heuristic_line(
             "SegWit",
-            if tx.segwit { "Yes" } else { "No (legacy)" },
+            if tx.segwit { "Yes" } else { "Legacy" },
             if tx.segwit {
                 theme::GREEN_TEXT
             } else {
@@ -641,7 +657,6 @@ fn draw_heuristics(frame: &mut Frame, app: &App, area: Rect) {
             },
         ));
 
-        // fee rate classification
         let fee_label = if tx.fee_rate_sat_vb > 100.0 {
             "Very high"
         } else if tx.fee_rate_sat_vb > 30.0 {
@@ -661,15 +676,8 @@ fn draw_heuristics(frame: &mut Frame, app: &App, area: Rect) {
         let fee_text = format!("{:.1} sat/vB ({})", tx.fee_rate_sat_vb, fee_label);
         lines.push(heuristic_line("Fee rate", &fee_text, fee_color));
 
-        // warnings
         if !tx.warnings.is_empty() {
             lines.push(Line::default());
-            lines.push(Line::from(Span::styled(
-                "Warnings",
-                Style::default()
-                    .fg(theme::ORANGE)
-                    .add_modifier(Modifier::BOLD),
-            )));
             for w in &tx.warnings {
                 lines.push(Line::from(vec![
                     Span::styled("  ! ", Style::default().fg(theme::ERROR)),
@@ -690,24 +698,286 @@ fn draw_heuristics(frame: &mut Frame, app: &App, area: Rect) {
                     .padding(Padding::horizontal(1)),
             )
             .wrap(Wrap { trim: false });
-        frame.render_widget(panel, area);
-    } else {
-        draw_placeholder(
-            frame,
-            "Heuristics",
-            "Load a fixture to see heuristic analysis.\n\nPress 'f' to load a fixture file.",
-            area,
-        );
+        frame.render_widget(panel, rows[0]);
+    }
+
+    // bottom-left: wallet fingerprint
+    {
+        let mut lines = Vec::new();
+
+        if let Some(ref fp) = tx.sherlock.fingerprint {
+            lines.push(heuristic_line(
+                "BIP69 ordering",
+                if fp.bip69_compliant { "Yes" } else { "No" },
+                if fp.bip69_compliant {
+                    theme::CYAN
+                } else {
+                    theme::TEXT_DIM
+                },
+            ));
+            lines.push(heuristic_line(
+                "Low-R signatures",
+                match fp.low_r_signatures {
+                    Some(true) => "Yes (grinding)",
+                    Some(false) => "No",
+                    None => "N/A",
+                },
+                match fp.low_r_signatures {
+                    Some(true) => theme::CYAN,
+                    _ => theme::TEXT_DIM,
+                },
+            ));
+            lines.push(heuristic_line(
+                "Anti-fee-sniping",
+                if fp.anti_fee_sniping { "Yes" } else { "No" },
+                if fp.anti_fee_sniping {
+                    theme::GREEN_TEXT
+                } else {
+                    theme::TEXT_DIM
+                },
+            ));
+            lines.push(heuristic_line(
+                "RBF signal",
+                if fp.rbf_signaling { "Yes" } else { "No" },
+                if fp.rbf_signaling {
+                    theme::WARNING
+                } else {
+                    theme::TEXT
+                },
+            ));
+            let change_text = format!("{:?}", fp.change_position);
+            lines.push(heuristic_line("Change position", &change_text, theme::TEXT));
+            lines.push(heuristic_line(
+                "Input type uniform",
+                if fp.input_type_consistency {
+                    "Yes"
+                } else {
+                    "No"
+                },
+                if fp.input_type_consistency {
+                    theme::GREEN_TEXT
+                } else {
+                    theme::WARNING
+                },
+            ));
+            lines.push(Line::default());
+            if let Some(ref wallet) = fp.likely_wallet {
+                lines.push(Line::from(vec![
+                    Span::styled(
+                        "  Wallet:  ",
+                        Style::default()
+                            .fg(theme::CYAN)
+                            .add_modifier(Modifier::BOLD),
+                    ),
+                    Span::styled(wallet, Style::default().fg(theme::ORANGE_TEXT)),
+                    Span::styled(
+                        format!("  ({:?})", fp.confidence),
+                        Style::default().fg(theme::TEXT_DIM),
+                    ),
+                ]));
+            } else {
+                lines.push(heuristic_line("Wallet", "Unknown", theme::TEXT_MUTED));
+            }
+        } else {
+            lines.push(Line::from(Span::styled(
+                "No fingerprint data.",
+                Style::default().fg(theme::TEXT_MUTED),
+            )));
+        }
+
+        let panel = Paragraph::new(lines)
+            .block(
+                Block::default()
+                    .title(Span::styled(" Wallet Fingerprint ", theme::header()))
+                    .borders(Borders::ALL)
+                    .border_style(theme::border_active())
+                    .padding(Padding::horizontal(1)),
+            )
+            .wrap(Wrap { trim: false });
+        frame.render_widget(panel, rows[1]);
     }
 }
 
-fn heuristic_line<'a>(label: &'a str, value: &'a str, color: ratatui::style::Color) -> Line<'a> {
+/// Right column: entropy + privacy advisor.
+fn draw_heuristics_right(frame: &mut Frame, tx: &crate::data::TxAnalysis, area: Rect) {
+    let rows = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Percentage(45), Constraint::Percentage(55)])
+        .split(area);
+
+    // top-right: Boltzmann entropy
+    {
+        let mut lines = Vec::new();
+
+        if let Some(ref ent) = tx.sherlock.entropy {
+            if ent.too_complex {
+                lines.push(Line::from(Span::styled(
+                    "Too complex (capped)",
+                    Style::default().fg(theme::WARNING),
+                )));
+            } else {
+                let interp_text = format!("{}", ent.interpretations);
+                let entropy_text = format!("{:.2} bits", ent.entropy_bits);
+                let max_text = format!("{:.2} bits", ent.max_entropy);
+                let density_text = format!("{:.1}%", ent.entropy_density * 100.0);
+
+                lines.push(heuristic_line("Interpretations", &interp_text, theme::CYAN));
+                lines.push(heuristic_line("Entropy", &entropy_text, theme::CYAN));
+                lines.push(heuristic_line("Max entropy", &max_text, theme::TEXT_DIM));
+                lines.push(heuristic_line(
+                    "Density",
+                    &density_text,
+                    if ent.entropy_density > 0.5 {
+                        theme::GREEN_TEXT
+                    } else {
+                        theme::WARNING
+                    },
+                ));
+
+                let grade_color = match ent.privacy_grade {
+                    'A' => theme::GREEN_TEXT,
+                    'B' => theme::GREEN,
+                    'C' => theme::WARNING,
+                    'D' => theme::ORANGE_TEXT,
+                    _ => theme::ERROR,
+                };
+                lines.push(Line::default());
+                lines.push(Line::from(vec![
+                    Span::styled(
+                        "  Grade:  ",
+                        Style::default()
+                            .fg(theme::TEXT_DIM)
+                            .add_modifier(Modifier::BOLD),
+                    ),
+                    Span::styled(
+                        format!("{}", ent.privacy_grade),
+                        Style::default()
+                            .fg(grade_color)
+                            .add_modifier(Modifier::BOLD),
+                    ),
+                ]));
+
+                if !ent.deterministic_links.is_empty() {
+                    lines.push(Line::default());
+                    lines.push(Line::from(Span::styled(
+                        format!("  {} deterministic links", ent.deterministic_links.len()),
+                        Style::default().fg(theme::WARNING),
+                    )));
+                }
+            }
+        } else {
+            lines.push(Line::from(Span::styled(
+                "No entropy data.",
+                Style::default().fg(theme::TEXT_MUTED),
+            )));
+        }
+
+        let panel = Paragraph::new(lines)
+            .block(
+                Block::default()
+                    .title(Span::styled(" Boltzmann Entropy ", theme::header()))
+                    .borders(Borders::ALL)
+                    .border_style(theme::border_active())
+                    .padding(Padding::horizontal(1)),
+            )
+            .wrap(Wrap { trim: false });
+        frame.render_widget(panel, rows[0]);
+    }
+
+    // bottom-right: privacy advisor
+    {
+        let mut lines = Vec::new();
+
+        if let Some(ref adv) = tx.sherlock.advice {
+            // score bar
+            let bar_filled = adv.score as usize;
+            let bar_empty = 10_usize.saturating_sub(bar_filled);
+            let score_color = if adv.score >= 7 {
+                theme::GREEN_TEXT
+            } else if adv.score >= 4 {
+                theme::WARNING
+            } else {
+                theme::ERROR
+            };
+
+            lines.push(Line::from(vec![
+                Span::styled(
+                    "  Score:  ",
+                    Style::default()
+                        .fg(theme::TEXT_DIM)
+                        .add_modifier(Modifier::BOLD),
+                ),
+                Span::styled("#".repeat(bar_filled), Style::default().fg(score_color)),
+                Span::styled(
+                    ".".repeat(bar_empty),
+                    Style::default().fg(theme::TEXT_MUTED),
+                ),
+                Span::styled(
+                    format!("  {}/10 ({})", adv.score, adv.grade),
+                    Style::default()
+                        .fg(score_color)
+                        .add_modifier(Modifier::BOLD),
+                ),
+            ]));
+
+            if !adv.issues.is_empty() {
+                lines.push(Line::default());
+                lines.push(Line::from(Span::styled(
+                    "Issues",
+                    Style::default()
+                        .fg(theme::ORANGE)
+                        .add_modifier(Modifier::BOLD),
+                )));
+                for issue in &adv.issues {
+                    lines.push(Line::from(vec![
+                        Span::styled("  - ", Style::default().fg(theme::ERROR)),
+                        Span::styled(format!("{:?}", issue), Style::default().fg(theme::TEXT)),
+                    ]));
+                }
+            }
+
+            if !adv.recommendations.is_empty() {
+                lines.push(Line::default());
+                lines.push(Line::from(Span::styled(
+                    "Recommendations",
+                    Style::default()
+                        .fg(theme::GREEN_TEXT)
+                        .add_modifier(Modifier::BOLD),
+                )));
+                for rec in &adv.recommendations {
+                    lines.push(Line::from(vec![
+                        Span::styled("  * ", Style::default().fg(theme::CYAN)),
+                        Span::styled(rec.as_str(), Style::default().fg(theme::TEXT)),
+                    ]));
+                }
+            }
+        } else {
+            lines.push(Line::from(Span::styled(
+                "No privacy advice.",
+                Style::default().fg(theme::TEXT_MUTED),
+            )));
+        }
+
+        let panel = Paragraph::new(lines)
+            .block(
+                Block::default()
+                    .title(Span::styled(" Privacy Advisor ", theme::header()))
+                    .borders(Borders::ALL)
+                    .border_style(theme::border_active())
+                    .padding(Padding::horizontal(1)),
+            )
+            .wrap(Wrap { trim: false });
+        frame.render_widget(panel, rows[1]);
+    }
+}
+
+fn heuristic_line(label: &str, value: &str, color: ratatui::style::Color) -> Line<'static> {
     Line::from(vec![
         Span::styled(
             format!("  {:<22}", label),
             Style::default().fg(theme::TEXT_DIM),
         ),
-        Span::styled(value, Style::default().fg(color)),
+        Span::styled(value.to_string(), Style::default().fg(color)),
     ])
 }
 
@@ -883,6 +1153,8 @@ fn draw_status_bar(frame: &mut Frame, app: &App, area: Rect) {
         Span::styled(":nav ", theme::key_desc()),
         Span::styled("f", theme::key_hint()),
         Span::styled(":load ", theme::key_desc()),
+        Span::styled("e", theme::key_hint()),
+        Span::styled(":export ", theme::key_desc()),
         Span::styled("?", theme::key_hint()),
         Span::styled(":help ", theme::key_desc()),
         Span::raw("  "),
@@ -915,6 +1187,7 @@ fn draw_help_overlay(frame: &mut Frame, area: Rect) {
         help_line("1-6", "Jump to tab"),
         help_line("j / k", "Navigate list"),
         help_line("f", "Load fixture file"),
+        help_line("e", "Export to JSON"),
         help_line("?", "Toggle this help"),
         Line::default(),
         Line::from(Span::styled(
