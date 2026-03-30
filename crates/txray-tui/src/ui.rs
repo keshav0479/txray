@@ -978,10 +978,31 @@ fn heuristic_line(label: &str, value: &str, color: ratatui::style::Color) -> Lin
 
 fn draw_famous_blocks(frame: &mut Frame, app: &App, area: Rect) {
     let blocks = txray_corpus::FAMOUS_BLOCKS;
+
+    let cols = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([Constraint::Percentage(45), Constraint::Percentage(55)])
+        .split(area);
+
+    let selected = blocks.get(app.famous_selected).unwrap_or(&blocks[0]);
+
+    let rows = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Percentage(58), Constraint::Percentage(42)])
+        .split(cols[1]);
+
     let mut lines: Vec<Line> = Vec::new();
 
     for (i, block) in blocks.iter().enumerate() {
         let marker = if i == app.famous_selected { ">" } else { " " };
+        let icon = match block.height {
+            0 => "◉",
+            170 => "→",
+            57043 => "🍕",
+            481824 => "⚡",
+            709635 => "◆",
+            _ => "•",
+        };
         let style = if i == app.famous_selected {
             Style::default()
                 .fg(theme::CYAN)
@@ -992,24 +1013,16 @@ fn draw_famous_blocks(frame: &mut Frame, app: &App, area: Rect) {
 
         lines.push(Line::from(vec![
             Span::styled(format!("{} ", marker), style),
-            Span::styled(format!("{:<20}", block.name), style),
+            Span::styled(
+                format!("{} ", icon),
+                Style::default().fg(theme::ORANGE_TEXT),
+            ),
+            Span::styled(format!("{:<18}", block.name), style),
             Span::styled(
                 format!("  height {}", block.height),
                 Style::default().fg(theme::TEXT_DIM),
             ),
         ]));
-
-        if i == app.famous_selected {
-            lines.push(Line::from(Span::styled(
-                format!("    {}", block.description),
-                Style::default().fg(theme::PURPLE_TEXT),
-            )));
-            lines.push(Line::from(Span::styled(
-                format!("    Look for: {}", block.what_to_look_for.join(", ")),
-                Style::default().fg(theme::TEXT_MUTED),
-            )));
-            lines.push(Line::default());
-        }
     }
 
     let panel = Paragraph::new(lines)
@@ -1021,7 +1034,149 @@ fn draw_famous_blocks(frame: &mut Frame, app: &App, area: Rect) {
                 .padding(Padding::horizontal(1)),
         )
         .wrap(Wrap { trim: false });
-    frame.render_widget(panel, area);
+    frame.render_widget(panel, cols[0]);
+
+    let mut education = vec![
+        Line::from(vec![
+            Span::styled(
+                selected.name,
+                Style::default()
+                    .fg(theme::CYAN)
+                    .add_modifier(Modifier::BOLD),
+            ),
+            Span::styled(
+                format!("  (#{})", selected.height),
+                Style::default().fg(theme::TEXT_DIM),
+            ),
+        ]),
+        Line::default(),
+        Line::from(Span::styled(
+            selected.description,
+            Style::default().fg(theme::PURPLE_TEXT),
+        )),
+        Line::default(),
+        Line::from(Span::styled(
+            "Why it's interesting",
+            Style::default()
+                .fg(theme::ORANGE)
+                .add_modifier(Modifier::BOLD),
+        )),
+        Line::from(Span::styled(
+            format!("  {}", selected.why_interesting),
+            Style::default().fg(theme::TEXT),
+        )),
+        Line::default(),
+        Line::from(Span::styled(
+            "What to look for",
+            Style::default()
+                .fg(theme::GREEN_TEXT)
+                .add_modifier(Modifier::BOLD),
+        )),
+    ];
+
+    for item in selected.what_to_look_for {
+        education.push(Line::from(vec![
+            Span::styled("  - ", Style::default().fg(theme::CYAN)),
+            Span::styled(*item, Style::default().fg(theme::TEXT)),
+        ]));
+    }
+
+    education.push(Line::default());
+    education.push(Line::from(vec![
+        Span::styled(
+            "Enter",
+            Style::default()
+                .fg(theme::CYAN)
+                .add_modifier(Modifier::BOLD),
+        ),
+        Span::styled(
+            " to fetch this block from mempool.space",
+            Style::default().fg(theme::TEXT_DIM),
+        ),
+    ]));
+
+    let education_panel = Paragraph::new(education)
+        .block(
+            Block::default()
+                .title(Span::styled(" Annotation ", theme::header()))
+                .borders(Borders::ALL)
+                .border_style(theme::border_active())
+                .padding(Padding::horizontal(1)),
+        )
+        .wrap(Wrap { trim: false });
+    frame.render_widget(education_panel, rows[0]);
+
+    let mut fetched_lines = Vec::new();
+    if let Some(data) = &app.famous_block_data {
+        fetched_lines.push(Line::from(vec![
+            Span::styled("Name: ", Style::default().fg(theme::TEXT_DIM)),
+            Span::styled(&data.name, Style::default().fg(theme::TEXT)),
+        ]));
+        fetched_lines.push(Line::from(vec![
+            Span::styled("Height: ", Style::default().fg(theme::TEXT_DIM)),
+            Span::styled(format!("{}", data.height), Style::default().fg(theme::TEXT)),
+        ]));
+        fetched_lines.push(Line::from(vec![
+            Span::styled("Tx count: ", Style::default().fg(theme::TEXT_DIM)),
+            Span::styled(
+                format!("{}", data.tx_count),
+                Style::default().fg(theme::CYAN),
+            ),
+        ]));
+        fetched_lines.push(Line::from(vec![
+            Span::styled("Size: ", Style::default().fg(theme::TEXT_DIM)),
+            Span::styled(
+                format!("{} bytes", data.size_bytes),
+                Style::default().fg(theme::TEXT),
+            ),
+        ]));
+        fetched_lines.push(Line::from(vec![
+            Span::styled("Timestamp: ", Style::default().fg(theme::TEXT_DIM)),
+            Span::styled(
+                format!("{}", data.timestamp),
+                Style::default().fg(theme::TEXT),
+            ),
+        ]));
+        fetched_lines.push(Line::from(vec![
+            Span::styled("Hash check: ", Style::default().fg(theme::TEXT_DIM)),
+            Span::styled(
+                if data.hash_matches {
+                    "match"
+                } else {
+                    "mismatch"
+                },
+                Style::default().fg(if data.hash_matches {
+                    theme::GREEN_TEXT
+                } else {
+                    theme::ERROR
+                }),
+            ),
+        ]));
+        fetched_lines.push(Line::from(vec![
+            Span::styled("Expected: ", Style::default().fg(theme::TEXT_DIM)),
+            Span::styled(&data.expected_hash, Style::default().fg(theme::TEXT_MUTED)),
+        ]));
+        fetched_lines.push(Line::from(vec![
+            Span::styled("Fetched:  ", Style::default().fg(theme::TEXT_DIM)),
+            Span::styled(&data.fetched_hash, Style::default().fg(theme::TEXT_MUTED)),
+        ]));
+    } else {
+        fetched_lines.push(Line::from(Span::styled(
+            "No fetched block data yet.",
+            Style::default().fg(theme::TEXT_MUTED),
+        )));
+    }
+
+    let fetched_panel = Paragraph::new(fetched_lines)
+        .block(
+            Block::default()
+                .title(Span::styled(" Fetched Block ", theme::header()))
+                .borders(Borders::ALL)
+                .border_style(theme::border_active())
+                .padding(Padding::horizontal(1)),
+        )
+        .wrap(Wrap { trim: false });
+    frame.render_widget(fetched_panel, rows[1]);
 }
 
 // ─── Learn Mode ─────────────────────────────────────────────────────────────
@@ -1464,6 +1619,7 @@ fn draw_help_overlay(frame: &mut Frame, area: Rect) {
         help_line("Tab / Shift+Tab", "Next / prev tab"),
         help_line("1-6", "Jump to tab"),
         help_line("j / k", "Navigate list"),
+        help_line("Enter (Famous)", "Fetch selected block"),
         help_line("f", "Load fixture file"),
         help_line("e", "Export to JSON"),
         help_line("?", "Toggle this help"),

@@ -3,6 +3,18 @@
 use crate::data::{AnalysisData, TxAnalysis};
 use txray_core::tx::script_exec::{ScriptStep, StepStatus};
 
+/// Fetched metadata for a famous block selected in the TUI.
+pub struct FamousBlockData {
+    pub name: String,
+    pub height: u64,
+    pub expected_hash: String,
+    pub fetched_hash: String,
+    pub tx_count: usize,
+    pub timestamp: u32,
+    pub size_bytes: usize,
+    pub hash_matches: bool,
+}
+
 /// Active tab in the TUI.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Tab {
@@ -128,6 +140,7 @@ pub struct App {
 
     // famous blocks state
     pub famous_selected: usize,
+    pub famous_block_data: Option<FamousBlockData>,
 
     // learn mode state
     pub learn_selected: usize,
@@ -148,6 +161,7 @@ impl App {
             tx_list_offset: 0,
             tx_list_selected: 0,
             famous_selected: 0,
+            famous_block_data: None,
             learn_selected: 0,
             debugger: None,
         }
@@ -274,6 +288,81 @@ impl App {
             None => None,
         }
     }
+
+    /// Fetch metadata for the currently selected famous block from mempool.space.
+    pub fn fetch_selected_famous_block(&mut self) {
+        let block = match txray_corpus::FAMOUS_BLOCKS.get(self.famous_selected) {
+            Some(b) => b,
+            None => {
+                self.status_message = "Invalid famous block selection".to_string();
+                return;
+            }
+        };
+
+        self.status_message = format!("Fetching block {} from mempool.space...", block.height);
+
+        let runtime = match tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+        {
+            Ok(rt) => rt,
+            Err(e) => {
+                self.status_message = format!("Fetch setup failed: {}", e);
+                return;
+            }
+        };
+
+        let raw_block_result = runtime.block_on(async {
+            txray_net::fetch_raw_block(
+                &txray_net::ApiSource::MempoolSpace,
+                &txray_net::BlockId::Height(block.height),
+            )
+            .await
+        });
+
+        let raw_block = match raw_block_result {
+            Ok(bytes) => bytes,
+            Err(e) => {
+                self.status_message = format!("Fetch failed: {}", e);
+                return;
+            }
+        };
+
+        let parsed = match txray_core::block::parser::parse_raw_block(&raw_block) {
+            Ok(p) => p,
+            Err(e) => {
+                self.status_message = format!("Block parse failed: {}", e);
+                return;
+            }
+        };
+
+        let tx_count = match txray_core::block::parser::extract_raw_transactions(&parsed.payload) {
+            Ok(txs) => txs.len(),
+            Err(e) => {
+                self.status_message = format!("Transaction extract failed: {}", e);
+                return;
+            }
+        };
+
+        let fetched_hash = txray_core::block::parser::reversed_hex(&parsed.header.block_hash);
+        let hash_matches = fetched_hash == block.hash;
+
+        self.famous_block_data = Some(FamousBlockData {
+            name: block.name.to_string(),
+            height: block.height,
+            expected_hash: block.hash.to_string(),
+            fetched_hash,
+            tx_count,
+            timestamp: parsed.header.timestamp,
+            size_bytes: parsed.payload.len(),
+            hash_matches,
+        });
+
+        self.status_message = format!(
+            "Fetched {} (height {}, {} txs)",
+            block.name, block.height, tx_count
+        );
+    }
 }
 
 #[cfg(test)]
@@ -331,6 +420,7 @@ mod tests {
         assert!(!app.should_quit);
         assert!(!app.show_help);
         assert!(app.analysis.is_none());
+        assert!(app.famous_block_data.is_none());
         assert_eq!(app.input_mode, InputMode::Normal);
     }
 

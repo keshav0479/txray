@@ -90,6 +90,11 @@ fn handle_key(app: &mut App, key: KeyEvent) -> bool {
             app.status_message = "Enter fixture path (Enter to confirm, Esc to cancel)".to_string();
         }
 
+        // famous blocks: fetch selected block from mempool
+        KeyCode::Enter if app.active_tab == crate::app::Tab::FamousBlocks => {
+            app.fetch_selected_famous_block();
+        }
+
         // number keys switch tabs
         KeyCode::Char('1') => app.active_tab = crate::app::Tab::Dashboard,
         KeyCode::Char('2') => app.active_tab = crate::app::Tab::TxDetail,

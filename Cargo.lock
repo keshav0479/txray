@@ -2742,6 +2742,7 @@ dependencies = [
  "hex",
  "ratatui",
  "serde_json",
+ "tokio",
  "txray-core",
  "txray-corpus",
  "txray-lens",
