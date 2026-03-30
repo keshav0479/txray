@@ -6,6 +6,8 @@ use ratatui::text::{Line, Span};
 use ratatui::widgets::{Bar, BarChart, BarGroup, Block, Borders, Clear, Padding, Paragraph, Wrap};
 use ratatui::Frame;
 
+use txray_core::tx::script_exec::StepStatus;
+
 use crate::app::{App, InputMode, Tab};
 use crate::theme;
 
@@ -97,16 +99,7 @@ fn draw_body(frame: &mut Frame, app: &App, area: Rect) {
         Tab::TxDetail => draw_tx_detail(frame, app, area),
         Tab::Heuristics => draw_heuristics(frame, app, area),
         Tab::FamousBlocks => draw_famous_blocks(frame, app, area),
-        Tab::ScriptDebugger => draw_placeholder(
-            frame,
-            "Script Debugger",
-            "Step through Bitcoin scripts opcode by opcode.\n\n\
-             Features coming in Commit 4.4:\n\
-             - Stack visualization\n\
-             - Step forward/backward\n\
-             - P2PKH, P2WPKH flows",
-            area,
-        ),
+        Tab::ScriptDebugger => draw_script_debugger(frame, app, area),
         Tab::Learn => draw_learn(frame, app, area),
     }
 }
@@ -1093,6 +1086,291 @@ fn draw_learn(frame: &mut Frame, app: &App, area: Rect) {
         .block(
             Block::default()
                 .title(Span::styled(" Learn ", theme::header()))
+                .borders(Borders::ALL)
+                .border_style(theme::border_active())
+                .padding(Padding::horizontal(1)),
+        )
+        .wrap(Wrap { trim: false });
+    frame.render_widget(panel, area);
+}
+
+// ─── Script Debugger ───────────────────────────────────────────────────────
+
+fn draw_script_debugger(frame: &mut Frame, app: &App, area: Rect) {
+    let dbg = match &app.debugger {
+        Some(d) => d,
+        None => {
+            draw_placeholder(
+                frame,
+                "Script Debugger",
+                "Load a fixture to debug scripts.\n\n\
+                 Press 'f' to load a fixture file.\n\
+                 Use n/p to step forward/backward.\n\
+                 Space toggles auto-run.",
+                area,
+            );
+            return;
+        }
+    };
+
+    // layout: left (opcode list) + right (stack + info)
+    let cols = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([Constraint::Percentage(55), Constraint::Percentage(45)])
+        .split(area);
+
+    // left: opcode step list
+    draw_opcode_list(frame, dbg, cols[0]);
+
+    // right: split into stack (top) + info (bottom)
+    let right_rows = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Percentage(65), Constraint::Percentage(35)])
+        .split(cols[1]);
+
+    draw_stack_view(frame, dbg, right_rows[0]);
+    draw_debug_info(frame, dbg, right_rows[1]);
+}
+
+fn draw_opcode_list(frame: &mut Frame, dbg: &crate::app::DebuggerState, area: Rect) {
+    let mut lines: Vec<Line> = Vec::new();
+
+    for (i, step) in dbg.steps.iter().enumerate() {
+        let is_current = i == dbg.cursor;
+        let is_past = i < dbg.cursor;
+
+        let (icon, icon_color) = match &step.status {
+            StepStatus::Ok => {
+                if is_past || is_current {
+                    ("*", theme::GREEN_TEXT)
+                } else {
+                    (".", theme::TEXT_MUTED)
+                }
+            }
+            StepStatus::AssumedValid => ("~", theme::WARNING),
+            StepStatus::Error(_) => ("!", theme::ERROR),
+            StepStatus::Finished => ("#", theme::GREEN_TEXT),
+        };
+
+        let marker = if is_current { ">" } else { " " };
+
+        let opcode_color = if is_current {
+            theme::CYAN
+        } else if is_past {
+            theme::TEXT
+        } else {
+            theme::TEXT_MUTED
+        };
+
+        let mods = if is_current {
+            Modifier::BOLD
+        } else {
+            Modifier::empty()
+        };
+
+        lines.push(Line::from(vec![
+            Span::styled(
+                format!("{} ", marker),
+                Style::default().fg(theme::CYAN).add_modifier(mods),
+            ),
+            Span::styled(
+                format!("{:>2} ", step.step_number),
+                Style::default().fg(theme::TEXT_DIM),
+            ),
+            Span::styled(
+                format!("{} ", icon),
+                Style::default().fg(icon_color).add_modifier(Modifier::BOLD),
+            ),
+            Span::styled(
+                step.opcode.clone(),
+                Style::default().fg(opcode_color).add_modifier(mods),
+            ),
+        ]));
+
+        // show error inline if this step failed
+        if let StepStatus::Error(msg) = &step.status {
+            if is_current || is_past {
+                lines.push(Line::from(Span::styled(
+                    format!("       {}", msg),
+                    Style::default().fg(theme::ERROR),
+                )));
+            }
+        }
+    }
+
+    let title = format!(" Opcodes ({}/{}) ", dbg.cursor + 1, dbg.steps.len());
+
+    let panel = Paragraph::new(lines)
+        .block(
+            Block::default()
+                .title(Span::styled(title, theme::header()))
+                .borders(Borders::ALL)
+                .border_style(theme::border_active())
+                .padding(Padding::horizontal(1)),
+        )
+        .wrap(Wrap { trim: false });
+    frame.render_widget(panel, area);
+}
+
+fn draw_stack_view(frame: &mut Frame, dbg: &crate::app::DebuggerState, area: Rect) {
+    let mut lines: Vec<Line> = Vec::new();
+
+    if let Some(step) = dbg.current_step() {
+        let stack = &step.main_stack;
+        if stack.is_empty() {
+            lines.push(Line::from(Span::styled(
+                "(empty)",
+                Style::default().fg(theme::TEXT_MUTED),
+            )));
+        } else {
+            // draw stack top-to-bottom (last element = top of stack)
+            for (i, item) in stack.iter().rev().enumerate() {
+                let is_top = i == 0;
+                let label = if is_top {
+                    "TOP"
+                } else {
+                    &format!("  {}", stack.len() - 1 - i)
+                };
+
+                let item_display = if item.len() > 40 {
+                    format!("{}...", &item[..40])
+                } else {
+                    item.clone()
+                };
+
+                let color = if is_top { theme::CYAN } else { theme::TEXT };
+                let mods = if is_top {
+                    Modifier::BOLD
+                } else {
+                    Modifier::empty()
+                };
+
+                lines.push(Line::from(vec![
+                    Span::styled(
+                        format!("{:<4} ", label),
+                        Style::default().fg(theme::TEXT_DIM),
+                    ),
+                    Span::styled(
+                        format!("[{}]", item_display),
+                        Style::default().fg(color).add_modifier(mods),
+                    ),
+                ]));
+            }
+        }
+
+        // alt stack if non-empty
+        let alt = &step.alt_stack;
+        if !alt.is_empty() {
+            lines.push(Line::default());
+            lines.push(Line::from(Span::styled(
+                "Alt Stack:",
+                Style::default()
+                    .fg(theme::PURPLE_TEXT)
+                    .add_modifier(Modifier::BOLD),
+            )));
+            for item in alt.iter().rev() {
+                lines.push(Line::from(Span::styled(
+                    format!("     [{}]", item),
+                    Style::default().fg(theme::PURPLE_TEXT),
+                )));
+            }
+        }
+    } else {
+        lines.push(Line::from(Span::styled(
+            "No step data.",
+            Style::default().fg(theme::TEXT_MUTED),
+        )));
+    }
+
+    let panel = Paragraph::new(lines)
+        .block(
+            Block::default()
+                .title(Span::styled(" Stack ", theme::header()))
+                .borders(Borders::ALL)
+                .border_style(theme::border_active())
+                .padding(Padding::horizontal(1)),
+        )
+        .wrap(Wrap { trim: false });
+    frame.render_widget(panel, area);
+}
+
+fn draw_debug_info(frame: &mut Frame, dbg: &crate::app::DebuggerState, area: Rect) {
+    let mut lines = Vec::new();
+
+    lines.push(Line::from(vec![
+        Span::styled("Input:  ", Style::default().fg(theme::TEXT_DIM)),
+        Span::styled(
+            format!("vin[{}]", dbg.input_index),
+            Style::default().fg(theme::CYAN),
+        ),
+        Span::styled(
+            format!("  ({})", dbg.script_label),
+            Style::default().fg(theme::TEXT_DIM),
+        ),
+    ]));
+
+    // result status
+    let (result_label, result_color) = match dbg.result_status() {
+        Some(StepStatus::Finished) => ("PASS", theme::GREEN_TEXT),
+        Some(StepStatus::Error(_)) => ("FAIL", theme::ERROR),
+        _ => {
+            if dbg.is_finished() {
+                ("DONE", theme::TEXT)
+            } else {
+                ("...", theme::TEXT_MUTED)
+            }
+        }
+    };
+    lines.push(Line::from(vec![
+        Span::styled("Result: ", Style::default().fg(theme::TEXT_DIM)),
+        Span::styled(
+            result_label,
+            Style::default()
+                .fg(result_color)
+                .add_modifier(Modifier::BOLD),
+        ),
+    ]));
+
+    let auto_label = if dbg.auto_run { "ON" } else { "OFF" };
+    let auto_color = if dbg.auto_run {
+        theme::GREEN_TEXT
+    } else {
+        theme::TEXT_MUTED
+    };
+    lines.push(Line::from(vec![
+        Span::styled("Auto:   ", Style::default().fg(theme::TEXT_DIM)),
+        Span::styled(auto_label, Style::default().fg(auto_color)),
+    ]));
+
+    lines.push(Line::default());
+    lines.push(Line::from(vec![
+        Span::styled(
+            "n",
+            Style::default()
+                .fg(theme::CYAN)
+                .add_modifier(Modifier::BOLD),
+        ),
+        Span::styled(":next ", Style::default().fg(theme::TEXT_DIM)),
+        Span::styled(
+            "p",
+            Style::default()
+                .fg(theme::CYAN)
+                .add_modifier(Modifier::BOLD),
+        ),
+        Span::styled(":prev ", Style::default().fg(theme::TEXT_DIM)),
+        Span::styled(
+            "Space",
+            Style::default()
+                .fg(theme::CYAN)
+                .add_modifier(Modifier::BOLD),
+        ),
+        Span::styled(":auto ", Style::default().fg(theme::TEXT_DIM)),
+    ]));
+
+    let panel = Paragraph::new(lines)
+        .block(
+            Block::default()
+                .title(Span::styled(" Debug Info ", theme::header()))
                 .borders(Borders::ALL)
                 .border_style(theme::border_active())
                 .padding(Padding::horizontal(1)),

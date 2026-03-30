@@ -1,6 +1,7 @@
 //! App state and tab management for the txray TUI.
 
 use crate::data::{AnalysisData, TxAnalysis};
+use txray_core::tx::script_exec::{ScriptStep, StepStatus};
 
 /// Active tab in the TUI.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -72,6 +73,44 @@ pub enum InputMode {
     FixturePath(String),
 }
 
+/// Script debugger state.
+pub struct DebuggerState {
+    /// All execution steps from script_exec
+    pub steps: Vec<ScriptStep>,
+    /// Current step cursor (0-indexed, pointing at the step being viewed)
+    pub cursor: usize,
+    /// Auto-run mode (advance one step per tick)
+    pub auto_run: bool,
+    /// Which input index we're debugging
+    pub input_index: usize,
+    /// Script type description
+    pub script_label: String,
+}
+
+impl DebuggerState {
+    pub fn current_step(&self) -> Option<&ScriptStep> {
+        self.steps.get(self.cursor)
+    }
+
+    pub fn is_finished(&self) -> bool {
+        self.cursor >= self.steps.len().saturating_sub(1)
+    }
+
+    pub fn step_forward(&mut self) {
+        if self.cursor < self.steps.len().saturating_sub(1) {
+            self.cursor += 1;
+        }
+    }
+
+    pub fn step_backward(&mut self) {
+        self.cursor = self.cursor.saturating_sub(1);
+    }
+
+    pub fn result_status(&self) -> Option<&StepStatus> {
+        self.steps.last().map(|s| &s.status)
+    }
+}
+
 /// Top-level application state.
 pub struct App {
     pub active_tab: Tab,
@@ -92,6 +131,9 @@ pub struct App {
 
     // learn mode state
     pub learn_selected: usize,
+
+    // script debugger state
+    pub debugger: Option<DebuggerState>,
 }
 
 impl App {
@@ -107,6 +149,7 @@ impl App {
             tx_list_selected: 0,
             famous_selected: 0,
             learn_selected: 0,
+            debugger: None,
         }
     }
 
@@ -122,13 +165,17 @@ impl App {
         self.show_help = !self.show_help;
     }
 
-    /// Load a transaction fixture file, run lens + sherlock analysis.
+    /// Load a transaction fixture file, run lens + sherlock analysis + script debugger.
     pub fn load_fixture(&mut self, path: &str) {
         match txray_lens::analyze_transaction(path) {
             Ok(json_str) => match crate::data::parse_tx_json(&json_str) {
                 Ok(mut tx) => {
                     // run sherlock analysis on the same fixture
                     tx.sherlock = crate::data::run_sherlock_analysis(path);
+
+                    // build script debugger for the first input
+                    self.debugger = self.build_debugger(path, 0);
+
                     self.status_message = format!("Loaded: {} ({})", tx.txid, path);
                     self.analysis = Some(AnalysisData::SingleTx(tx));
                 }
@@ -139,6 +186,40 @@ impl App {
             Err(e) => {
                 self.status_message = format!("Analysis error: {}", e);
             }
+        }
+    }
+
+    /// Build a debugger state for a specific input of the loaded fixture.
+    fn build_debugger(&self, path: &str, input_index: usize) -> Option<DebuggerState> {
+        let debug_inputs = crate::data::extract_debug_inputs(path);
+        let di = debug_inputs.into_iter().nth(input_index)?;
+
+        let steps = txray_core::tx::script_exec::execute_script(
+            &di.script_pubkey,
+            &di.script_sig,
+            &di.witness,
+        );
+
+        if steps.is_empty() {
+            return None;
+        }
+
+        Some(DebuggerState {
+            steps,
+            cursor: 0,
+            auto_run: false,
+            input_index: di.input_index,
+            script_label: di.script_type,
+        })
+    }
+
+    /// Switch the debugger to a different input.
+    pub fn debug_input(&mut self, fixture_path: &str, input_index: usize) {
+        self.debugger = self.build_debugger(fixture_path, input_index);
+        if self.debugger.is_some() {
+            self.status_message = format!("Debugging vin[{}]", input_index);
+        } else {
+            self.status_message = format!("Cannot debug vin[{}]", input_index);
         }
     }
 
@@ -199,6 +280,28 @@ impl App {
 mod tests {
     use super::*;
 
+    fn write_temp_fixture() -> std::path::PathBuf {
+        let raw_tx = "02000000000101a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a10000000000fdffffff0110270000000000001600141313131313131313131313131313131313131313024730440220deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef0220deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef012103aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa00000000";
+        let fixture_json = serde_json::json!({
+            "network": "mainnet",
+            "raw_tx": raw_tx,
+            "prevouts": [{
+                "txid": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1",
+                "vout": 0,
+                "value_sats": 20000,
+                "script_pubkey_hex": "00141515151515151515151515151515151515151515"
+            }]
+        });
+
+        let unique = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_nanos())
+            .unwrap_or(0);
+        let path = std::env::temp_dir().join(format!("txray_tui_app_test_{unique}.json"));
+        std::fs::write(&path, fixture_json.to_string()).unwrap();
+        path
+    }
+
     #[test]
     fn tab_cycle_forward() {
         let tab = Tab::Dashboard;
@@ -258,15 +361,64 @@ mod tests {
 
     #[test]
     fn load_real_fixture_has_sherlock() {
-        let fixture = "/home/nitro/Documents/OpenSource/SoB/Challenges/2026-developer-challenge-1-chain-lens-keshav0479/fixtures/transactions/multi_input_segwit.json";
-        if !std::path::Path::new(fixture).exists() {
-            return;
-        }
+        let fixture = write_temp_fixture();
         let mut app = App::new();
-        app.load_fixture(fixture);
+        app.load_fixture(fixture.to_str().unwrap());
         let tx = app.tx_analysis().expect("should have loaded tx");
         assert!(tx.sherlock.fingerprint.is_some());
-        assert!(tx.sherlock.entropy.is_some());
         assert!(tx.sherlock.advice.is_some());
+        std::fs::remove_file(fixture).ok();
+    }
+
+    #[test]
+    fn debugger_state_step_forward_backward() {
+        let step = |n: usize, op: &str| ScriptStep {
+            step_number: n,
+            opcode: op.to_string(),
+            main_stack: vec![],
+            alt_stack: vec![],
+            status: StepStatus::Ok,
+        };
+        let mut dbg = DebuggerState {
+            steps: vec![step(1, "OP_DUP"), step(2, "OP_HASH160"), step(3, "VERIFY")],
+            cursor: 0,
+            auto_run: false,
+            input_index: 0,
+            script_label: "p2wpkh".to_string(),
+        };
+
+        assert_eq!(dbg.cursor, 0);
+        dbg.step_forward();
+        assert_eq!(dbg.cursor, 1);
+        dbg.step_forward();
+        assert_eq!(dbg.cursor, 2);
+        dbg.step_forward(); // should clamp at end
+        assert_eq!(dbg.cursor, 2);
+        assert!(dbg.is_finished());
+
+        dbg.step_backward();
+        assert_eq!(dbg.cursor, 1);
+        dbg.step_backward();
+        assert_eq!(dbg.cursor, 0);
+        dbg.step_backward(); // should clamp at 0
+        assert_eq!(dbg.cursor, 0);
+    }
+
+    #[test]
+    fn load_real_fixture_has_debugger() {
+        let fixture = write_temp_fixture();
+        let mut app = App::new();
+        app.load_fixture(fixture.to_str().unwrap());
+        let dbg = app.debugger.as_ref().expect("should have debugger");
+        assert!(!dbg.steps.is_empty());
+        assert_eq!(dbg.cursor, 0);
+        assert_eq!(dbg.input_index, 0);
+        std::fs::remove_file(fixture).ok();
+    }
+
+    #[test]
+    fn debugger_no_fixture_is_none() {
+        let app = App::new();
+        assert!(app.debugger.is_none());
     }
 }

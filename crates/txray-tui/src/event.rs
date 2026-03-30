@@ -7,7 +7,16 @@ use crate::app::{App, InputMode};
 
 /// Poll for a key event with a timeout. Returns true if the app should keep running.
 pub fn handle_events(app: &mut App) -> anyhow::Result<bool> {
-    if event::poll(Duration::from_millis(16))? {
+    // auto-run: advance debugger one step per tick
+    if let Some(ref mut dbg) = app.debugger {
+        if dbg.auto_run && !dbg.is_finished() {
+            dbg.step_forward();
+        } else if dbg.auto_run && dbg.is_finished() {
+            dbg.auto_run = false;
+        }
+    }
+
+    if event::poll(Duration::from_millis(100))? {
         if let Event::Key(key) = event::read()? {
             if key.kind != event::KeyEventKind::Press {
                 return Ok(true);
@@ -47,6 +56,23 @@ fn handle_key(app: &mut App, key: KeyEvent) -> bool {
         KeyCode::Char('?') => app.toggle_help(),
         KeyCode::Tab => app.next_tab(),
         KeyCode::BackTab => app.prev_tab(),
+
+        // script debugger controls (only on that tab)
+        KeyCode::Char('n') if app.active_tab == crate::app::Tab::ScriptDebugger => {
+            if let Some(ref mut dbg) = app.debugger {
+                dbg.step_forward();
+            }
+        }
+        KeyCode::Char('p') if app.active_tab == crate::app::Tab::ScriptDebugger => {
+            if let Some(ref mut dbg) = app.debugger {
+                dbg.step_backward();
+            }
+        }
+        KeyCode::Char(' ') if app.active_tab == crate::app::Tab::ScriptDebugger => {
+            if let Some(ref mut dbg) = app.debugger {
+                dbg.auto_run = !dbg.auto_run;
+            }
+        }
 
         // vim-style navigation
         KeyCode::Char('j') | KeyCode::Down => handle_scroll_down(app),
@@ -261,5 +287,81 @@ mod tests {
         // escape cancels
         handle_key(&mut app, KeyEvent::new(KeyCode::Esc, KeyModifiers::NONE));
         assert_eq!(app.input_mode, InputMode::Normal);
+    }
+
+    #[test]
+    fn debugger_n_p_keys() {
+        use crate::app::DebuggerState;
+        use txray_core::tx::script_exec::{ScriptStep, StepStatus};
+
+        let mut app = App::new();
+        app.active_tab = Tab::ScriptDebugger;
+        app.debugger = Some(DebuggerState {
+            steps: vec![
+                ScriptStep {
+                    step_number: 1,
+                    opcode: "OP_DUP".into(),
+                    main_stack: vec![],
+                    alt_stack: vec![],
+                    status: StepStatus::Ok,
+                },
+                ScriptStep {
+                    step_number: 2,
+                    opcode: "OP_HASH160".into(),
+                    main_stack: vec![],
+                    alt_stack: vec![],
+                    status: StepStatus::Ok,
+                },
+                ScriptStep {
+                    step_number: 3,
+                    opcode: "VERIFY".into(),
+                    main_stack: vec![],
+                    alt_stack: vec![],
+                    status: StepStatus::Finished,
+                },
+            ],
+            cursor: 0,
+            auto_run: false,
+            input_index: 0,
+            script_label: "p2pkh".into(),
+        });
+
+        // n steps forward
+        handle_key(
+            &mut app,
+            KeyEvent::new(KeyCode::Char('n'), KeyModifiers::NONE),
+        );
+        assert_eq!(app.debugger.as_ref().unwrap().cursor, 1);
+
+        // p steps backward
+        handle_key(
+            &mut app,
+            KeyEvent::new(KeyCode::Char('p'), KeyModifiers::NONE),
+        );
+        assert_eq!(app.debugger.as_ref().unwrap().cursor, 0);
+
+        // space toggles auto-run
+        handle_key(
+            &mut app,
+            KeyEvent::new(KeyCode::Char(' '), KeyModifiers::NONE),
+        );
+        assert!(app.debugger.as_ref().unwrap().auto_run);
+        handle_key(
+            &mut app,
+            KeyEvent::new(KeyCode::Char(' '), KeyModifiers::NONE),
+        );
+        assert!(!app.debugger.as_ref().unwrap().auto_run);
+    }
+
+    #[test]
+    fn n_key_ignored_on_other_tabs() {
+        let mut app = App::new();
+        app.active_tab = Tab::Dashboard; // not script debugger
+                                         // n key should not crash even without debugger
+        handle_key(
+            &mut app,
+            KeyEvent::new(KeyCode::Char('n'), KeyModifiers::NONE),
+        );
+        // no panic = pass
     }
 }

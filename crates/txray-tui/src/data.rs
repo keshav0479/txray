@@ -177,6 +177,72 @@ pub fn run_sherlock_analysis(fixture_path: &str) -> SherlockResults {
     }
 }
 
+/// Data needed to debug a single input's script execution.
+pub struct ScriptDebugInput {
+    pub input_index: usize,
+    pub script_type: String,
+    pub script_pubkey: Vec<u8>,
+    pub script_sig: Vec<u8>,
+    pub witness: Vec<Vec<u8>>,
+}
+
+/// Extract debuggable inputs from a fixture file.
+/// Returns one ScriptDebugInput per input in the transaction.
+pub fn extract_debug_inputs(fixture_path: &str) -> Vec<ScriptDebugInput> {
+    let fixture_text = match std::fs::read_to_string(fixture_path) {
+        Ok(t) => t,
+        Err(_) => return Vec::new(),
+    };
+    let fixture: serde_json::Value = match serde_json::from_str(&fixture_text) {
+        Ok(v) => v,
+        Err(_) => return Vec::new(),
+    };
+
+    let raw_hex = fixture
+        .get("raw_tx")
+        .or_else(|| fixture.get("raw_hex"))
+        .and_then(|v| v.as_str())
+        .unwrap_or("");
+    let raw_bytes = match hex::decode(raw_hex) {
+        Ok(b) => b,
+        Err(_) => return Vec::new(),
+    };
+    let tx = match txray_core::tx::parser::parse_raw_tx(&raw_bytes) {
+        Ok(t) => t,
+        Err(_) => return Vec::new(),
+    };
+
+    let prevouts = fixture
+        .get("prevouts")
+        .and_then(|v| v.as_array())
+        .cloned()
+        .unwrap_or_default();
+
+    tx.inputs
+        .iter()
+        .enumerate()
+        .map(|(i, inp)| {
+            let script_pubkey = prevouts
+                .get(i)
+                .and_then(|p| p.get("script_pubkey_hex"))
+                .and_then(|v| v.as_str())
+                .and_then(|h| hex::decode(h).ok())
+                .unwrap_or_default();
+
+            let script_type =
+                txray_core::tx::script::classify_output_script(&script_pubkey).to_string();
+
+            ScriptDebugInput {
+                input_index: i,
+                script_type,
+                script_pubkey,
+                script_sig: inp.script_sig.clone(),
+                witness: inp.witness.clone(),
+            }
+        })
+        .collect()
+}
+
 /// Parse the JSON output from txray_lens::analyze_transaction into TxAnalysis.
 pub fn parse_tx_json(json_str: &str) -> anyhow::Result<TxAnalysis> {
     let v: serde_json::Value = serde_json::from_str(json_str)?;
@@ -357,23 +423,57 @@ mod tests {
     }
 
     #[test]
-    fn sherlock_analysis_real_fixture() {
-        // use the multi_input_segwit fixture if available
-        let fixture = "/home/nitro/Documents/OpenSource/SoB/Challenges/2026-developer-challenge-1-chain-lens-keshav0479/fixtures/transactions/multi_input_segwit.json";
-        if !std::path::Path::new(fixture).exists() {
-            return; // skip if fixture not available
-        }
-        let result = run_sherlock_analysis(fixture);
-        // should have all three results
+    fn sherlock_analysis_with_temp_fixture() {
+        // minimal valid segwit fixture (1-in 1-out p2wpkh)
+        let raw_tx = "02000000000101a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a10000000000fdffffff0110270000000000001600141313131313131313131313131313131313131313024730440220deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef0220deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef012103aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa00000000";
+        let fixture_json = serde_json::json!({
+            "network": "mainnet",
+            "raw_tx": raw_tx,
+            "prevouts": [{
+                "txid": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1",
+                "vout": 0,
+                "value_sats": 20000,
+                "script_pubkey_hex": "00141515151515151515151515151515151515151515"
+            }]
+        });
+        let dir = std::env::temp_dir();
+        let path = dir.join("txray_test_sherlock.json");
+        std::fs::write(&path, fixture_json.to_string()).unwrap();
+        let result = run_sherlock_analysis(path.to_str().unwrap());
+        std::fs::remove_file(&path).ok();
+        // fingerprint and advice always run; entropy may be None for 1-in-1-out
         assert!(result.fingerprint.is_some());
-        assert!(result.entropy.is_some());
-        assert!(result.advice.is_some());
+        if let Some(adv) = result.advice {
+            assert!(adv.score >= 1 && adv.score <= 10);
+        }
+    }
 
-        let fp = result.fingerprint.unwrap();
-        // multi-input segwit should have some fingerprint data
-        assert!(fp.likely_wallet.is_some() || fp.likely_wallet.is_none()); // just check it runs
+    #[test]
+    fn extract_debug_inputs_nonexistent() {
+        let inputs = extract_debug_inputs("/nonexistent/fixture.json");
+        assert!(inputs.is_empty());
+    }
 
-        let adv = result.advice.unwrap();
-        assert!(adv.score >= 1 && adv.score <= 10);
+    #[test]
+    fn extract_debug_inputs_with_temp_fixture() {
+        let raw_tx = "02000000000101a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a10000000000fdffffff0110270000000000001600141313131313131313131313131313131313131313024730440220deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef0220deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef012103aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa00000000";
+        let fixture_json = serde_json::json!({
+            "network": "mainnet",
+            "raw_tx": raw_tx,
+            "prevouts": [{
+                "txid": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1",
+                "vout": 0,
+                "value_sats": 20000,
+                "script_pubkey_hex": "00141515151515151515151515151515151515151515"
+            }]
+        });
+        let dir = std::env::temp_dir();
+        let path = dir.join("txray_test_debug_inputs.json");
+        std::fs::write(&path, fixture_json.to_string()).unwrap();
+        let inputs = extract_debug_inputs(path.to_str().unwrap());
+        std::fs::remove_file(&path).ok();
+        assert_eq!(inputs.len(), 1);
+        assert_eq!(inputs[0].input_index, 0);
+        assert!(!inputs[0].script_pubkey.is_empty());
     }
 }
