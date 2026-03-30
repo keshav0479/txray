@@ -47,8 +47,9 @@ pub fn analyze_transaction(fixture_path: &str) -> Result<String, TxrayError> {
 
     let raw_tx_hex = fixture
         .get("raw_tx")
+        .or_else(|| fixture.get("raw_hex"))
         .and_then(|v| v.as_str())
-        .ok_or_else(|| TxrayError::invalid_fixture("Missing 'raw_tx' field"))?;
+        .ok_or_else(|| TxrayError::invalid_fixture("Missing 'raw_tx' (or 'raw_hex') field"))?;
 
     let prevouts_array = fixture
         .get("prevouts")

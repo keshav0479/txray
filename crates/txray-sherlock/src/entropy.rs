@@ -1,7 +1,9 @@
 //! Boltzmann entropy analysis — measure transaction privacy via interpretation counting.
 //!
-//! Uses subset-sum dynamic programming to count the number of valid
-//! input→output matchings. Higher entropy = more ambiguous = better privacy.
+//! Uses backtracking over input→output assignments to count valid matchings.
+//! Each input is assigned to exactly one output; multiple inputs may fund the
+//! same output. This is the simplified single-assignment model (as used by OXT).
+//! Higher entropy = more ambiguous = better privacy.
 
 use serde::Serialize;
 
@@ -54,9 +56,9 @@ pub fn compute_entropy(input_amounts: &[u64], output_amounts: &[u64]) -> Option<
         });
     }
 
-    // Count valid interpretations using subset-sum DP approach:
-    // For each output, find which subsets of inputs could fund it.
-    // Then count the number of valid partitions of inputs into outputs.
+    // Count valid interpretations via input→output assignment backtracking.
+    // Each input is assigned to exactly one output; multiple inputs can share
+    // an output. We enumerate all assignments where sums match exactly.
     let (interpretations, link_counts) = count_interpretations(input_amounts, output_amounts);
 
     let entropy_bits = if interpretations > 0 {

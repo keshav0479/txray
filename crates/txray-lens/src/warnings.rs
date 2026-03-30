@@ -1,9 +1,10 @@
 use serde_json::Value;
 
-/// A warning with a code
+/// A warning with a code and human-readable message
 #[derive(Debug, Clone)]
 pub struct Warning {
     pub code: &'static str,
+    pub message: &'static str,
 }
 
 /// Generate warnings for a analyzed transaction.
@@ -17,7 +18,10 @@ pub fn generate_warnings(
 
     // HIGH_FEE: fee > 1,000,000 sats OR fee_rate > 200 sat/vB
     if fee_sats > 1_000_000 || fee_rate_sat_vb > 200.0 {
-        warnings.push(Warning { code: "HIGH_FEE" });
+        warnings.push(Warning {
+            code: "HIGH_FEE",
+            message: "Unusually high fee detected",
+        });
     }
 
     // DUST_OUTPUT: any non-op_return output with value < 546 sats
@@ -25,6 +29,7 @@ pub fn generate_warnings(
         if output.script_type != "op_return" && output.value_sats < 546 {
             warnings.push(Warning {
                 code: "DUST_OUTPUT",
+                message: "Output below dust threshold (546 sats)",
             });
             break; // Only emit once
         }
@@ -35,6 +40,7 @@ pub fn generate_warnings(
         if output.script_type == "unknown" {
             warnings.push(Warning {
                 code: "UNKNOWN_OUTPUT_SCRIPT",
+                message: "Output has unrecognized script type",
             });
             break;
         }
@@ -44,6 +50,7 @@ pub fn generate_warnings(
     if rbf_signaling {
         warnings.push(Warning {
             code: "RBF_SIGNALING",
+            message: "Transaction signals Replace-By-Fee (can be bumped)",
         });
     }
 
@@ -59,7 +66,7 @@ pub struct OutputInfo {
 
 impl Warning {
     pub fn to_json(&self) -> Value {
-        serde_json::json!({ "code": self.code })
+        serde_json::json!({ "code": self.code, "message": self.message })
     }
 }
 

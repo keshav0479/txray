@@ -138,6 +138,16 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
+/// Extract raw transaction hex from a fixture JSON, trying both 'raw_hex' and 'raw_tx' keys.
+fn extract_raw_hex(report: &serde_json::Value) -> Result<String> {
+    report
+        .get("raw_hex")
+        .or_else(|| report.get("raw_tx"))
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string())
+        .ok_or_else(|| anyhow::anyhow!("fixture missing 'raw_hex' (or 'raw_tx') field"))
+}
+
 fn cmd_parse_tx(fixture_path: &str) -> Result<()> {
     let result =
         txray_lens::analyze_transaction(fixture_path).context("failed to parse transaction")?;
@@ -184,10 +194,8 @@ fn cmd_fingerprint(fixture_path: &str) -> Result<()> {
         serde_json::from_str(&json_str).context("failed to parse fixture JSON")?;
 
     // Build a RawTransaction from the fixture data
-    let raw_hex = report["raw_hex"]
-        .as_str()
-        .ok_or_else(|| anyhow::anyhow!("fixture missing 'raw_hex' field"))?;
-    let raw_bytes = hex::decode(raw_hex).context("failed to decode raw_hex")?;
+    let raw_hex = extract_raw_hex(&report)?;
+    let raw_bytes = hex::decode(&raw_hex).context("failed to decode raw transaction hex")?;
     let parsed = txray_core::tx::parser::parse_raw_tx(&raw_bytes)
         .map_err(|e| anyhow::anyhow!("failed to parse transaction: {}", e))?;
 
@@ -217,11 +225,9 @@ fn cmd_entropy(fixture_path: &str) -> Result<()> {
     let report: serde_json::Value =
         serde_json::from_str(&json_str).context("failed to parse fixture JSON")?;
 
-    // Build a RawTransaction from raw_hex
-    let raw_hex = report["raw_hex"]
-        .as_str()
-        .ok_or_else(|| anyhow::anyhow!("fixture missing 'raw_hex' field"))?;
-    let raw_bytes = hex::decode(raw_hex).context("failed to decode raw_hex")?;
+    // Build a RawTransaction from the fixture
+    let raw_hex = extract_raw_hex(&report)?;
+    let raw_bytes = hex::decode(&raw_hex).context("failed to decode raw transaction hex")?;
     let parsed = txray_core::tx::parser::parse_raw_tx(&raw_bytes)
         .map_err(|e| anyhow::anyhow!("failed to parse transaction: {}", e))?;
 
@@ -298,10 +304,8 @@ fn cmd_advise(fixture_path: &str) -> Result<()> {
         serde_json::from_str(&json_str).context("failed to parse fixture JSON")?;
 
     // Parse the raw transaction
-    let raw_hex = report["raw_hex"]
-        .as_str()
-        .ok_or_else(|| anyhow::anyhow!("fixture missing 'raw_hex' field"))?;
-    let raw_bytes = hex::decode(raw_hex).context("failed to decode raw_hex")?;
+    let raw_hex = extract_raw_hex(&report)?;
+    let raw_bytes = hex::decode(&raw_hex).context("failed to decode raw transaction hex")?;
     let parsed = txray_core::tx::parser::parse_raw_tx(&raw_bytes)
         .map_err(|e| anyhow::anyhow!("failed to parse transaction: {}", e))?;
 
