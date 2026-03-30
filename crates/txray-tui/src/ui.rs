@@ -1780,6 +1780,7 @@ fn draw_input_bar(frame: &mut Frame, app: &App, area: Rect) {
 }
 
 fn draw_status_bar(frame: &mut Frame, app: &App, area: Rect) {
+    let breadcrumb = status_breadcrumb(app);
     let hints = vec![
         Span::styled(" q", theme::key_hint()),
         Span::styled(":quit ", theme::key_desc()),
@@ -1794,11 +1795,62 @@ fn draw_status_bar(frame: &mut Frame, app: &App, area: Rect) {
         Span::styled("?", theme::key_hint()),
         Span::styled(":help ", theme::key_desc()),
         Span::raw("  "),
+        Span::styled(breadcrumb, Style::default().fg(theme::CYAN)),
+        Span::raw("  "),
         Span::styled(&app.status_message, Style::default().fg(theme::TEXT_MUTED)),
     ];
 
     let bar = Paragraph::new(Line::from(hints)).style(theme::status_bar());
     frame.render_widget(bar, area);
+}
+
+fn status_breadcrumb(app: &App) -> String {
+    match app.active_tab {
+        Tab::Dashboard => "Dashboard".to_string(),
+        Tab::TxDetail => "Tx Detail".to_string(),
+        Tab::Heuristics => "Heuristics".to_string(),
+        Tab::FamousBlocks => {
+            if let Some(block) = txray_corpus::FAMOUS_BLOCKS.get(app.famous_selected) {
+                format!("Famous Blocks > {}", block.name)
+            } else {
+                "Famous Blocks".to_string()
+            }
+        }
+        Tab::ScriptDebugger => {
+            if let Some(dbg) = app.debugger.as_ref() {
+                format!(
+                    "Script Debugger > vin[{}] > {}",
+                    dbg.input_index, dbg.script_label
+                )
+            } else {
+                "Script Debugger".to_string()
+            }
+        }
+        Tab::Learn => {
+            if app.learn_active {
+                let lesson = app.current_lesson();
+                let total = lesson.steps.len();
+                let step = app.learn_step.min(total.saturating_sub(1)) + 1;
+                if app.learn_fetch_in_progress {
+                    format!(
+                        "Learn > Lesson {} > Step {}/{} > Fetching",
+                        app.learn_selected + 1,
+                        step,
+                        total
+                    )
+                } else {
+                    format!(
+                        "Learn > Lesson {} > Step {}/{}",
+                        app.learn_selected + 1,
+                        step,
+                        total
+                    )
+                }
+            } else {
+                format!("Learn > Lesson {}", app.learn_selected + 1)
+            }
+        }
+    }
 }
 
 fn draw_help_overlay(frame: &mut Frame, area: Rect) {
