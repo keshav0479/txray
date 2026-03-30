@@ -8,6 +8,7 @@ members = [
     "crates/txray-net",
     "crates/txray-corpus",
     "crates/txray-cli",
+    "crates/txray-tui",
 ]
 
 [workspace.package]
@@ -44,3 +45,6 @@ tokio = { version = "1", features = ["full"] }
 clap = { version = "4", features = ["derive"] }
 colored = "3"
 anyhow = "1"
+
+# TUI (used by txray-tui)
+ratatui = { version = "0.30", features = ["crossterm"] }

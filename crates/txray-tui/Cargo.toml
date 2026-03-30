@@ -1,0 +1,22 @@
+[package]
+name = "txray-tui"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Interactive TUI dashboard for txray Bitcoin toolkit"
+
+[[bin]]
+name = "txray-tui"
+path = "src/main.rs"
+
+[dependencies]
+txray-core = { path = "../txray-core" }
+txray-lens = { path = "../txray-lens" }
+txray-sherlock = { path = "../txray-sherlock" }
+txray-smith = { path = "../txray-smith" }
+txray-net = { path = "../txray-net" }
+txray-corpus = { path = "../txray-corpus" }
+ratatui.workspace = true
+anyhow.workspace = true
+serde_json.workspace = true
+hex.workspace = true
