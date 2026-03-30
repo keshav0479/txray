@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+@theme {
+  /* ─── Shared Surface Palette (all 3 challenges) ─── */
+  --color-surface-bg: #000000;
+  --color-surface-card: #09090b;
+  --color-surface-hover: #18181b;
+  --color-surface-border: #27272a;
+
+  /* ─── Text (shared) ─── */
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #475569;
+
+  /* ─── Lens Brand (Blue — tx parsing & analysis) ─── */
+  --color-lens-50: #eff6ff;
+  --color-lens-300: #93c5fd;
+  --color-lens-400: #60a5fa;
+  --color-lens-500: #3b82f6;
+  --color-lens-600: #2563eb;
+  --color-lens-700: #1d4ed8;
+  --color-lens-900: #1e3a8a;
+
+  /* ─── Sherlock Brand (Amber — privacy analysis) ─── */
+  --color-sherlock-50: #fefce8;
+  --color-sherlock-300: #fcd34d;
+  --color-sherlock-400: #fbbf24;
+  --color-sherlock-500: #d4a546;
+  --color-sherlock-600: #b8860b;
+  --color-sherlock-700: #92400e;
+  --color-sherlock-900: #451a03;
+
+  /* ─── Smith Brand (Blue, same family as Lens) ─── */
+  --color-smith-50: #eff6ff;
+  --color-smith-300: #93c5fd;
+  --color-smith-400: #60a5fa;
+  --color-smith-500: #3b82f6;
+  --color-smith-600: #2563eb;
+  --color-smith-700: #1d4ed8;
+  --color-smith-900: #1e3a8a;
+
+  /* ─── Classification Colors (from Sherlock) ─── */
+  --color-class-coinjoin: #a855f7;
+  --color-class-consolidation: #3b82f6;
+  --color-class-self-transfer: #22d3ee;
+  --color-class-batch: #f97316;
+  --color-class-simple: #6b7280;
+  --color-class-unknown: #374151;
+
+  /* ─── Intent Colors ─── */
+  --color-flow-fee: #f43f5e;
+  --color-flow-success: #22c55e;
+  --color-flow-warning: #f97316;
+
+  /* ─── Fonts ─── */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, "SF Mono",
+    Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+/* ─── Base Resets ─── */
+html,
+body {
+  background-color: var(--color-surface-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code,
+pre,
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* ─── Selection ─── */
+::selection {
+  background: var(--color-lens-500);
+  color: white;
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-surface-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-surface-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* ─── Utility Classes ─── */
+.glass-card {
+  background: rgba(9, 9, 11, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--color-surface-border);
+}
+
+.glow-lens {
+  box-shadow: 0 0 40px -10px rgba(59, 130, 246, 0.3);
+}
+
+.glow-sherlock {
+  box-shadow: 0 0 40px -10px rgba(212, 165, 70, 0.3);
+}
+
+.glow-lens:hover {
+  box-shadow: 0 0 60px -15px rgba(59, 130, 246, 0.5);
+}
+
+.glow-sherlock:hover {
+  box-shadow: 0 0 60px -15px rgba(212, 165, 70, 0.5);
+}

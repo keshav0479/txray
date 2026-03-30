@@ -72,6 +72,25 @@ txray inspect <base64-psbt>
 txray advise fixture.json
 ```
 
+## TUI (`txray-tui`)
+
+```bash
+# launch interactive TUI
+cargo run -p txray-tui
+
+# launch and preload a fixture
+cargo run -p txray-tui -- path/to/fixture.json
+```
+
+TUI includes:
+- 6-tab dashboard with keyboard navigation (`Tab`, `Shift+Tab`, `1-6`)
+- Famous blocks fetch + sidebar annotations
+- Script debugger step-through view (`n`, `p`, `Space`)
+- Learn mode with guided lessons, live fetch, quiz feedback (`a/b/c`, `1/2/3`)
+- Help overlay (`?`) and status breadcrumb
+
+Note: script debugger currently targets simplified script execution traces (best coverage on P2PKH/P2WPKH style flows). Some synthetic fixtures may intentionally end in a failed `VERIFY_RESULT`.
+
 ## Crates
 
 ### `txray-core`
@@ -142,9 +161,13 @@ Each entry explains why it's interesting and what to look for when parsing.
 
 ```bash
 cargo build --workspace
-cargo test --workspace     # 282 tests
-cargo clippy --workspace   # zero warnings
+cargo test --workspace     # 322 tests
+cargo clippy --workspace --all-targets -- -D warnings
 ```
+
+## Demo Media
+
+Terminal demo recording/GIF is intentionally deferred until Phase 5 packaging so media reflects the final WASM + web experience.
 
 ## License
 
