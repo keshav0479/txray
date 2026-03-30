@@ -76,15 +76,15 @@ fn handle_key(app: &mut App, key: KeyEvent) -> bool {
                 app.prev_learn_step();
                 return true;
             }
-            KeyCode::Char('a') if app.learn_active => {
+            KeyCode::Char('a') | KeyCode::Char('A') | KeyCode::Char('1') if app.learn_active => {
                 app.answer_learn_quiz(0);
                 return true;
             }
-            KeyCode::Char('b') if app.learn_active => {
+            KeyCode::Char('b') | KeyCode::Char('B') | KeyCode::Char('2') if app.learn_active => {
                 app.answer_learn_quiz(1);
                 return true;
             }
-            KeyCode::Char('c') if app.learn_active => {
+            KeyCode::Char('c') | KeyCode::Char('C') | KeyCode::Char('3') if app.learn_active => {
                 app.answer_learn_quiz(2);
                 return true;
             }
@@ -452,6 +452,32 @@ mod tests {
         };
         handle_key(&mut app, KeyEvent::new(key, KeyModifiers::NONE));
         assert!(app.learn_quiz_feedback.is_some());
+    }
+
+    #[test]
+    fn learn_quiz_accepts_uppercase_and_numeric_keys() {
+        let mut app = App::new();
+        app.active_tab = Tab::Learn;
+        app.learn_selected = 0;
+        app.start_selected_lesson();
+
+        handle_key(
+            &mut app,
+            KeyEvent::new(KeyCode::Char('A'), KeyModifiers::SHIFT),
+        );
+        assert_eq!(app.learn_quiz_choice, Some(0));
+
+        handle_key(
+            &mut app,
+            KeyEvent::new(KeyCode::Char('2'), KeyModifiers::NONE),
+        );
+        assert_eq!(app.learn_quiz_choice, Some(1));
+
+        handle_key(
+            &mut app,
+            KeyEvent::new(KeyCode::Char('3'), KeyModifiers::NONE),
+        );
+        assert_eq!(app.learn_quiz_choice, Some(2));
     }
 
     #[test]
