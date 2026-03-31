@@ -153,7 +153,7 @@ export function SherlockBackground() {
           backgroundImage: glowPattern,
           backgroundRepeat: "repeat",
           backgroundSize: tileSize,
-          filter: "drop-shadow(0 0 14px rgba(251,191,36,0.65))",
+          filter: "drop-shadow(0 0 14px rgba(247,147,26,0.65))",
         }}
       />
 
@@ -164,7 +164,7 @@ export function SherlockBackground() {
           backgroundImage: glowPattern,
           backgroundRepeat: "repeat",
           backgroundSize: tileSize,
-          filter: "drop-shadow(0 0 10px rgba(212,165,70,0.52))",
+          filter: "drop-shadow(0 0 10px rgba(247,147,26,0.52))",
         }}
       />
 
@@ -176,7 +176,7 @@ export function SherlockBackground() {
           backgroundImage: glowPattern,
           backgroundRepeat: "repeat",
           backgroundSize: tileSize,
-          filter: "drop-shadow(0 0 18px rgba(251,191,36,0.80))",
+          filter: "drop-shadow(0 0 18px rgba(247,147,26,0.80))",
         }}
       />
 

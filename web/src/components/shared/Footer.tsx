@@ -4,7 +4,7 @@ import { ExternalLink } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="w-full border-t border-white/5 bg-black/40 backdrop-blur-sm">
+    <footer className="relative z-10 w-full border-t border-white/5 bg-transparent">
       <div className="max-w-5xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-6 text-xs text-zinc-500">
           <span className="flex items-center gap-1.5 font-medium text-zinc-400">

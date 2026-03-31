@@ -49,20 +49,21 @@ function MouldTile({ delay, uniqueId }: { delay: number; uniqueId: string }) {
         </linearGradient>
       </defs>
 
-      {/* Outer metallic base plate */}
-      <rect x="10" y="10" width="100" height="100" rx="20" fill="#080a0e" stroke="#1c202a" strokeWidth="2" />
+      {/* Outer metallic base plate (Elevated physical stone texture) */}
+      <rect x="10" y="10" width="100" height="100" rx="20" fill="#161413" stroke="#2a2522" strokeWidth="1" />
       
       {/* Corner Rivets — filled solid for subtle visibility */}
-      <circle cx="22" cy="22" r="3" fill="#1c202a" />
-      <circle cx="98" cy="22" r="3" fill="#1c202a" />
-      <circle cx="22" cy="98" r="3" fill="#1c202a" />
-      <circle cx="98" cy="98" r="3" fill="#1c202a" />
+      {/* Corner Rivets */}
+      <circle cx="22" cy="22" r="3" fill="rgba(255,255,255,0.02)" />
+      <circle cx="98" cy="22" r="3" fill="rgba(255,255,255,0.02)" />
+      <circle cx="22" cy="98" r="3" fill="rgba(255,255,255,0.02)" />
+      <circle cx="98" cy="98" r="3" fill="rgba(255,255,255,0.02)" />
 
-      {/* Inner darker chamber */}
-      <rect x="24" y="24" width="72" height="72" rx="14" fill="#030406" stroke="#11141a" strokeWidth="1" />
+      {/* Inner darker chamber (Hollowed core) */}
+      <rect x="24" y="24" width="72" height="72" rx="14" fill="#090807" stroke="#1c1917" strokeWidth="1" />
 
-      {/* Dormant BTC Logo — outline only, like a carved mould cavity */}
-      <g fill="none" stroke="#1c202a" strokeWidth="1" transform={LOGO_TRANSFORM}>
+      {/* Dormant BTC Logo — ghost outline only */}
+      <g fill="none" stroke="#2a2522" strokeWidth="1.5" transform={LOGO_TRANSFORM}>
         <path d={BTC_PATH} />
       </g>
 
@@ -77,7 +78,7 @@ function MouldTile({ delay, uniqueId }: { delay: number; uniqueId: string }) {
         <g 
           fill={`url(#${gradId})`} 
           transform={LOGO_TRANSFORM}
-          style={{ filter: "drop-shadow(0 0 4px #f7931a) drop-shadow(0 0 8px rgba(247,147,26,0.3))" }}
+          style={{ filter: "drop-shadow(0 0 6px rgba(247,147,26,0.3))" }}
         >
           <path d={BTC_PATH} />
         </g>
@@ -104,60 +105,12 @@ export function SmithBackground() {
   );
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-[#030406]">
+    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-transparent">
       {/* Inject CSS keyframes once */}
       <style dangerouslySetInnerHTML={{ __html: KEYFRAMES_CSS }} />
-      
-      {/* 1. Faint structural grid lines */}
-      <div className="absolute inset-0">
-        <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-          {cols.map(c => (
-            <line key={`v-${c}`} x1={c} y1="0" x2={c} y2="100%" stroke="#111520" strokeWidth="1" />
-          ))}
-          {rows.map(r => (
-            <line key={`h-${r}`} x1="0" y1={r} x2="100%" y2={r} stroke="#111520" strokeWidth="1" />
-          ))}
-        </svg>
-      </div>
 
-      {/* 2. Traveling pulses along grid lines */}
-      <div className="absolute inset-0">
-        <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-          {/* Horizontal pulses — left to right */}
-          {rows.map((r, i) => (
-            <line
-              key={`pulse-h-${i}`}
-              x1="0" y1={r} x2="100%" y2={r}
-              stroke="#f7931a"
-              strokeWidth="2"
-              strokeLinecap="round"
-              opacity="0.4"
-              strokeDasharray="80 2000"
-              style={{
-                animation: `pulse-h 12s linear ${i * 1.5}s infinite`
-              }}
-            />
-          ))}
-          {/* Vertical pulses — top to bottom */}
-          {cols.map((c, i) => (
-            <line
-              key={`pulse-v-${i}`}
-              x1={c} y1="0" x2={c} y2="100%"
-              stroke="#f7931a"
-              strokeWidth="2"
-              strokeLinecap="round"
-              opacity="0.3"
-              strokeDasharray="60 1800"
-              style={{
-                animation: `pulse-v 16s linear ${i * 1.2}s infinite`
-              }}
-            />
-          ))}
-        </svg>
-      </div>
-
-      {/* 3. Mould tiles */}
-      <div className="absolute w-full h-full">
+      {/* 1. Mould tiles — the tile arrangement implies the grid, no need for explicit lines */}
+      <div className="absolute w-full h-full opacity-[0.32]">
         {nodes.map(({ x, y, id, delay }) => (
           <div 
             key={id}
@@ -175,19 +128,6 @@ export function SmithBackground() {
         ))}
       </div>
 
-      {/* Center Vignette — darkens the hero text area so content pops */}
-      <div 
-        className="absolute inset-0 pointer-events-none" 
-        style={{ 
-          background: "radial-gradient(ellipse 60% 50% at 50% 45%, rgba(3,4,6,0.7) 0%, transparent 100%)" 
-        }} 
-      />
-
-      {/* Edge Fades */}
-      <div className="absolute inset-x-0 bottom-0 h-32 bg-linear-to-t from-[#030406] to-transparent pointer-events-none" />
-      <div className="absolute inset-x-0 top-0 h-24 bg-linear-to-b from-[#030406] to-transparent pointer-events-none" />
-      <div className="absolute inset-y-0 left-0 w-24 bg-linear-to-r from-[#030406] to-transparent pointer-events-none" />
-      <div className="absolute inset-y-0 right-0 w-24 bg-linear-to-l from-[#030406] to-transparent pointer-events-none" />
     </div>
   );
 }
