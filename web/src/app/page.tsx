@@ -20,6 +20,7 @@ import { Footer } from "@/components/shared/Footer";
 import { SmithBackground } from "@/components/smith/SmithBackground";
 import { LensMini, SherlockMini, SmithMini } from "@/components/shared/LandingIllustrations";
 import { TiltCard } from "@/components/shared/TiltCard";
+import { TxrayLogo } from "@/components/shared/TxrayLogo";
 
 // pick a cleaner subset of famous entries for the landing chips
 const CHIP_ENTRIES = FAMOUS_ENTRIES.filter((e) =>
@@ -38,7 +39,7 @@ const CAPABILITIES = [
     bg: "bg-white/5",
     glow: "group-hover:border-amber-500/30 group-hover:shadow-[0_0_30px_-10px_rgba(245,158,11,0.15)]",
     Illustration: LensMini,
-    href: "/explore/famous",
+    href: "/lens",
   },
   {
     icon: Shield,
@@ -51,7 +52,7 @@ const CAPABILITIES = [
     bg: "bg-white/5",
     glow: "group-hover:border-amber-500/30 group-hover:shadow-[0_0_30px_-10px_rgba(245,158,11,0.15)]",
     Illustration: SherlockMini,
-    href: "/explore/famous",
+    href: "/sherlock",
   },
   {
     icon: Hammer,
@@ -139,14 +140,14 @@ export default function HomePage() {
           className="flex flex-col items-center text-center z-10 max-w-3xl pt-8"
         >
           {/* Logo */}
-          <motion.span
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-4xl mb-6 select-none opacity-80"
+          <motion.div
+            initial={{ scale: 0.5, opacity: 0, y: 10 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            className="mb-8"
           >
-            ⟐
-          </motion.span>
+            <TxrayLogo variant="mark" className="w-16 h-16 text-amber-500 drop-shadow-[0_0_25px_rgba(245,158,11,0.3)]" />
+          </motion.div>
 
           {/* Title */}
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tighter mb-5 leading-[1.1]">

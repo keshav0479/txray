@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
+import { TxrayLogo } from "@/components/shared/TxrayLogo";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -96,10 +97,9 @@ export function Header() {
         {/* Logo */}
         <Link
           href="/"
-          className="font-bold text-base tracking-tight flex items-center gap-2 text-white hover:text-lens-400 transition-colors shrink-0"
+          className="flex items-center hover:opacity-80 transition-opacity shrink-0"
         >
-          <span className="text-lg">⟐</span>
-          txray
+          <TxrayLogo variant="wordmark" className="h-7" />
         </Link>
 
         {/* Desktop Nav */}
