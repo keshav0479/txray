@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -88,6 +88,12 @@ function FamousChip({ entry }: { entry: FamousEntry }) {
 
 export default function HomePage() {
   const router = useRouter();
+  const logoRef = useRef<HTMLButtonElement>(null);
+  const holdTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const fadeTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const holdDelayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const holdActivatedRef = useRef(false);
+  const holdProgressRef = useRef(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [tipHeight, setTipHeight] = useState<number | null>(null);
   const [fees, setFees] = useState<{
@@ -95,6 +101,85 @@ export default function HomePage() {
     halfHourFee: number;
     economyFee: number;
   } | null>(null);
+  const [scanOrigin, setScanOrigin] = useState<{ x: number; y: number } | null>(null);
+  const [scanPulses, setScanPulses] = useState<number[]>([]);
+  const [returnPulses, setReturnPulses] = useState<number[]>([]);
+  const [holdProgress, setHoldProgress] = useState(0);
+
+  // compute origin from logo position
+  const computeOrigin = useCallback(() => {
+    if (logoRef.current) {
+      const rect = logoRef.current.getBoundingClientRect();
+      setScanOrigin({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
+    }
+  }, []);
+
+  const startHold = useCallback(() => {
+    computeOrigin();
+    // INSTANT OUTWARD WAVE
+    setScanPulses(prev => [...prev.slice(-4), Date.now()]);
+    
+    if (fadeTimerRef.current) { clearInterval(fadeTimerRef.current); fadeTimerRef.current = null; }
+    holdDelayRef.current = setTimeout(() => {
+      holdActivatedRef.current = true;
+      holdTimerRef.current = setInterval(() => {
+        setHoldProgress(prev => {
+          const next = Math.min(1, prev + 0.013);
+          holdProgressRef.current = next;
+          return next;
+        });
+      }, 33);
+    }, 400);
+  }, [computeOrigin]);
+
+  const stopHold = useCallback(() => {
+    if (holdDelayRef.current) { clearTimeout(holdDelayRef.current); holdDelayRef.current = null; }
+    if (holdTimerRef.current) { clearInterval(holdTimerRef.current); holdTimerRef.current = null; }
+
+    // SNAPPY INWARD WAVE (THE ECHO): Only if we reached FULL CHARGE
+    if (holdProgressRef.current >= 0.99) {
+        setReturnPulses(prev => [...prev.slice(-4), Date.now()]);
+    }
+
+    holdProgressRef.current = 0;
+
+    // fade back
+    fadeTimerRef.current = setInterval(() => {
+      setHoldProgress(prev => {
+        const next = prev - 0.04;
+        if (next <= 0) {
+          if (fadeTimerRef.current) clearInterval(fadeTimerRef.current);
+          holdActivatedRef.current = false;
+          return 0;
+        }
+        return next;
+      });
+    }, 33);
+  }, []);
+
+  const handleClick = useCallback(() => {
+    // Punches handled in pointer events for instant feel
+  }, []);
+
+  // cleanup pulses
+  useEffect(() => {
+    if (scanPulses.length === 0 && returnPulses.length === 0) return;
+    const interval = setInterval(() => {
+      const now = Date.now();
+      setScanPulses(prev => prev.filter(t => now - t < 2500));
+      setReturnPulses(prev => prev.filter(t => now - t < 1500));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [scanPulses, returnPulses]);
+
+  // cleanup timers
+  useEffect(() => {
+    return () => {
+      if (holdDelayRef.current) clearTimeout(holdDelayRef.current);
+      if (holdTimerRef.current) clearInterval(holdTimerRef.current);
+      if (fadeTimerRef.current) clearInterval(fadeTimerRef.current);
+    };
+  }, []);
 
   // fetch live network stats
   useEffect(() => {
@@ -123,9 +208,15 @@ export default function HomePage() {
       {/* ─── HERO ─── */}
       <section className="flex-1 flex flex-col items-center justify-center px-6 pt-24 pb-16 relative">
         {/* Smith animated BTC mould grid */}
-        <SmithBackground />
+        <SmithBackground 
+          scanPulses={scanPulses} 
+          returnPulses={returnPulses} 
+          scanOriginX={scanOrigin?.x} 
+          scanOriginY={scanOrigin?.y} 
+          holdProgress={holdProgress}
+        />
 
-        {/* Hero-specific vignette so text stays highly readable without darkening the whole scrolling page */}
+        {/* Hero-specific vignette */}
         <div 
           className="absolute inset-0 pointer-events-none z-1" 
           style={{ 
@@ -139,15 +230,40 @@ export default function HomePage() {
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           className="flex flex-col items-center text-center z-10 max-w-3xl pt-8"
         >
-          {/* Logo */}
-          <motion.div
+          {/* Logo - hold to charge, click/release to pulse */}
+          <motion.button
+            ref={logoRef}
             initial={{ scale: 0.5, opacity: 0, y: 10 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-            className="mb-8"
+            whileTap={{ scale: 0.92 }}
+            whileHover={{ scale: 1.1 }}
+            onClick={handleClick}
+            onPointerDown={startHold}
+            onPointerUp={stopHold}
+            onPointerLeave={stopHold}
+            className="mb-8 cursor-pointer group"
+            aria-label="Trigger X-Ray scan"
           >
-            <TxrayLogo variant="mark" className="w-16 h-16 text-amber-500 drop-shadow-[0_0_25px_rgba(245,158,11,0.3)]" />
-          </motion.div>
+            <div
+              className="w-16 h-16 transition-all duration-300"
+              style={{
+                animation: "hero-float 6s ease-in-out infinite, hero-glow 3s ease-in-out infinite",
+              }}
+            >
+              <TxrayLogo variant="mark" className="w-full h-full text-amber-500" />
+            </div>
+            <style dangerouslySetInnerHTML={{ __html: `
+              @keyframes hero-float {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-4px); }
+              }
+              @keyframes hero-glow {
+                0%, 100% { filter: drop-shadow(0 0 16px rgba(245,158,11,0.2)) brightness(1); }
+                50% { filter: drop-shadow(0 0 32px rgba(245,158,11,0.5)) brightness(1.15); }
+              }
+            `}} />
+          </motion.button>
 
           {/* Title */}
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tighter mb-5 leading-[1.1]">

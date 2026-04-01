@@ -24,6 +24,13 @@ const KEYFRAMES_CSS = `
   38%, 100% { opacity: 0; }
 }
 
+@keyframes scan-glow {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 0; }
+}
+
 @keyframes pulse-h {
   from { stroke-dashoffset: 2080; }
   to { stroke-dashoffset: -2080; }
@@ -87,7 +94,15 @@ function MouldTile({ delay, uniqueId }: { delay: number; uniqueId: string }) {
   );
 }
 
-export function SmithBackground() {
+interface SmithBackgroundProps {
+  scanPulses?: number[];
+  returnPulses?: number[];
+  scanOriginX?: number;
+  scanOriginY?: number;
+  holdProgress?: number; // 0 = idle, 1 = fully charged
+}
+
+export function SmithBackground({ scanPulses = [], returnPulses = [], scanOriginX, scanOriginY, holdProgress = 0 }: SmithBackgroundProps) {
   const spacingX = 150;
   const spacingY = 140;
   const tileSize = 65;
@@ -95,39 +110,152 @@ export function SmithBackground() {
   const cols = Array.from({ length: 14 }, (_, i) => -70 + i * spacingX);
   const rows = Array.from({ length: 9 }, (_, i) => -50 + i * spacingY);
   const half = tileSize / 2;
-  
+
+  // scan origin in px (from the logo button's position)
+  const ox = scanOriginX ?? 960;
+  const oy = scanOriginY ?? 340;
+
+  // compute max distance for normalization
+  let maxDist = 1;
   const nodes = cols.flatMap((x, ci) => 
-    rows.map((y, ri) => ({ 
-      x, y, 
-      id: `${ci}-${ri}`,
-      delay: ((ci * 3.1 + ri * 2.3) % 18)
-    }))
+    rows.map((y, ri) => {
+      const dx = x - ox;
+      const dy = y - oy;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist > maxDist) maxDist = dist;
+      return { x, y, id: `${ci}-${ri}`, delay: ((ci * 3.1 + ri * 2.3) % 18), dist };
+    })
   );
 
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-transparent">
-      {/* Inject CSS keyframes once */}
       <style dangerouslySetInnerHTML={{ __html: KEYFRAMES_CSS }} />
 
-      {/* 1. Mould tiles — the tile arrangement implies the grid, no need for explicit lines */}
-      <div className="absolute w-full h-full opacity-[0.32]">
-        {nodes.map(({ x, y, id, delay }) => (
-          <div 
-            key={id}
-            className="absolute"
-            style={{ 
-              left: `${x}px`, 
-              top: `${y}px`, 
-              width: `${tileSize}px`, 
-              height: `${tileSize}px`,
-              transform: `translate(-${half}px, -${half}px)` 
-            }}
-          >
-            <MouldTile delay={delay} uniqueId={id} />
-          </div>
-        ))}
-      </div>
+      <div 
+        className="absolute w-full h-full"
+        style={{ 
+          opacity: 0.32 + (holdProgress * 0.43), // ramps from 0.32 to 0.75
+          transition: holdProgress > 0 ? "none" : "opacity 0.8s ease",
+        }}
+      >
+        {nodes.map(({ x, y, id, delay, dist }) => {
+          const normalizedDist = dist / maxDist;
+          const holdOpacity = holdProgress > 0
+            ? Math.max(0, Math.min(1, (holdProgress - normalizedDist + 0.2) * 5))
+            : 0;
+          const holdGradId = `hold-fill-${id}`;
 
+          return (
+            <div 
+              key={id}
+              className="absolute"
+              style={{ 
+                left: `${x}px`, 
+                top: `${y}px`, 
+                width: `${tileSize}px`, 
+                height: `${tileSize}px`,
+                transform: `translate(-${half}px, -${half}px)` 
+              }}
+            >
+              {/* Ambient tile - NEVER re-keyed */}
+              <MouldTile delay={delay} uniqueId={id} />
+
+              {/* Hold glow - progressive radial wave while holding */}
+              {holdProgress > 0 && holdOpacity > 0 && (
+                <svg
+                  className="absolute inset-0"
+                  width="100%" height="100%" viewBox="0 0 120 120"
+                  xmlns="http://www.w3.org/2000/svg"
+                  style={{ opacity: holdOpacity }}
+                >
+                  <defs>
+                    <linearGradient id={holdGradId} x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#f7931a" />
+                      <stop offset="40%" stopColor="#ffcc66" />
+                      <stop offset="100%" stopColor="#f7931a" stopOpacity="0.6" />
+                    </linearGradient>
+                  </defs>
+                  <g
+                    fill={`url(#${holdGradId})`}
+                    transform={LOGO_TRANSFORM}
+                    style={{ filter: "drop-shadow(0 0 8px rgba(247,147,26,0.5))" }}
+                  >
+                    <path d={BTC_PATH} />
+                  </g>
+                </svg>
+              )}
+
+              {/* Scan glow overlays - fires on down (Outward) */}
+              {scanPulses.map(timestamp => {
+                const scanDelay = normalizedDist * 1.5;
+                const scanGradId = `scan-fill-${id}-${timestamp}`;
+                return (
+                  <svg
+                    key={timestamp}
+                    className="absolute inset-0"
+                    width="100%" height="100%" viewBox="0 0 120 120"
+                    xmlns="http://www.w3.org/2000/svg"
+                    style={{
+                      animation: `scan-glow 1.4s ease-out ${scanDelay}s forwards`,
+                      opacity: 0,
+                    }}
+                  >
+                    <defs>
+                      <linearGradient id={scanGradId} x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#f7931a" />
+                        <stop offset="40%" stopColor="#ffcc66" />
+                        <stop offset="100%" stopColor="#f7931a" stopOpacity="0.6" />
+                      </linearGradient>
+                    </defs>
+                    <g
+                      fill={`url(#${scanGradId})`}
+                      transform={LOGO_TRANSFORM}
+                      style={{ filter: "drop-shadow(0 0 8px rgba(247,147,26,0.5))" }}
+                    >
+                      <path d={BTC_PATH} />
+                    </g>
+                  </svg>
+                );
+              })}
+
+              {/* Return pulse overlays - fires on release (Inward) */}
+              {returnPulses.map(timestamp => {
+                // Inward delay: 0 at edges, 0.4s at logo
+                const returnDelay = (1 - normalizedDist) * 0.4;
+                const returnGradId = `return-fill-${id}-${timestamp}`;
+                return (
+                  <svg
+                    key={timestamp}
+                    className="absolute inset-0"
+                    width="100%" height="100%" viewBox="0 0 120 120"
+                    xmlns="http://www.w3.org/2000/svg"
+                    style={{
+                      // Snappier 0.8s duration for the return
+                      animation: `scan-glow 0.8s ease-out ${returnDelay}s forwards`,
+                      opacity: 0,
+                    }}
+                  >
+                    <defs>
+                      <linearGradient id={returnGradId} x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#f7931a" />
+                        <stop offset="40%" stopColor="#ffcc66" />
+                        <stop offset="100%" stopColor="#f7931a" stopOpacity="0.6" />
+                      </linearGradient>
+                    </defs>
+                    <g
+                      fill={`url(#${returnGradId})`}
+                      transform={LOGO_TRANSFORM}
+                      style={{ filter: "drop-shadow(0 0 8px rgba(247,147,26,0.5))" }}
+                    >
+                      <path d={BTC_PATH} />
+                    </g>
+                  </svg>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
