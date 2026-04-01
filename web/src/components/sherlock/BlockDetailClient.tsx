@@ -319,8 +319,8 @@ export default function BlockDetailClient({ stem }: { stem: string }) {
   return (
     <div className="w-full max-w-6xl mx-auto px-6 pt-24 pb-16 z-10 relative">
       {/* Back nav */}
-      <Link href="/dashboard" className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-white transition-colors mb-6">
-        <ArrowLeft className="w-4 h-4" /> Back to Evidence Board
+      <Link href="/sherlock" className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-white transition-colors mb-6">
+        <ArrowLeft className="w-4 h-4" /> Back to Sherlock
       </Link>
 
       {/* Title */}

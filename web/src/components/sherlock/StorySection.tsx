@@ -7,7 +7,7 @@ import {
   AnimatedCIOH,
   AnimatedChange,
   AnimatedDots,
-} from "@/components/sherlock/StoryGraphics";
+} from "./StoryGraphics";
 
 type StoryCard = {
   graphic: React.ComponentType<{ isPlaying: boolean }>;

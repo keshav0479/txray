@@ -1,17 +1,17 @@
 "use client";
 
 /**
- * InteractiveBackground
+ * LensBackground
  *
  * 3 layers on top of a dim ₿ base pattern:
  * 1. Orb 1 — large soft spotlight drifting left to right (upper half)
- * 2. Orb 2 — large soft spotlight drifting left to right (lower half)
+ * 2. Orb 2 — large soft spotlight drifting left to right (lower half, phase-shifted)
  */
 export function LensBackground() {
   const tileSize = "200px 220px";
 
   const glowPattern = 'url("/patterns/lens-pattern-glow.svg")';
-  const glowFilter = "drop-shadow(0 0 10px rgba(247, 147, 26, 0.9)) drop-shadow(0 0 35px rgba(247, 147, 26, 0.6))";
+  const glowFilter = "drop-shadow(0 0 10px rgba(245, 158, 11, 0.9)) drop-shadow(0 0 35px rgba(245, 158, 11, 0.6))";
 
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-surface-bg">

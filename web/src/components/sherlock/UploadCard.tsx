@@ -23,7 +23,7 @@ export function UploadCard() {
       form.append("rev", revFile);
       form.append("xor", xorFile);
 
-      const res = await fetch("/api/analyze", { method: "POST", body: form });
+      const res = await fetch("/api/sherlock/analyze", { method: "POST", body: form });
       const data = await res.json();
 
       if (!res.ok || !data.ok) {

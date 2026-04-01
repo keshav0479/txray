@@ -250,7 +250,7 @@ export default function BlockExplorePage({
           </div>
         </motion.div>
 
-        {/* More coming */}
+        {/* Analysis handoff */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -258,8 +258,7 @@ export default function BlockExplorePage({
           className="text-center py-8 border-t border-white/5 mt-8"
         >
           <p className="text-sm text-zinc-500">
-            Full block analysis with classification, script distribution,
-            and privacy scoring coming in the next update.
+            Click any transaction above to open full Lens scrollytelling analysis for that tx.
           </p>
         </motion.div>
       </div>

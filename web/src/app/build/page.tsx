@@ -9,7 +9,48 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SmithBackground } from "@/components/smith/SmithBackground";
+import { HorizontalStory } from "@/components/smith/StoryFlowCard";
+import {
+  AnimatedWallet,
+  AnimatedChange,
+  AnimatedFee,
+  AnimatedDust,
+  AnimatedForge,
+} from "@/components/smith/StoryGraphics";
 import { Footer } from "@/components/shared/Footer";
+
+const STORY_CARDS = [
+  {
+    index: 1,
+    title: "Your wallet holds coins, not a balance",
+    description: "Bitcoin doesn\u2019t track a single \u2018balance\u2019 like a bank account. Your wallet actually holds individual digital coins called UTXOs \u2014 just like having specific \u20b9500, \u20b9200, and \u20b9100 bills in a physical leather wallet.",
+    Graphic: AnimatedWallet,
+  },
+  {
+    index: 2,
+    title: "You can\u2019t split a coin \u2014 you spend it whole",
+    description: "Want to pay \u20b9300? You hand over your \u20b9500 bill and get \u20b9200 back as \u2018change.\u2019 Bitcoin works exactly the same \u2014 you must put the whole coin into the transaction, sending the leftover back to yourself.",
+    Graphic: AnimatedChange,
+  },
+  {
+    index: 3,
+    title: "The miner\u2019s fee depends on transaction size",
+    description: "Every transaction requires a fee to get confirmed by miners. But the fee isn\u2019t based on how much money you send \u2014 it\u2019s based on data size (vBytes). More input coins = a physically larger transaction = a higher fee.",
+    Graphic: AnimatedFee,
+  },
+  {
+    index: 4,
+    title: "Tiny amounts become \u2018dust\u2019 \u2014 unusable forever",
+    description: "If your change output is too small, it will cost more in miner fees to spend than it\u2019s actually worth. These tiny \u2018dust\u2019 amounts get permanently stuck in your wallet. Smart wallets avoid creating them.",
+    Graphic: AnimatedDust,
+  },
+  {
+    index: 5,
+    title: "Enter txray Smith",
+    description: "txray Smith handles all of this automatically. Upload your wallet, tell it where to send, and it picks the optimal coins, calculates precise fees, prevents dust, and constructs a safe unsigned transaction (PSBT) for your hardware wallet.",
+    Graphic: AnimatedForge,
+  },
+];
 
 const PRESETS = [
   {
@@ -299,6 +340,41 @@ export default function BuildPage() {
           </a>
         </motion.div>
       </div>
+
+      {/* Scroll indicator */}
+      <div className="w-full flex flex-col items-center py-12 z-10">
+        <span className="text-xs uppercase tracking-[0.3em] text-zinc-500 font-medium mb-3">
+          How it Works
+        </span>
+        <motion.div
+          animate={{ y: [0, 10, 0] }}
+          transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+          className="flex flex-col items-center gap-1"
+        >
+          <div className="w-1 h-1 rounded-full bg-[#3b82f6]/60" />
+          <div className="w-px h-10 bg-linear-to-b from-[#3b82f6]/40 to-transparent" />
+        </motion.div>
+      </div>
+
+      {/* Horizontal scroll story */}
+      <HorizontalStory cards={STORY_CARDS} />
+
+      {/* Bottom CTA */}
+      <section className="w-full py-24 flex flex-col items-center justify-center px-6 text-center z-10 border-t border-white/5">
+        <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">
+          Ready to build better transactions?
+        </h2>
+        <p className="text-zinc-400 mb-10 max-w-xl text-lg">
+          Upload your wallet data. We&apos;ll handle the selection, the fees, and the math.
+        </p>
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="flex h-14 items-center justify-center gap-2 rounded-full bg-white px-8 text-lg font-bold text-black transition-transform hover:scale-105 active:scale-95 shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] hover:shadow-[0_0_60px_-15px_rgba(255,255,255,0.5)] cursor-pointer"
+        >
+          Start Forging
+        </button>
+      </section>
+
       <Footer />
     </>
   );

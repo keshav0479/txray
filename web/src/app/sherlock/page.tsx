@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Shield, Search, ArrowRight, Sparkles, Clock,
-  Loader2, AlertTriangle, Fingerprint, ScanEye,
+  Loader2, AlertTriangle, Fingerprint, ScanEye, Upload,
 } from "lucide-react";
 import { FAMOUS_ENTRIES, type FamousEntry } from "@/lib/famous";
 import { detectSearchType } from "@/lib/mempool";
 import { SherlockBackground } from "@/components/sherlock/SherlockBackground";
+import { UploadCard } from "@/components/sherlock/UploadCard";
+import { StorySection } from "@/components/sherlock/StorySection";
 import { TiltCard } from "@/components/shared/TiltCard";
 import { Footer } from "@/components/shared/Footer";
 
@@ -33,7 +35,7 @@ const ALL_SHERLOCK = [...SHERLOCK_ENTRIES, ...PRIVACY_BLOCKS];
 
 export default function SherlockPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"search" | "famous">("search");
+  const [activeTab, setActiveTab] = useState<"search" | "famous" | "upload">("search");
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -96,21 +98,22 @@ export default function SherlockPage() {
             transition={{ delay: 0.1 }}
             className="flex justify-center mb-10"
           >
-            <div className="inline-flex rounded-2xl bg-stone-950/60 backdrop-blur-xl border border-white/8 p-1">
+            <div className="inline-flex rounded-2xl bg-stone-950/60 backdrop-blur-xl border border-white/8 p-1 max-w-full overflow-x-auto scrollbar-hide">
               {[
                 { id: "search" as const, icon: ScanEye, label: "Analyze TX" },
-                { id: "famous" as const, icon: Sparkles, label: "Famous Transactions" },
+                { id: "famous" as const, icon: Sparkles, label: "Famous" },
+                { id: "upload" as const, icon: Upload, label: "Upload Block" },
               ].map(tab => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                  className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
                     activeTab === tab.id
                       ? "bg-purple-500/15 text-purple-400 border border-purple-500/20"
                       : "text-stone-500 hover:text-stone-300"
                   }`}
                 >
-                  <tab.icon className="w-4 h-4" />
+                  <tab.icon className="w-4 h-4 shrink-0" />
                   {tab.label}
                 </button>
               ))}
@@ -252,8 +255,62 @@ export default function SherlockPage() {
                 </div>
               </motion.div>
             )}
+
+            {/* Upload Block Files Tab */}
+            {activeTab === "upload" && (
+              <motion.div
+                key="upload"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.3 }}
+                className="max-w-2xl mx-auto"
+              >
+                <UploadCard />
+              </motion.div>
+            )}
           </AnimatePresence>
         </div>
+
+        {/* Scroll indicator */}
+        <div className="flex flex-col items-center gap-3 py-16 relative z-10">
+          <p className="text-xs uppercase tracking-[0.2em] text-stone-500 font-mono">
+            How it works
+          </p>
+          <motion.div
+            className="w-1.5 h-1.5 rounded-full bg-purple-500"
+            animate={{ y: [0, 8, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+          />
+        </div>
+
+        {/* Story Section */}
+        <StorySection />
+
+        {/* Bottom CTA */}
+        <section className="relative z-10 w-full max-w-2xl mx-auto px-6 py-24 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+          >
+            <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight mb-4">
+              Ready to investigate?
+            </h2>
+            <p className="text-stone-400 text-lg mb-8 max-w-md mx-auto">
+              Paste any transaction ID and let Sherlock reveal the privacy fingerprint hidden in the blockchain.
+            </p>
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              className="inline-flex items-center gap-2 bg-purple-600 text-white font-bold px-8 py-4 rounded-xl hover:bg-purple-500 transition-colors"
+            >
+              <ScanEye className="w-5 h-5" />
+              Start Analysis
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </motion.div>
+        </section>
 
         <Footer />
       </div>

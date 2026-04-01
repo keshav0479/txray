@@ -147,6 +147,49 @@ pre,
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
 }
 
+/* ─── Lens orb animations ─── */
+@keyframes orb-lr-1 {
+  0% {
+    mask-position: -100vw -10vh;
+    -webkit-mask-position: -100vw -10vh;
+  }
+  100% {
+    mask-position: 150vw -10vh;
+    -webkit-mask-position: 150vw -10vh;
+  }
+}
+
+.animate-orb-1 {
+  animation: orb-lr-1 26s linear infinite;
+  will-change: mask-position, -webkit-mask-position;
+}
+
+@keyframes orb-lr-2 {
+  0% {
+    mask-position: -100vw 40vh;
+    -webkit-mask-position: -100vw 40vh;
+  }
+  100% {
+    mask-position: 150vw 40vh;
+    -webkit-mask-position: 150vw 40vh;
+  }
+}
+
+.animate-orb-2 {
+  animation: orb-lr-2 26s linear infinite;
+  animation-delay: -13s;
+  will-change: mask-position, -webkit-mask-position;
+}
+
+/* ─── Scrollbar-hide utility ─── */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* ─── Category pill colors ─── */
 .cat-genesis { --cat: #f59e0b; }
 .cat-milestone { --cat: #3b82f6; }

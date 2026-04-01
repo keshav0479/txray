@@ -5,12 +5,20 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Eye, ArrowRight, Sparkles, Clock,
-  Upload, Play, FileDigit, Activity,
-  Loader2, AlertTriangle, ChevronRight, Database,
+  Upload, Play, FileDigit, Activity, Loader2, ChevronDown,
+  AlertTriangle, ChevronRight, Database,
 } from "lucide-react";
 import { FAMOUS_ENTRIES, type FamousEntry } from "@/lib/famous";
 import { DEMO_FIXTURES } from "@/lib/scriptData";
 import { LensBackground } from "@/components/lens/LensBackground";
+import { TimelineSection } from "@/components/lens/TimelineSection";
+import {
+  AnimatedGlobe,
+  AnimatedBlocks,
+  AnimatedMiners,
+  AnimatedTransaction,
+  AnimatedLens,
+} from "@/components/lens/AnimatedGraphics";
 import { TiltCard } from "@/components/shared/TiltCard";
 import { Footer } from "@/components/shared/Footer";
 
@@ -29,21 +37,46 @@ export default function LensPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"famous" | "demo" | "upload">("famous");
   const [selectedFixture, setSelectedFixture] = useState("04330");
-  const [uploading, setUploading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // file upload state
   const [blkFile, setBlkFile] = useState<File | null>(null);
   const [revFile, setRevFile] = useState<File | null>(null);
   const [xorFile, setXorFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const handleDemo = (fixtureId: string) => {
+    router.push(`/lens/analyze?demo=${fixtureId}`);
+  };
+
+  const handleFileUpload = async () => {
+    if (!blkFile || !revFile || !xorFile) return;
     setUploading(true);
-    // in a real implementation this would run the WASM parser
-    // for now, navigate to the block explorer
-    const fixture = DEMO_FIXTURES.find(f => f.id === fixtureId);
-    if (fixture) {
-      router.push(`/explore/block/${fixture.id}`);
+    setErrorMsg(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("blk", blkFile);
+      formData.append("rev", revFile);
+      formData.append("xor", xorFile);
+
+      const res = await fetch("/api/analyze", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok || data.ok === false || data.error) {
+        const msg =
+          (typeof data.error === "object" && data.error?.message) ||
+          (typeof data.error === "string" && data.error) ||
+          data.message ||
+          "Analysis failed";
+        throw new Error(msg);
+      }
+
+      sessionStorage.setItem("lens_result", JSON.stringify(data));
+      router.push("/lens/analyze?from=upload");
+    } catch (error) {
+      setErrorMsg(error instanceof Error ? error.message : "Analysis failed");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -89,22 +122,22 @@ export default function LensPage() {
             transition={{ delay: 0.1 }}
             className="flex justify-center mb-10"
           >
-            <div className="inline-flex rounded-2xl bg-stone-950/60 backdrop-blur-xl border border-white/8 p-1">
+            <div className="inline-flex rounded-2xl bg-stone-950/60 backdrop-blur-xl border border-white/8 p-1 max-w-full overflow-x-auto scrollbar-hide">
               {[
                 { id: "famous" as const, icon: Sparkles, label: "Famous Blocks" },
-                { id: "demo" as const, icon: Play, label: "Demo Mode" },
-                { id: "upload" as const, icon: Upload, label: "Upload Files" },
+                { id: "demo" as const, icon: Play, label: "Demo" },
+                { id: "upload" as const, icon: Upload, label: "Upload" },
               ].map(tab => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                  className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
                     activeTab === tab.id
                       ? "bg-lens-500/15 text-lens-400 border border-lens-500/20"
                       : "text-stone-500 hover:text-stone-300"
                   }`}
                 >
-                  <tab.icon className="w-4 h-4" />
+                  <tab.icon className="w-4 h-4 shrink-0" />
                   {tab.label}
                 </button>
               ))}
@@ -214,18 +247,13 @@ export default function LensPage() {
 
                   <button
                     onClick={() => handleDemo(selectedFixture)}
-                    disabled={uploading}
-                    className="w-full group flex items-center justify-center gap-2 bg-lens-500 text-white font-bold px-6 py-4 rounded-xl hover:bg-lens-400 transition-colors disabled:opacity-50"
+                    className="w-full group flex items-center justify-center gap-2 bg-lens-500 text-white font-bold px-6 py-4 rounded-xl hover:bg-lens-400 transition-colors"
                   >
-                    {uploading ? (
-                      <><Loader2 className="w-5 h-5 animate-spin" /> Analyzing...</>
-                    ) : (
-                      <>
-                        <Activity className="w-5 h-5" />
-                        Run Demo Analysis
-                        <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                      </>
-                    )}
+                    <>
+                      <Activity className="w-5 h-5" />
+                      Run Demo Analysis
+                      <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </>
                   </button>
                 </div>
               </motion.div>
@@ -287,19 +315,110 @@ export default function LensPage() {
                   )}
 
                   <button
-                    disabled={!allFilesSelected || uploading}
-                    className="w-full flex items-center justify-center gap-2 bg-lens-500 text-white font-bold px-6 py-4 rounded-xl hover:bg-lens-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    onClick={allFilesSelected ? handleFileUpload : () => router.push("/lens/analyze")}
+                    disabled={uploading}
+                    className="w-full flex items-center justify-center gap-2 bg-lens-500 text-white font-bold px-6 py-4 rounded-xl hover:bg-lens-400 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     {uploading ? (
                       <><Loader2 className="w-4 h-4 animate-spin" /> Analyzing...</>
+                    ) : allFilesSelected ? (
+                      <><Activity className="w-4 h-4" /> Analyze Block</>
                     ) : (
-                      <><Upload className="w-4 h-4" /> Run Analysis</>
+                      <><Upload className="w-4 h-4" /> Open Full Analyzer</>
                     )}
                   </button>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Scroll indicator */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="mt-20 mb-8 flex flex-col items-center gap-5 text-lens-400 font-medium tracking-wide z-10"
+          >
+            <div className="flex flex-col items-center gap-2 bg-black/70 px-6 py-2 rounded-2xl border border-lens-500/20">
+              <span className="text-xs uppercase tracking-widest text-lens-300/80">How it Works</span>
+              <motion.div
+                animate={{ y: [0, 4, 0] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <ChevronDown className="w-5 h-5 text-lens-400" />
+              </motion.div>
+            </div>
+
+            <motion.div
+              animate={{ y: [0, 8, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              className="flex flex-col items-center"
+            >
+              <div className="w-3 h-3 rounded-full bg-lens-500 shadow-[0_0_15px_rgba(245,158,11,0.8)]" />
+              <div className="w-[2px] h-16 bg-linear-to-b from-lens-500 to-transparent" />
+            </motion.div>
+          </motion.div>
+
+          {/* Timeline storytelling */}
+          <section className="w-full max-w-5xl mx-auto py-8 px-2 sm:px-4 flex flex-col relative">
+            <div className="absolute left-[34px] md:left-1/2 md:-ml-[1px] top-0 bottom-0 w-[2px] bg-white/5" />
+
+            <TimelineSection
+              index={0}
+              title="Bitcoin is shared money records"
+              description="Bitcoin runs without a central bank. A global network of computers keeps one public ledger of every transfer."
+              Graphic={AnimatedGlobe}
+            />
+
+            <TimelineSection
+              index={1}
+              title="Those records are grouped into blocks"
+              description="The ledger is a chain of blocks. Each block is a page of transactions linked to the previous page."
+              Graphic={AnimatedBlocks}
+            />
+
+            <TimelineSection
+              index={2}
+              title="Transactions wait in the mempool"
+              description="New transactions first enter a waiting area. Miners pick from that queue and package transactions into the next block."
+              Graphic={AnimatedTransaction}
+            />
+
+            <TimelineSection
+              index={3}
+              title="Miners secure blocks through proof-of-work"
+              description="Miners race to solve the proof-of-work puzzle. The winner confirms the block and appends it to Bitcoin history."
+              Graphic={AnimatedMiners}
+            />
+
+            <TimelineSection
+              index={4}
+              title="txray Lens opens the block to explain it"
+              description="Inside each block are headers, inputs, outputs, scripts, and fees. Lens turns raw bytes into a human-readable story."
+              Graphic={AnimatedLens}
+              isLast
+            />
+          </section>
+
+          {/* Bottom CTA */}
+          <section className="min-h-[48vh] w-full flex flex-col items-center justify-center px-6 text-center border-t border-white/5 bg-black/45 backdrop-blur-md mt-8 rounded-3xl">
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-white mb-6">
+              Ready to see what&apos;s inside a real block?
+            </h2>
+            <p className="text-stone-400 mb-10 max-w-xl text-lg">
+              No sign up required. Try a demo fixture or upload your own Bitcoin Core `.dat` files.
+            </p>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <button
+                onClick={() => router.push("/lens/analyze")}
+                className="inline-flex items-center gap-2 bg-lens-500 text-white hover:bg-lens-400 font-semibold px-8 py-4 rounded-full text-lg shadow-[0_0_40px_rgba(245,158,11,0.28)] transition-all"
+              >
+                Open Analyzer
+                <ArrowRight className="w-5 h-5" />
+              </button>
+            </motion.div>
+          </section>
         </div>
 
         <Footer />

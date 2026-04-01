@@ -355,9 +355,9 @@ export default function HomePage() {
                 isConnected ? "opacity-100" : "opacity-60 animate-pulse"
               }`}
             >
-              {/* Mobile + Tablet: 3 high-signal metrics */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 px-3 py-3 lg:hidden">
-            <PulseMetric className="h-12" icon={<Blocks className="w-3.5 h-3.5 text-amber-500/80" />}>
+              {/* Mobile + Tablet: 3 high-signal metrics, always horizontal */}
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-3 lg:hidden">
+            <PulseMetric className="h-11 sm:h-12" icon={<Blocks className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-amber-500/80" />}>
               <MetricLabel
                 text="Block"
                 term="Latest Block"
@@ -373,14 +373,14 @@ export default function HomePage() {
                     value={tipHeight}
                     formatter={(value) => `#${value.toLocaleString()}`}
                   />
-                  <ArrowUpRight className="w-3 h-3 opacity-50" />
+                  <ArrowUpRight className="w-3 h-3 opacity-50 hidden sm:block" />
                 </Link>
               ) : (
                 <span className="text-stone-700">--</span>
               )}
             </PulseMetric>
 
-            <PulseMetric className="h-12" icon={<Zap className="w-3.5 h-3.5 text-amber-500/80" />}>
+            <PulseMetric className="h-11 sm:h-12" icon={<Zap className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-amber-500/80" />}>
               <MetricLabel text="Fast" term="Fast Fee" definition="Next block target" analogy="Express shipping" />
               <SmoothNumber
                 value={fees?.fastestFee ?? null}
@@ -388,7 +388,7 @@ export default function HomePage() {
               />
             </PulseMetric>
 
-            <PulseMetric className="h-12" icon={<Rows3 className="w-3.5 h-3.5 text-amber-500/80" />}>
+            <PulseMetric className="h-11 sm:h-12" icon={<Rows3 className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-amber-500/80" />}>
               <MetricLabel text="Pool" term="Mempool" definition="Waiting txs" analogy="Sorting center" />
               <SmoothNumber
                 value={mempoolTxCount}
@@ -627,9 +627,9 @@ function PulseMetric({
   className?: string;
 }) {
   return (
-    <div className={`h-14 rounded-xl border border-white/5 bg-white/2 backdrop-blur-sm px-3.5 flex items-center gap-3 min-w-0 transition-colors ${className}`}>
+    <div className={`h-14 rounded-xl border border-white/5 bg-white/2 backdrop-blur-sm px-2 sm:px-3.5 flex items-center gap-1.5 sm:gap-3 min-w-0 transition-colors ${className}`}>
       <div className="shrink-0 drop-shadow-[0_0_8px_rgba(245,158,11,0.25)]">{icon}</div>
-      <div className="min-w-0 flex-1 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 text-xs">
+      <div className="min-w-0 flex-1 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 sm:gap-3 text-[10px] sm:text-xs">
         {children}
       </div>
     </div>
