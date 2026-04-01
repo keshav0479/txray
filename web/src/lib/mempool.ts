@@ -2,6 +2,17 @@
 // all endpoints are CORS-enabled, no auth required
 
 const BASE = "https://mempool.space/api";
+const IMMUTABLE_TTL_MS = 30 * 60 * 1_000;
+const HOT_TTL_MS = 10 * 1_000;
+const TIP_TTL_MS = 5 * 1_000;
+
+type CacheEntry = {
+  expiresAt: number;
+  data: unknown;
+};
+
+const responseCache = new Map<string, CacheEntry>();
+const inflightRequests = new Map<string, Promise<unknown>>();
 
 export interface MempoolVin {
   txid: string;
@@ -81,22 +92,79 @@ export class MempoolError extends Error {
 }
 
 async function fetchJSON<T>(path: string): Promise<T> {
-  const res = await fetch(`${BASE}${path}`);
-  if (!res.ok) {
-    if (res.status === 404) {
-      throw new MempoolError("Not found. Check the txid or block height.", 404);
+  const key = `json:${path}`;
+  const cached = getCached<T>(key);
+  if (cached !== undefined) return cached;
+
+  const inflight = inflightRequests.get(key) as Promise<T> | undefined;
+  if (inflight) return inflight;
+
+  const request = (async () => {
+    const res = await fetch(`${BASE}${path}`);
+    if (!res.ok) {
+      if (res.status === 404) {
+        throw new MempoolError("Not found. Check the txid or block height.", 404);
+      }
+      throw new MempoolError(`mempool.space returned ${res.status}`, res.status);
     }
-    throw new MempoolError(`mempool.space returned ${res.status}`, res.status);
-  }
-  return res.json();
+    const data = (await res.json()) as T;
+    setCached(key, data, ttlForPath(path));
+    return data;
+  })().finally(() => {
+    inflightRequests.delete(key);
+  });
+
+  inflightRequests.set(key, request);
+  return request;
 }
 
 async function fetchText(path: string): Promise<string> {
-  const res = await fetch(`${BASE}${path}`);
-  if (!res.ok) {
-    throw new MempoolError(`mempool.space returned ${res.status}`, res.status);
+  const key = `text:${path}`;
+  const cached = getCached<string>(key);
+  if (cached !== undefined) return cached;
+
+  const inflight = inflightRequests.get(key) as Promise<string> | undefined;
+  if (inflight) return inflight;
+
+  const request = (async () => {
+    const res = await fetch(`${BASE}${path}`);
+    if (!res.ok) {
+      throw new MempoolError(`mempool.space returned ${res.status}`, res.status);
+    }
+    const text = await res.text();
+    setCached(key, text, ttlForPath(path));
+    return text;
+  })().finally(() => {
+    inflightRequests.delete(key);
+  });
+
+  inflightRequests.set(key, request);
+  return request;
+}
+
+function ttlForPath(path: string): number {
+  if (path === "/blocks/tip/height") return TIP_TTL_MS;
+  if (path === "/v1/fees/recommended") return HOT_TTL_MS;
+  return IMMUTABLE_TTL_MS;
+}
+
+function getCached<T>(key: string): T | undefined {
+  const entry = responseCache.get(key);
+  if (!entry) return undefined;
+  if (entry.expiresAt < Date.now()) {
+    responseCache.delete(key);
+    return undefined;
   }
-  return res.text();
+  return entry.data as T;
+}
+
+function setCached<T>(key: string, data: T, ttlMs: number): void {
+  responseCache.set(key, { data, expiresAt: Date.now() + ttlMs });
+}
+
+export function clearMempoolCache(): void {
+  responseCache.clear();
+  inflightRequests.clear();
 }
 
 // fetch a decoded transaction by txid
