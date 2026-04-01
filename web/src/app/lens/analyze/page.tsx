@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { Loader2 } from "lucide-react";
 import { UploadCard } from "@/components/lens/UploadCard";
 import { ContentScanLoader } from "@/components/lens/ContentScanLoader";
 import { BlockOverview } from "@/components/lens/BlockOverview";
 import { AnalysisView } from "@/components/lens/AnalysisView";
-import { LensBackground } from "@/components/lens/LensBackground";
 import { Footer } from "@/components/shared/Footer";
 import type { AnalyzedTx, BlockAnalysis } from "@/lib/layout";
 
@@ -37,7 +37,7 @@ function extractErrorMessage(data: unknown): string {
   return "Something went wrong while analyzing the input";
 }
 
-export default function LensAnalyzePage() {
+function LensAnalyzeContent() {
   const searchParams = useSearchParams();
   const [analysisState, setAnalysisState] = useState<
     "input" | "loading" | "block_overview" | "tx_detail"
@@ -163,108 +163,124 @@ export default function LensAnalyzePage() {
   }, [searchParams, analysisState]);
 
   return (
-    <>
-      <LensBackground />
-      <div className="min-h-screen flex flex-col">
-        <div className="flex-1 pt-24 pb-12 px-6 flex flex-col items-center justify-center relative z-10 w-full text-white">
-          <AnimatePresence mode="wait">
-            {analysisState === "input" && (
-              <motion.div
-                key="input"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.4 }}
-                className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-20"
-              >
-                <div className="flex-1 text-center lg:text-left flex flex-col items-center lg:items-start">
-                  <h1 className="text-5xl lg:text-6xl font-bold tracking-tight mb-2 text-white">
-                    txray Lens
-                  </h1>
-                  <p className="text-lg text-zinc-400 mb-12 leading-relaxed max-w-md">
-                    Feed raw Bitcoin Core files into the lens, then inspect every
-                    transaction through interactive visual scrollytelling
-                  </p>
-                </div>
+    <div className="min-h-screen flex flex-col">
+      <div className="flex-1 pt-24 pb-12 px-6 flex flex-col items-center justify-center relative z-10 w-full text-white">
+        <AnimatePresence mode="wait">
+          {analysisState === "input" && (
+            <motion.div
+              key="input"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4 }}
+              className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-20"
+            >
+              <div className="flex-1 text-center lg:text-left flex flex-col items-center lg:items-start">
+                <h1 className="text-5xl lg:text-6xl font-bold tracking-tight mb-2 text-white">
+                  txray Lens
+                </h1>
+                <p className="text-lg text-zinc-400 mb-12 leading-relaxed max-w-md">
+                  Feed raw Bitcoin Core files into the lens, then inspect every
+                  transaction through interactive visual scrollytelling
+                </p>
+              </div>
 
-                <div className="flex-1 w-full max-w-xl relative">
-                  <UploadCard
-                    onAnalyzeDemo={runDemoAnalysis}
-                    onAnalyzeFiles={runFileAnalysis}
-                    onAnalyzeFixture={runFixtureAnalysis}
-                    uploading={uploading}
-                    errorMsg={errorMsg}
-                    onDismissError={() => setErrorMsg(null)}
-                  />
-                </div>
-              </motion.div>
-            )}
-
-            {analysisState === "loading" && (
-              <motion.div
-                key="loading"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.4 }}
-                className="w-full flex-1 flex items-center justify-center"
-              >
-                <ContentScanLoader />
-              </motion.div>
-            )}
-
-            {analysisState === "block_overview" && analysisData && "transactions" in analysisData && (
-              <motion.div
-                key="block_overview"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                className="w-full"
-              >
-                <BlockOverview
-                  blockData={analysisData}
-                  onSelectTx={(tx) => {
-                    setSelectedTx(tx);
-                    setAnalysisState("tx_detail");
-                  }}
-                  onReset={() => {
-                    setAnalysisState("input");
-                    setAnalysisData(null);
-                    setSelectedTx(null);
-                  }}
+              <div className="flex-1 w-full max-w-xl relative">
+                <UploadCard
+                  onAnalyzeDemo={runDemoAnalysis}
+                  onAnalyzeFiles={runFileAnalysis}
+                  onAnalyzeFixture={runFixtureAnalysis}
+                  uploading={uploading}
+                  errorMsg={errorMsg}
+                  onDismissError={() => setErrorMsg(null)}
                 />
-              </motion.div>
-            )}
+              </div>
+            </motion.div>
+          )}
 
-            {analysisState === "tx_detail" && (selectedTx || analysisData) && (
-              <motion.div
-                key="tx_detail"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                className="w-full"
-              >
-                <AnalysisView
-                  data={selectedTx || (analysisData as AnalyzedTx)}
-                  onReset={() => {
-                    setAnalysisState("input");
-                    setAnalysisData(null);
-                    setSelectedTx(null);
-                  }}
-                  onBack={
-                    analysisData && "transactions" in analysisData
-                      ? () => setAnalysisState("block_overview")
-                      : undefined
-                  }
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-        <Footer />
+          {analysisState === "loading" && (
+            <motion.div
+              key="loading"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4 }}
+              className="w-full flex-1 flex items-center justify-center"
+            >
+              <ContentScanLoader />
+            </motion.div>
+          )}
+
+          {analysisState === "block_overview" && analysisData && "transactions" in analysisData && (
+            <motion.div
+              key="block_overview"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="w-full"
+            >
+              <BlockOverview
+                blockData={analysisData}
+                onSelectTx={(tx) => {
+                  setSelectedTx(tx);
+                  setAnalysisState("tx_detail");
+                }}
+                onReset={() => {
+                  setAnalysisState("input");
+                  setAnalysisData(null);
+                  setSelectedTx(null);
+                }}
+              />
+            </motion.div>
+          )}
+
+          {analysisState === "tx_detail" && (selectedTx || analysisData) && (
+            <motion.div
+              key="tx_detail"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="w-full"
+            >
+              <AnalysisView
+                data={selectedTx || (analysisData as AnalyzedTx)}
+                onReset={() => {
+                  setAnalysisState("input");
+                  setAnalysisData(null);
+                  setSelectedTx(null);
+                }}
+                onBack={
+                  analysisData && "transactions" in analysisData
+                    ? () => setAnalysisState("block_overview")
+                    : undefined
+                }
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-    </>
+      <Footer />
+    </div>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <Loader2 className="w-8 h-8 text-lens-400 animate-spin" />
+        <p className="text-zinc-400 text-sm">Loading...</p>
+      </div>
+    </div>
+  );
+}
+
+export default function LensAnalyzePage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <LensAnalyzeContent />
+    </Suspense>
   );
 }

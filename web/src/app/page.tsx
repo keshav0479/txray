@@ -228,7 +228,10 @@ export default function HomePage() {
     <div className="min-h-screen flex flex-col">
       {/* ─── HERO ─── */}
       <section className="flex-1 flex flex-col items-center justify-center px-6 pt-24 pb-16 relative">
-        {/* Smith animated BTC mould grid */}
+        {/* Hide the global background and use interactive version on landing page */}
+        <div className="fixed inset-0 bg-stone-950 z-[-2]" />
+        
+        {/* Smith animated BTC mould grid - interactive version for landing page only */}
         <SmithBackground 
           scanPulses={scanPulses} 
           returnPulses={returnPulses} 

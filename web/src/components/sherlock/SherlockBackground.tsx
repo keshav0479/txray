@@ -1,48 +1,11 @@
 "use client";
 
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 
 export function SherlockBackground() {
   const tileSize = "120px 140px";
   const dimPattern = 'url("/patterns/sherlock-pattern.svg")';
   const glowPattern = 'url("/patterns/sherlock-pattern-glow.svg")';
-
-  // Mouse torch — updated directly on DOM, zero re-renders
-  const mouseTorchRef = useRef<HTMLDivElement>(null);
-  const fadeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    const el = mouseTorchRef.current;
-    if (!el) return;
-
-    // Start off-screen so it doesn't flash at (0,0) on mount
-    el.style.setProperty('--mx', '-300px');
-    el.style.setProperty('--my', '-300px');
-
-    const onMove = (e: MouseEvent) => {
-      el.style.setProperty('--mx', `${e.clientX}px`);
-      el.style.setProperty('--my', `${e.clientY}px`);
-      el.style.opacity = '1';
-
-      if (fadeTimer.current) clearTimeout(fadeTimer.current);
-      fadeTimer.current = setTimeout(() => {
-        el.style.opacity = '0';
-      }, 1500);
-    };
-
-    const onLeave = () => {
-      if (fadeTimer.current) clearTimeout(fadeTimer.current);
-      el.style.opacity = '0';
-    };
-
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseleave', onLeave);
-    return () => {
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseleave', onLeave);
-      if (fadeTimer.current) clearTimeout(fadeTimer.current);
-    };
-  }, []);
 
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-surface-bg">
@@ -112,28 +75,6 @@ export function SherlockBackground() {
           animation: torchSweep2 23s ease-in-out infinite alternate;
           animation-delay: -11s;
         }
-
-        /* Mouse torch — tighter beam, fades out on idle */
-        .mask-mouse-torch {
-          mask-image: radial-gradient(
-            ellipse 8vw 14vh at var(--mx, -300px) var(--my, -300px),
-            black 0%,
-            rgba(0,0,0,0.65) 30%,
-            rgba(0,0,0,0.1) 60%,
-            transparent 78%
-          );
-          -webkit-mask-image: radial-gradient(
-            ellipse 8vw 14vh at var(--mx, -300px) var(--my, -300px),
-            black 0%,
-            rgba(0,0,0,0.65) 30%,
-            rgba(0,0,0,0.1) 60%,
-            transparent 78%
-          );
-          mask-size: 100% 100%;
-          -webkit-mask-size: 100% 100%;
-          opacity: 0;
-          transition: opacity 0.7s ease-out;
-        }
       `}} />
 
       {/* LAYER 0: Dim base — always-visible ghost of the full pattern */}
@@ -165,18 +106,6 @@ export function SherlockBackground() {
           backgroundRepeat: "repeat",
           backgroundSize: tileSize,
           filter: "drop-shadow(0 0 10px rgba(247,147,26,0.52))",
-        }}
-      />
-
-      {/* LAYER 2: Mouse torch — follows cursor, fades out after 1.5s idle */}
-      <div
-        ref={mouseTorchRef}
-        className="absolute inset-0 mask-mouse-torch mix-blend-screen"
-        style={{
-          backgroundImage: glowPattern,
-          backgroundRepeat: "repeat",
-          backgroundSize: tileSize,
-          filter: "drop-shadow(0 0 18px rgba(247,147,26,0.80))",
         }}
       />
 

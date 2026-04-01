@@ -97,17 +97,17 @@ export default function TxExplorePage({
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="flex flex-col items-center gap-4"
-        >
-          <Loader2 className="w-8 h-8 text-lens-400 animate-spin" />
-          <p className="text-zinc-400 text-sm">Preparing full Lens analysis</p>
-          <p className="text-zinc-600 text-xs font-mono">{txid.slice(0, 20)}...</p>
-        </motion.div>
-      </div>
+        <div className="min-h-screen flex items-center justify-center">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex flex-col items-center gap-4"
+          >
+            <Loader2 className="w-8 h-8 text-lens-400 animate-spin" />
+            <p className="text-zinc-400 text-sm">Preparing full Lens analysis</p>
+            <p className="text-zinc-600 text-xs font-mono">{txid.slice(0, 20)}...</p>
+          </motion.div>
+        </div>
     );
   }
 
@@ -122,19 +122,19 @@ export default function TxExplorePage({
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-6">
-        <div className="max-w-md text-center">
-          <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-white mb-2">Transaction Not Found</h2>
-          <p className="text-red-400/80 text-sm mb-6">{error}</p>
-          <Link
-            href="/"
-            className="px-6 py-2 rounded-full bg-white text-black font-semibold text-sm hover:bg-zinc-200 transition-colors"
-          >
-            Back to Search
-          </Link>
+        <div className="min-h-screen flex items-center justify-center px-6">
+          <div className="max-w-md text-center">
+            <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-white mb-2">Transaction Not Found</h2>
+            <p className="text-red-400/80 text-sm mb-6">{error}</p>
+            <Link
+              href="/"
+              className="px-6 py-2 rounded-full bg-white text-black font-semibold text-sm hover:bg-zinc-200 transition-colors"
+            >
+              Back to Search
+            </Link>
+          </div>
         </div>
-      </div>
     );
   }
 

@@ -1,116 +1,112 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useEffect, useRef } from "react";
+import createGlobe from "cobe";
 
 interface GraphicProps {
   isPlaying: boolean;
 }
 
-/**
- * Replaces the original cobe-based AnimatedGlobe with a pure SVG
- * spinning wireframe network to avoid the heavy cobe dependency.
- */
-export function AnimatedGlobe({ isPlaying }: GraphicProps) {
-  const cycle = 12;
-  // Network node positions (simulating a globe-like distribution)
-  const nodes = [
-    { x: 170, y: 40 },  // top
-    { x: 60, y: 90 },   // upper-left
-    { x: 280, y: 90 },  // upper-right
-    { x: 120, y: 160 }, // mid-left
-    { x: 220, y: 160 }, // mid-right
-    { x: 170, y: 120 }, // center
-    { x: 80, y: 200 },  // lower-left
-    { x: 260, y: 200 }, // lower-right
-    { x: 170, y: 220 }, // bottom
-  ];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function AnimatedGlobe(_props: GraphicProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const phiRef = useRef(0);
+  const globeRef = useRef<ReturnType<typeof createGlobe> | null>(null);
+  const animationRef = useRef<number | null>(null);
 
-  // Edges connecting the nodes
-  const edges = [
-    [0, 1], [0, 2], [0, 5],
-    [1, 3], [1, 5],
-    [2, 4], [2, 5],
-    [3, 5], [3, 6], [3, 8],
-    [4, 5], [4, 7], [4, 8],
-    [6, 8], [7, 8],
-  ];
+  useEffect(() => {
+    if (!canvasRef.current) return;
+
+    // Marker locations for global Bitcoin network nodes
+    const markerLocations: [number, number][] = [
+      [40.7128, -74.006],    // New York
+      [51.5074, -0.1278],    // London
+      [35.6762, 139.6503],   // Tokyo
+      [1.3521, 103.8198],    // Singapore
+      [-33.8688, 151.2093],  // Sydney
+      [37.7749, -122.4194],  // San Francisco
+      [25.2048, 55.2708],    // Dubai
+      [19.076, 72.8777],     // Mumbai
+      [-23.5505, -46.6333],  // São Paulo
+      [-1.2921, 36.8219],    // Nairobi
+      [52.52, 13.405],       // Berlin
+      [37.5665, 126.978],    // Seoul
+      [28.6139, 77.209],     // Delhi
+      [12.9716, 77.5946],    // Bangalore
+      [6.5244, 3.3792],      // Lagos
+      [-33.9249, 18.4241],   // Cape Town
+      [-34.6037, -58.3816],  // Buenos Aires
+      [19.4326, -99.1332],   // Mexico City
+      [43.6532, -79.3832],   // Toronto
+      [-6.2088, 106.8456],   // Jakarta
+    ];
+
+    const globe = createGlobe(canvasRef.current, {
+      devicePixelRatio: 2,
+      width: 600,
+      height: 600,
+      phi: 0,
+      theta: 0.25,
+      dark: 1,
+      diffuse: 1.2,
+      mapSamples: 16000,
+      mapBrightness: 2,
+      baseColor: [0.12, 0.20, 0.45],      // Blue-ish globe surface
+      markerColor: [0.23, 0.51, 0.96],     // Bright blue markers
+      glowColor: [0.06, 0.10, 0.30],       // Dark blue glow
+      markers: markerLocations.map((location, i) => ({
+        location,
+        size: 0.05 + Math.sin(i) * 0.02,
+      })),
+    });
+
+    globeRef.current = globe;
+
+    // Animation loop to rotate the globe and pulse markers
+    let frame = 0;
+    const animate = () => {
+      phiRef.current += 0.002; // Slow rotation
+      frame += 1;
+      const t = frame * 0.02;
+
+      globe.update({
+        phi: phiRef.current,
+        markers: markerLocations.map((location, i) => ({
+          location,
+          size: 0.03 + Math.abs(Math.sin(t + i * 0.8)) * 0.06,
+        })),
+      });
+
+      animationRef.current = requestAnimationFrame(animate);
+    };
+
+    animationRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+      globe.destroy();
+      globeRef.current = null;
+    };
+  }, []);
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center">
-      <svg viewBox="0 0 340 260" className="w-full h-full" fill="none">
-        {/* Outer circle (globe outline) */}
-        <motion.circle
-          cx="170" cy="130" r="110"
-          stroke="#1e3a8a" strokeWidth="1.5" fill="none"
-          initial={{ opacity: 0 }}
-          animate={isPlaying ? { opacity: [0, 0.5, 0.5] } : { opacity: 0 }}
-          transition={{ duration: 2, repeat: Infinity }}
-        />
-
-        {/* Network edges */}
-        {edges.map(([a, b], i) => (
-          <motion.line
-            key={`e-${i}`}
-            x1={nodes[a].x} y1={nodes[a].y}
-            x2={nodes[b].x} y2={nodes[b].y}
-            stroke="#3b82f6" strokeWidth="1"
-            initial={{ opacity: 0 }}
-            animate={isPlaying ? {
-              opacity: [0, 0, 0.6, 0.6, 0],
-            } : { opacity: 0 }}
-            transition={{
-              duration: cycle,
-              times: [0, (i * 0.04), (i * 0.04 + 0.08), 0.85, 1],
-              repeat: Infinity,
-              ease: "easeOut",
-            }}
-          />
-        ))}
-
-        {/* Network nodes */}
-        {nodes.map((n, i) => (
-          <motion.circle
-            key={`n-${i}`}
-            cx={n.x} cy={n.y} r="5"
-            fill="#60a5fa"
-            initial={{ opacity: 0, scale: 0 }}
-            animate={isPlaying ? {
-              opacity: [0, 0, 1, 1, 0],
-              scale: [0, 0, 1, 1, 0],
-            } : { opacity: 0 }}
-            transition={{
-              duration: cycle,
-              times: [0, (i * 0.05), (i * 0.05 + 0.06), 0.85, 1],
-              repeat: Infinity,
-              ease: "easeOut",
-            }}
-          />
-        ))}
-
-        {/* Pulse traveling along edges */}
-        {[0, 3, 7, 12].map((edgeIdx, pi) => {
-          const [a, b] = edges[edgeIdx];
-          return (
-            <motion.circle
-              key={`pulse-${pi}`}
-              r="3"
-              fill="#f59e0b"
-              initial={{ opacity: 0 }}
-              animate={isPlaying ? {
-                cx: [nodes[a].x, nodes[b].x, nodes[b].x],
-                cy: [nodes[a].y, nodes[b].y, nodes[b].y],
-                opacity: [0, 1, 0],
-              } : { opacity: 0 }}
-              transition={{
-                duration: 2,
-                delay: pi * 1.5,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            />
-          );
-        })}
-      </svg>
+    <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+      <canvas
+        ref={canvasRef}
+        className="w-full h-full"
+        width={600}
+        height={600}
+        style={{ 
+          width: "100%", 
+          height: "100%",
+          maxWidth: "300px",
+          maxHeight: "300px",
+          objectFit: "contain"
+        }}
+      />
     </div>
   );
 }
@@ -140,7 +136,7 @@ export function AnimatedBlocks({ isPlaying }: GraphicProps) {
                 x={x} y="20" width="100" height="100" rx="12"
                 stroke="#3b82f6"
                 strokeWidth="1.5"
-                fill="rgba(30, 58, 138, 0.4)"
+                fill="rgba(30, 58, 138, 0.4)" // brand-900 / dark blue fill
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={isPlaying ? {
                   opacity: [0, 0, 1, 1, 1, 1, 1, 0],
@@ -158,7 +154,7 @@ export function AnimatedBlocks({ isPlaying }: GraphicProps) {
               <motion.text
                 x={x + 50} y="44" textAnchor="middle"
                 fontSize="11" fontFamily="monospace" fontWeight="500"
-                fill="#93c5fd"
+                fill="#93c5fd" // brand-300
                 initial={{ opacity: 0 }}
                 animate={isPlaying ? {
                   opacity: [0, 0, 1, 1, 1, 1, 1, 0],
@@ -176,7 +172,7 @@ export function AnimatedBlocks({ isPlaying }: GraphicProps) {
               <motion.text
                 x={x + 50} y="62" textAnchor="middle"
                 fontSize="10" fontFamily="monospace"
-                fill="#60a5fa"
+                fill="#60a5fa" // brand-400
                 initial={{ opacity: 0 }}
                 animate={isPlaying ? {
                   opacity: [0, 0, 0.8, 0.8, 0.8, 0.8, 0.8, 0],
@@ -195,7 +191,7 @@ export function AnimatedBlocks({ isPlaying }: GraphicProps) {
                 <motion.line
                   key={li}
                   x1={x + 18} y1={lineY} x2={x + 82 - li * 8} y2={lineY}
-                  stroke="#2563eb"
+                  stroke="#2563eb" // brand-600
                   strokeWidth="2.5"
                   strokeLinecap="round"
                   initial={{ opacity: 0 }}
@@ -226,14 +222,14 @@ export function AnimatedBlocks({ isPlaying }: GraphicProps) {
                   {/* Dashed link line */}
                   <motion.line
                     x1={x + 102} y1="70" x2={x + 113} y2="70"
-                    stroke="#1d4ed8"
+                    stroke="#1d4ed8" // brand-700
                     strokeWidth="2"
                     strokeDasharray="3 2"
                   />
                   {/* Arrow tip */}
                   <motion.path
                     d={`M ${x + 111} 66 L ${x + 115} 70 L ${x + 111} 74`}
-                    stroke="#1d4ed8"
+                    stroke="#1d4ed8" // brand-700
                     strokeWidth="2"
                     fill="none"
                   />
@@ -243,7 +239,7 @@ export function AnimatedBlocks({ isPlaying }: GraphicProps) {
               {/* Confirmation glow pulse */}
               <motion.rect
                 x={x - 2} y="18" width="104" height="104" rx="14"
-                stroke="#60a5fa"
+                stroke="#60a5fa" // Bright blue glow
                 strokeWidth="2"
                 fill="none"
                 initial={{ opacity: 0 }}
@@ -269,10 +265,10 @@ export function AnimatedMiners({ isPlaying }: GraphicProps) {
   const cycle = 10;
 
   const miners = [
-    { id: 'm1', x: 130, y: 20, isWinner: false, label: "Node A" },
-    { id: 'm2', x: 290, y: 20, isWinner: true, label: "Node B" },
-    { id: 'm3', x: 130, y: 180, isWinner: false, label: "Node C" },
-    { id: 'm4', x: 290, y: 180, isWinner: false, label: "Node D" },
+    { id: 'm1', x: 130, y: 20, isWinner: false, label: "Node A" },   // Top left
+    { id: 'm2', x: 290, y: 20, isWinner: true, label: "Node B" },    // Top right (Winner)
+    { id: 'm3', x: 130, y: 180, isWinner: false, label: "Node C" },  // Bottom left
+    { id: 'm4', x: 290, y: 180, isWinner: false, label: "Node D" },  // Bottom right
   ];
 
   const targetBlock = { x: 210, y: 100, w: 45, h: 50 };
@@ -280,7 +276,7 @@ export function AnimatedMiners({ isPlaying }: GraphicProps) {
   return (
     <div className="relative w-full h-full flex items-center justify-center">
       <svg viewBox="0 0 340 240" className="w-full h-full" fill="none">
-        {/* Master fade wrapper */}
+        {/* Master fade wrapper — fades entire scene at cycle boundary for seamless loop */}
         <motion.g
           animate={isPlaying ? {
             opacity: [0, 1, 1, 1, 0],
@@ -294,14 +290,14 @@ export function AnimatedMiners({ isPlaying }: GraphicProps) {
 
         {/* Lasers from miners to target block */}
         {miners.map((miner) => {
-          const mX = miner.x + 20;
+          const mX = miner.x + 20; // Center of miner
           const mY = miner.y + 20;
-          const bX = targetBlock.x + targetBlock.w / 2;
+          const bX = targetBlock.x + targetBlock.w / 2; // Center of target block
           const bY = targetBlock.y + targetBlock.h / 2;
-
+          
           return (
             <g key={`laser-${miner.id}`}>
-              {/* Racing lasers (all miners 0-4s) */}
+              {/* Racing lasers (all miners 0-4s) - ALWAYS BLUE */}
               <motion.line
                 x1={mX} y1={mY} x2={bX} y2={bY}
                 stroke="#3b82f6" strokeWidth="1.5" strokeDasharray="4 6"
@@ -318,7 +314,7 @@ export function AnimatedMiners({ isPlaying }: GraphicProps) {
                 }}
               />
 
-              {/* Winning laser locking in (winner only, 4-6s) */}
+              {/* Winning laser locking in (winner only, 4-6s) - BLUE */}
               {miner.isWinner && (
                 <motion.line
                   x1={mX} y1={mY} x2={bX} y2={bY}
@@ -329,7 +325,7 @@ export function AnimatedMiners({ isPlaying }: GraphicProps) {
                   } : { opacity: 0 }}
                   transition={{
                     duration: cycle,
-                    times: [0, 0.4, 0.4, 0.6, 0.6, 1],
+                    times: [0, 0.4, 0.4, 0.6, 0.6, 1], // Active 4s to 6s
                     repeat: Infinity,
                   }}
                 />
@@ -356,12 +352,13 @@ export function AnimatedMiners({ isPlaying }: GraphicProps) {
             } : {}}
             transition={{ duration: cycle, times: [0, 0.4, 0.41, 0.75, 1], repeat: Infinity }}
           />
+          {/* Block lock icon or hash target */}
           <motion.text
             x={targetBlock.x + targetBlock.w / 2} y={targetBlock.y + 30} textAnchor="middle" fill="#93c5fd" fontSize="20"
             animate={isPlaying ? { opacity: [1, 1, 0, 0] } : { opacity: 1 }}
             transition={{ duration: cycle, times: [0, 0.4, 0.41, 1], repeat: Infinity }}
           >?</motion.text>
-
+          
           <motion.text
             x={targetBlock.x + targetBlock.w / 2} y={targetBlock.y + 30} textAnchor="middle" fill="#93c5fd" fontSize="12" fontWeight="bold" fontFamily="monospace"
             initial={{ opacity: 0 }}
@@ -381,16 +378,19 @@ export function AnimatedMiners({ isPlaying }: GraphicProps) {
         {/* The Miners (Server Racks) */}
         {miners.map((miner, i) => (
           <g key={miner.id}>
+            {/* Server Rack Body */}
             <motion.rect
               x={miner.x} y={miner.y} width="40" height="40" rx="4"
               stroke="#3b82f6" strokeWidth="2" fill="rgba(30, 58, 138, 0.5)"
               animate={isPlaying ? {
+                // Winner turns brighter blue at 4s. Others dim at 4s.
                 stroke: miner.isWinner ? ["#3b82f6", "#3b82f6", "#60a5fa", "#60a5fa", "#3b82f6"] : "#3b82f6",
                 fill: miner.isWinner ? ["rgba(30,58,138,0.5)", "rgba(30,58,138,0.5)", "rgba(96,165,250,0.2)", "rgba(96,165,250,0.2)", "rgba(30,58,138,0.5)"] : "rgba(30,58,138,0.5)",
                 opacity: miner.isWinner ? 1 : [1, 1, 0.3, 0.3, 1],
               } : {}}
               transition={{ duration: cycle, times: [0, 0.4, 0.41, 0.95, 1], repeat: Infinity }}
             />
+            {/* Blinking LEDs on servers */}
             <motion.circle
               cx={miner.x + 30} cy={miner.y + 10} r="2"
               fill="#60a5fa"
@@ -403,16 +403,18 @@ export function AnimatedMiners({ isPlaying }: GraphicProps) {
               animate={isPlaying ? { opacity: [1, 0, 1] } : { opacity: 1 }}
               transition={{ duration: 0.7, repeat: Infinity, delay: i * 0.2 }}
             />
-
+            
+            {/* Node Labels */}
             <motion.text
               x={miner.x + 20} y={miner.y - 8} textAnchor="middle" fontSize="10" fill="#93c5fd"
-              animate={isPlaying ? {
+              animate={isPlaying ? { 
                 opacity: miner.isWinner ? 1 : [1, 1, 0.3, 0.3, 1],
                 fill: miner.isWinner ? ["#93c5fd", "#93c5fd", "#bfdbfe", "#bfdbfe", "#93c5fd"] : "#93c5fd"
               } : {}}
               transition={{ duration: cycle, times: [0, 0.4, 0.41, 0.95, 1], repeat: Infinity }}
             >{miner.label}</motion.text>
-
+            
+            {/* Hashing text floating above miners (0-4s) */}
             <motion.text
               x={miner.x + 20} y={miner.y + 55} textAnchor="middle" fontSize="10" fontFamily="monospace" fill="#60a5fa"
               initial={{ opacity: 0 }}
@@ -426,7 +428,7 @@ export function AnimatedMiners({ isPlaying }: GraphicProps) {
           </g>
         ))}
 
-        {/* The Bitcoin Block Reward */}
+        {/* The Bitcoin Block Reward (Shoots from block to winner at 6-7.5s) */}
         <motion.g
           initial={{ opacity: 0, scale: 0 }}
           animate={isPlaying ? {
@@ -443,7 +445,7 @@ export function AnimatedMiners({ isPlaying }: GraphicProps) {
           }}
         >
           <circle cx="232.5" cy="125" r="10" fill="#f59e0b" />
-          <text x="232.5" y="129" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="bold">&#x20bf;</text>
+          <text x="232.5" y="129" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="bold">₿</text>
         </motion.g>
         </motion.g>
       </svg>
@@ -453,7 +455,7 @@ export function AnimatedMiners({ isPlaying }: GraphicProps) {
 
 export function AnimatedTransaction({ isPlaying }: GraphicProps) {
   const cycle = 8;
-
+  
   const mempoolTxs = [
     { id: 0, x: 30, y: 100, bx: 228, by: 98 },
     { id: 1, x: 70, y: 80, bx: 246, by: 98 },
@@ -467,7 +469,7 @@ export function AnimatedTransaction({ isPlaying }: GraphicProps) {
   return (
     <div className="relative w-full h-full flex items-center justify-center">
       <svg viewBox="0 0 340 240" className="w-full h-full" fill="none">
-
+        
         {/* Mempool Container */}
         <motion.rect
           x="15" y="70" width="100" height="110" rx="10"
@@ -475,7 +477,7 @@ export function AnimatedTransaction({ isPlaying }: GraphicProps) {
         />
         <text x="65" y="55" textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="12" fontFamily="monospace">Mempool</text>
 
-        {/* Existing Mempool Transactions */}
+        {/* Existing Mempool Transactions (Bobbing then flying into block) */}
         {mempoolTxs.map((tx) => (
           <motion.rect
             key={tx.id}
@@ -512,13 +514,13 @@ export function AnimatedTransaction({ isPlaying }: GraphicProps) {
           } : { opacity: 0 }}
           transition={{
             duration: cycle,
-            times: [0, 0.15, 0.4, 0.55, 0.7, 0.75, 0.9, 1],
+            times: [0, 0.15, 0.4, 0.55, 0.7, 0.75, 0.9, 1], // Drops in 0-0.15
             ease: "easeInOut",
             repeat: Infinity
           }}
         />
 
-        {/* Bundling Beam / Arrow */}
+        {/* Bundling Beam / Arrow (Active 0.35 to 0.6) */}
         <motion.path
           d="M 125 125 Q 170 125 210 125"
           stroke="#3b82f6" strokeWidth="2" strokeDasharray="4 4" fill="none"
@@ -584,7 +586,7 @@ export function AnimatedTransaction({ isPlaying }: GraphicProps) {
           Block #840
         </motion.text>
 
-        {/* Solid Block Overlap */}
+        {/* Solid Block Overlap (Hides individual Txs when bundled) */}
         <motion.rect
           x="220" y="90" width="75" height="55" rx="6"
           stroke="#3b82f6" strokeWidth="2"
@@ -641,7 +643,7 @@ export function AnimatedLens({ isPlaying }: GraphicProps) {
   return (
     <div className="relative w-full h-full flex items-center justify-center">
       <svg viewBox="0 0 340 240" className="w-full h-full" fill="none">
-
+        
         <defs>
           <clipPath id="ui-clip">
             <motion.rect
@@ -676,7 +678,7 @@ export function AnimatedLens({ isPlaying }: GraphicProps) {
           <rect x="20" y="20" width="300" height="70" rx="8" fill="rgba(15, 23, 42, 0.8)" stroke="#3b82f6" strokeWidth="2" />
           <text x="35" y="45" fill="#f59e0b" fontSize="14" fontWeight="bold">Block Header</text>
           <text x="35" y="65" fill="#93c5fd" fontSize="12" fontFamily="monospace">Hash: 00000000000000000003b4...</text>
-          <text x="35" y="80" fill="#93c5fd" fontSize="10">Version: 4 &bull; Time: 2024-05-12 14:30:00</text>
+          <text x="35" y="80" fill="#93c5fd" fontSize="10">Version: 4 • Time: 2024-05-12 14:30:00</text>
 
           {/* Tx Card 1 */}
           <rect x="20" y="105" width="140" height="50" rx="6" fill="rgba(15, 23, 42, 0.8)" stroke="#60a5fa" strokeWidth="1" strokeDasharray="4 4" />
@@ -687,11 +689,11 @@ export function AnimatedLens({ isPlaying }: GraphicProps) {
           <rect x="180" y="105" width="140" height="50" rx="6" fill="rgba(15, 23, 42, 0.8)" stroke="#60a5fa" strokeWidth="1" strokeDasharray="4 4" />
           <text x="190" y="125" fill="#fff" fontSize="12" fontWeight="bold">Tx 2</text>
           <text x="190" y="145" fill="#60a5fa" fontSize="10">Value: 0.50 BTC</text>
-
+          
           {/* Extra generic lines to fill space */}
           <rect x="20" y="170" width="140" height="50" rx="6" fill="rgba(15, 23, 42, 0.8)" stroke="#1e3a8a" strokeWidth="1" />
           <text x="30" y="193" fill="#3b82f6" fontSize="10">Tx 3 ...</text>
-
+          
           <rect x="180" y="170" width="140" height="50" rx="6" fill="rgba(15, 23, 42, 0.8)" stroke="#1e3a8a" strokeWidth="1" />
           <text x="190" y="193" fill="#3b82f6" fontSize="10">Tx 4 ...</text>
         </g>

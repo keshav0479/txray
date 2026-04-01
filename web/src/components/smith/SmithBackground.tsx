@@ -57,20 +57,20 @@ function MouldTile({ delay, uniqueId }: { delay: number; uniqueId: string }) {
       </defs>
 
       {/* Outer metallic base plate (Elevated physical stone texture) */}
-      <rect x="10" y="10" width="100" height="100" rx="20" fill="#161413" stroke="#2a2522" strokeWidth="1" />
+      <rect x="10" y="10" width="100" height="100" rx="20" fill="#1a1816" stroke="#322e2a" strokeWidth="1" />
       
       {/* Corner Rivets — filled solid for subtle visibility */}
       {/* Corner Rivets */}
-      <circle cx="22" cy="22" r="3" fill="rgba(255,255,255,0.02)" />
-      <circle cx="98" cy="22" r="3" fill="rgba(255,255,255,0.02)" />
-      <circle cx="22" cy="98" r="3" fill="rgba(255,255,255,0.02)" />
-      <circle cx="98" cy="98" r="3" fill="rgba(255,255,255,0.02)" />
+      <circle cx="22" cy="22" r="3" fill="rgba(255,255,255,0.04)" />
+      <circle cx="98" cy="22" r="3" fill="rgba(255,255,255,0.04)" />
+      <circle cx="22" cy="98" r="3" fill="rgba(255,255,255,0.04)" />
+      <circle cx="98" cy="98" r="3" fill="rgba(255,255,255,0.04)" />
 
       {/* Inner darker chamber (Hollowed core) */}
-      <rect x="24" y="24" width="72" height="72" rx="14" fill="#090807" stroke="#1c1917" strokeWidth="1" />
+      <rect x="24" y="24" width="72" height="72" rx="14" fill="#0f0d0b" stroke="#252320" strokeWidth="1" />
 
       {/* Dormant BTC Logo — ghost outline only */}
-      <g fill="none" stroke="#2a2522" strokeWidth="1.5" transform={LOGO_TRANSFORM}>
+      <g fill="none" stroke="#3a3632" strokeWidth="1.5" transform={LOGO_TRANSFORM}>
         <path d={BTC_PATH} />
       </g>
 
@@ -128,13 +128,13 @@ export function SmithBackground({ scanPulses = [], returnPulses = [], scanOrigin
   );
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-transparent">
+    <div className="fixed inset-0 pointer-events-none overflow-hidden bg-transparent z-0">
       <style dangerouslySetInnerHTML={{ __html: KEYFRAMES_CSS }} />
 
       <div 
         className="absolute w-full h-full"
         style={{ 
-          opacity: 0.32 + (holdProgress * 0.43), // ramps from 0.32 to 0.75
+          opacity: 0.28 + (holdProgress * 0.35), // ramps from 0.28 to 0.63 (balanced visibility)
           transition: holdProgress > 0 ? "none" : "opacity 0.8s ease",
         }}
       >

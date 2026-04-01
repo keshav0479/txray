@@ -113,7 +113,7 @@ function FamousCard({
 
 export default function FamousPage() {
   return (
-    <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col">
       <div className="flex-1 max-w-5xl mx-auto px-6 pt-24 pb-16 w-full">
         {/* Header */}
         <motion.div

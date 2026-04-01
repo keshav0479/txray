@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { Header } from "@/components/shared/Header";
+import { SmithBackground } from "@/components/smith/SmithBackground";
 import "./globals.css";
 
 const inter = Inter({
@@ -41,6 +42,8 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}
       >
+        {/* Global background - persists across all pages */}
+        <SmithBackground />
         <Header />
         <main className="pt-16">{children}</main>
       </body>
