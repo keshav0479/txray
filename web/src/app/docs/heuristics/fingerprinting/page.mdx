@@ -1,0 +1,47 @@
+# Wallet Fingerprinting
+
+## What Wallet Fingerprinting Is
+
+Wallet fingerprinting tries to identify wallet software behavior from transaction patterns.
+
+Different wallets often leave different "style signatures" in how they build transactions.
+
+## Simple Analogy
+
+Like handwriting analysis: two notes may say similar things, but pen pressure, letter spacing, and style still hint at who wrote them.
+
+On Bitcoin, those "style clues" are transaction construction choices.
+
+## Signals We Use
+
+txray looks at combinations of signals such as:
+
+- input/output ordering tendencies,
+- fee-rate behavior,
+- script-type consistency,
+- sequence and locktime usage,
+- known policy patterns (for example anti-fee-sniping style).
+
+## Known Limitations
+
+- Wallets evolve, so signatures drift over time.
+- Users can use hardware wallets + software combos.
+- Privacy tools intentionally hide fingerprints.
+- Similar wallets can overlap in behavior.
+
+So we report likelihood, not absolute identity.
+
+## How to Interpret Matches
+
+- Strong match: useful lead, still verify with more evidence.
+- Weak match: do not over-interpret.
+- Conflicting clues: prefer caution and show uncertainty.
+
+In txray, fingerprinting is one layer in a multi-signal analysis pipeline.
+
+---
+
+Related:
+
+- [Address Clustering](/docs/heuristics/address-clustering)
+- [Change Detection](/docs/heuristics/change-detection)

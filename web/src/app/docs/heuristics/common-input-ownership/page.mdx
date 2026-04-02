@@ -1,0 +1,67 @@
+# Common Input Ownership
+
+<AudienceIntro />
+
+<AudienceBlock for="beginner" title="Beginner view">
+Treat this as a strong hint, not a final answer. If many coins are spent together, they are often from one wallet.
+</AudienceBlock>
+
+<AudienceBlock for="analyst" title="Analyst view">
+Use CIOH as a high-weight signal only when transaction context does not suggest collaborative spending.
+</AudienceBlock>
+
+<AudienceBlock for="builder" title="Builder view">
+Model this as weighted evidence with explicit caveat flags for CoinJoin/PayJoin-like structures.
+</AudienceBlock>
+
+## What This Heuristic Says
+
+If one transaction uses many inputs, those inputs are usually controlled by one owner.
+
+In plain words: if several coins are spent together in one checkout, they are probably from the same wallet.
+
+## Simple Analogy
+
+Think of paying at a store with three notes from one wallet. The cashier sees all three notes used together in one payment. Most of the time, the notes belong to the same person.
+
+That is exactly what this heuristic does with UTXOs.
+
+## Why Analysts Use It
+
+- It is one of the strongest first-pass heuristics.
+- It works well on normal wallet behavior.
+- It helps build address clusters quickly.
+
+## When It Fails
+
+This is important. It is not a law.
+
+It can fail in cases like:
+
+- **CoinJoin**: many users deliberately combine inputs.
+- **Collaborative spending** (for example PayJoin): two parties co-create one transaction.
+- **Some multisig workflows** where control is shared.
+
+## How txray Uses It
+
+txray uses this signal as part of a weighted model, not as a final truth by itself.
+
+That means:
+
+- one strong signal increases confidence,
+- conflicting signals lower confidence,
+- edge-case patterns trigger caution.
+
+## Confidence Guidance
+
+- Treat this as **"likely"**, not **"certain"**.
+- Always cross-check with change detection and transaction pattern context.
+- If a transaction looks like CoinJoin, reduce trust in this heuristic.
+
+---
+
+Related:
+
+- [Change Detection](/docs/heuristics/change-detection)
+- [Address Clustering](/docs/heuristics/address-clustering)
+- [Wallet Fingerprinting](/docs/heuristics/fingerprinting)

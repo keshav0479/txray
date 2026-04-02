@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 @theme {
   /* ─── Shared Surface Palette (Warm Dark / Stone) ─── */
@@ -196,3 +197,350 @@ pre,
 .cat-privacy { --cat: #a855f7; }
 .cat-technical { --cat: #06b6d4; }
 .cat-cultural { --cat: #f43f5e; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DOCS THEMES - Comprehensive CSS variables for each theme
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.docs-theme-blue {
+  --docs-bg: #0a0f18;
+  --docs-bg-gradient: radial-gradient(ellipse at top, rgba(59, 130, 246, 0.08), transparent 50%);
+  --docs-panel: #0f172a;
+  --docs-panel-hover: #162033;
+  --docs-panel-border: #1e3a5f;
+  --docs-text: #e2e8f0;
+  --docs-text-heading: #f1f5f9;
+  --docs-muted: #94a3b8;
+  --docs-accent: #60a5fa;
+  --docs-accent-muted: #3b82f6;
+  --docs-link: #7dd3fc;
+  --docs-code-bg: #0c1929;
+  --docs-code-text: #e2e8f0;
+  --docs-selection: rgba(59, 130, 246, 0.3);
+  --docs-scrollbar: #1e3a5f;
+  --docs-progress: linear-gradient(90deg, #3b82f6, #60a5fa);
+  --docs-card-glow: rgba(59, 130, 246, 0.15);
+}
+
+.docs-theme-slate {
+  --docs-bg: #0f1115;
+  --docs-bg-gradient: radial-gradient(ellipse at top, rgba(148, 163, 184, 0.06), transparent 50%);
+  --docs-panel: #181c23;
+  --docs-panel-hover: #1f242d;
+  --docs-panel-border: #2e3744;
+  --docs-text: #e2e8f0;
+  --docs-text-heading: #f8fafc;
+  --docs-muted: #94a3b8;
+  --docs-accent: #94a3b8;
+  --docs-accent-muted: #64748b;
+  --docs-link: #a5b4fc;
+  --docs-code-bg: #1a1f28;
+  --docs-code-text: #e2e8f0;
+  --docs-selection: rgba(148, 163, 184, 0.25);
+  --docs-scrollbar: #2e3744;
+  --docs-progress: linear-gradient(90deg, #64748b, #94a3b8);
+  --docs-card-glow: rgba(148, 163, 184, 0.1);
+}
+
+.docs-theme-warm {
+  --docs-bg: #0f0c0a;
+  --docs-bg-gradient: radial-gradient(ellipse at top, rgba(251, 191, 36, 0.06), transparent 50%);
+  --docs-panel: #1c1612;
+  --docs-panel-hover: #261e18;
+  --docs-panel-border: #3d2f24;
+  --docs-text: #fef3c7;
+  --docs-text-heading: #fefce8;
+  --docs-muted: #d6c7a8;
+  --docs-accent: #fbbf24;
+  --docs-accent-muted: #d97706;
+  --docs-link: #fcd34d;
+  --docs-code-bg: #1a140f;
+  --docs-code-text: #fef3c7;
+  --docs-selection: rgba(251, 191, 36, 0.25);
+  --docs-scrollbar: #3d2f24;
+  --docs-progress: linear-gradient(90deg, #d97706, #fbbf24);
+  --docs-card-glow: rgba(251, 191, 36, 0.12);
+}
+
+.docs-theme-cream {
+  --docs-bg: #faf8f5;
+  --docs-bg-gradient: radial-gradient(ellipse at top, rgba(120, 113, 108, 0.06), transparent 50%);
+  --docs-panel: #ffffff;
+  --docs-panel-hover: #f5f3ef;
+  --docs-panel-border: #e7e5e4;
+  --docs-text: #1c1917;
+  --docs-text-heading: #0c0a09;
+  --docs-muted: #78716c;
+  --docs-accent: #a16207;
+  --docs-accent-muted: #ca8a04;
+  --docs-link: #b45309;
+  --docs-code-bg: #f5f3ef;
+  --docs-code-text: #1c1917;
+  --docs-selection: rgba(161, 98, 7, 0.2);
+  --docs-scrollbar: #d6d3d1;
+  --docs-progress: linear-gradient(90deg, #ca8a04, #eab308);
+  --docs-card-glow: rgba(161, 98, 7, 0.08);
+}
+
+.docs-theme-graphite {
+  --docs-bg: #09090b;
+  --docs-bg-gradient: radial-gradient(ellipse at top, rgba(161, 161, 170, 0.05), transparent 50%);
+  --docs-panel: #121215;
+  --docs-panel-hover: #1a1a1f;
+  --docs-panel-border: #27272a;
+  --docs-text: #e4e4e7;
+  --docs-text-heading: #fafafa;
+  --docs-muted: #a1a1aa;
+  --docs-accent: #a1a1aa;
+  --docs-accent-muted: #71717a;
+  --docs-link: #a5b4fc;
+  --docs-code-bg: #18181b;
+  --docs-code-text: #e4e4e7;
+  --docs-selection: rgba(161, 161, 170, 0.2);
+  --docs-scrollbar: #27272a;
+  --docs-progress: linear-gradient(90deg, #52525b, #a1a1aa);
+  --docs-card-glow: rgba(161, 161, 170, 0.08);
+}
+
+/* ─── Docs base styles ─── */
+.docs-font-academic {
+  font-family: "Inter", var(--font-inter), ui-sans-serif, system-ui;
+  letter-spacing: -0.01em;
+}
+
+/* ─── Smooth theme transitions ─── */
+.docs-theme-blue,
+.docs-theme-slate,
+.docs-theme-warm,
+.docs-theme-cream,
+.docs-theme-graphite {
+  transition: 
+    background-color 400ms cubic-bezier(0.4, 0, 0.2, 1),
+    color 300ms ease;
+}
+
+/* ─── Docs scrollbar theming ─── */
+.docs-theme-blue ::-webkit-scrollbar-thumb,
+.docs-theme-slate ::-webkit-scrollbar-thumb,
+.docs-theme-warm ::-webkit-scrollbar-thumb,
+.docs-theme-cream ::-webkit-scrollbar-thumb,
+.docs-theme-graphite ::-webkit-scrollbar-thumb {
+  background: var(--docs-scrollbar);
+}
+
+/* ─── Docs selection theming ─── */
+.docs-theme-blue ::selection,
+.docs-theme-slate ::selection,
+.docs-theme-warm ::selection,
+.docs-theme-cream ::selection,
+.docs-theme-graphite ::selection {
+  background: var(--docs-selection);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DOCS LAYOUT ANIMATIONS - GPU ACCELERATED
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Apple-like spring easing */
+:root {
+  --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+/* ─── Docs Main Content (margin for fixed sidebar) ─── */
+.docs-main-content {
+  margin-left: 0;
+  transition: margin-left 300ms var(--ease-spring);
+}
+
+@media (min-width: 1024px) {
+  .docs-main-content {
+    margin-left: 18rem; /* w-72 = 18rem */
+  }
+  
+  .docs-sidebar-collapsed .docs-main-content {
+    margin-left: 0;
+  }
+  
+  .docs-zen-mode .docs-main-content {
+    margin-left: 0;
+  }
+}
+
+/* ─── Sidebar (hide in zen mode) ─── */
+.docs-zen-mode .docs-sidebar {
+  transform: translateX(-100%);
+}
+
+/* ─── TOC (Table of Contents) ─── */
+.docs-toc-wrap {
+  transform: translateX(0);
+  opacity: 1;
+  transition: 
+    transform 400ms var(--ease-spring),
+    opacity 250ms ease-out;
+  will-change: transform, opacity;
+}
+
+.docs-zen-mode .docs-toc-wrap {
+  transform: translateX(50px);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ─── Main Content Shell ─── */
+.docs-content-shell {
+  transition: max-width 500ms var(--ease-out-expo);
+}
+
+.docs-zen-mode .docs-content-shell {
+  max-width: 920px;
+}
+
+/* ─── Top Controls Bar (hide in zen) ─── */
+.docs-top-controls {
+  opacity: 1;
+  transform: translateY(0);
+  max-height: 100px;
+  transition: 
+    opacity 200ms ease-out,
+    transform 300ms var(--ease-spring),
+    max-height 300ms ease-out;
+}
+
+.docs-zen-mode .docs-top-controls {
+  opacity: 0;
+  transform: translateY(-10px);
+  max-height: 0;
+  margin-bottom: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* ─── Breadcrumbs (hide in zen) ─── */
+.docs-breadcrumbs {
+  opacity: 1;
+  transform: translateY(0);
+  max-height: 50px;
+  transition: 
+    opacity 200ms ease-out,
+    transform 200ms ease-out,
+    max-height 250ms ease-out,
+    margin 250ms ease-out;
+}
+
+.docs-zen-mode .docs-breadcrumbs {
+  opacity: 0;
+  transform: translateY(-5px);
+  max-height: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CREAM THEME PROSE OVERRIDES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.docs-theme-cream .prose,
+.docs-theme-cream .prose p,
+.docs-theme-cream .prose li,
+.docs-theme-cream .prose strong {
+  color: var(--docs-text) !important;
+}
+
+.docs-theme-cream .prose h1,
+.docs-theme-cream .prose h2,
+.docs-theme-cream .prose h3,
+.docs-theme-cream .prose h4 {
+  color: var(--docs-text-heading) !important;
+}
+
+.docs-theme-cream .prose code {
+  background: var(--docs-code-bg) !important;
+  color: var(--docs-code-text) !important;
+}
+
+.docs-theme-cream .prose pre {
+  background: var(--docs-code-bg) !important;
+  border-color: var(--docs-panel-border) !important;
+}
+
+.docs-theme-cream .prose a {
+  color: var(--docs-link) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DOCS COMPONENT UTILITIES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Sidebar active indicator */
+.docs-sidebar-active {
+  position: relative;
+}
+
+.docs-sidebar-active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: var(--docs-accent);
+  border-radius: 0 2px 2px 0;
+}
+
+/* TOC active indicator */
+.docs-toc-active {
+  position: relative;
+  color: var(--docs-accent) !important;
+}
+
+.docs-toc-active::before {
+  content: "";
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2px;
+  height: 100%;
+  background: var(--docs-accent);
+  border-radius: 1px;
+  opacity: 0.8;
+}
+
+/* Card hover effect */
+.docs-card {
+  transition: 
+    transform 300ms cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 200ms ease;
+}
+
+.docs-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px -12px var(--docs-card-glow);
+}
+
+/* Button/control base */
+.docs-control {
+  transition: 
+    background-color 200ms ease,
+    border-color 200ms ease,
+    color 150ms ease,
+    transform 200ms ease;
+}
+
+.docs-control:hover {
+  transform: translateY(-1px);
+}
+
+.docs-control:active {
+  transform: translateY(0);
+}
+
+/* Focus ring for accessibility */
+.docs-focus-ring:focus-visible {
+  outline: 2px solid var(--docs-accent);
+  outline-offset: 2px;
+}

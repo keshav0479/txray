@@ -1,0 +1,68 @@
+# Getting Started
+
+Welcome to txray, a professional Bitcoin transaction analysis toolkit.
+
+<AudienceIntro />
+
+<AudienceBlock for="beginner" title="Beginner focus">
+Start with Lens. Think of it like learning the labels on a map before solving routes.
+</AudienceBlock>
+
+<AudienceBlock for="analyst" title="Analyst focus">
+Prioritize confidence scoring and contradiction checks between heuristics.
+</AudienceBlock>
+
+<AudienceBlock for="builder" title="Builder focus">
+Use this section to map UI outputs back to CLI commands and pipeline assumptions.
+</AudienceBlock>
+
+## What is txray?
+
+txray provides three integrated tools for Bitcoin analysis:
+
+- **Lens**: Decode transactions at the byte level.
+- **Sherlock**: Cluster addresses and apply forensic heuristics.
+- **Smith**: Build optimized PSBTs with better privacy and fee control.
+
+## Quick Start
+
+### Web Interface
+
+1. Open the app.
+2. Choose Lens, Sherlock, or Smith.
+3. Paste transaction/block data.
+4. Review the analysis.
+
+### CLI
+
+```bash
+# Parse a transaction
+cargo run --release -- parse tx <hex-or-file>
+
+# Analyze a block
+cargo run --release -- analyze <block-height>
+
+# Build a PSBT
+cargo run --release -- build <fixture.json>
+
+# List famous blocks
+cargo run --release -- famous
+```
+
+## Installation
+
+```bash
+git clone https://github.com/yourusername/txray.git
+cd txray
+cargo build --release
+```
+
+## Next Steps
+
+- [Learn the UTXO model](/docs/concepts/utxo-model)
+- [Read heuristics docs](/docs/heuristics/common-input-ownership)
+- [Follow tutorials](/docs/tutorials)
+
+---
+
+txray is an educational and analysis tool. Verify results independently for critical decisions.

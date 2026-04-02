@@ -1,0 +1,77 @@
+# Tutorials
+
+Learn by doing. These guides are written in plain language with checkpoints and quick "why this matters" notes.
+
+## Featured Tutorial: Bitcoin Pizza Transaction
+
+This walkthrough teaches how to inspect a historic payment like an analyst.
+
+### Step 1: Start With Context
+
+Before opening tools, write down your question:
+
+- Who likely paid?
+- Which output looks like the merchant payment?
+- Which output might be change?
+
+<Tip>
+Start with one question at a time. If you ask five questions together, you usually miss simple clues.
+</Tip>
+
+### Step 2: Open Lens and Read Structure First
+
+In Lens, check:
+
+1. input count,
+2. output count,
+3. script types,
+4. fee and weight.
+
+Do not jump to identity conclusions yet.
+
+<Example>
+Think of this like reading a map legend before navigating the city.
+</Example>
+
+### Step 3: Identify Payment vs Change
+
+Use change-detection clues:
+
+- value shape,
+- script similarity,
+- output behavior.
+
+Mark each output as:
+
+- likely payment,
+- likely change,
+- uncertain.
+
+<Warning>
+If this transaction has collaborative behavior, change detection can be misleading.
+</Warning>
+
+### Step 4: Move to Sherlock for Clustering
+
+Now inspect ownership links and cluster confidence.
+
+Ask: does Sherlock evidence support your Lens hypothesis or contradict it?
+
+If it contradicts, prefer caution.
+
+### Step 5: Record a Short Conclusion
+
+Write 3 lines only:
+
+1. strongest evidence,
+2. biggest uncertainty,
+3. confidence level (high/medium/low).
+
+This habit keeps analysis clean and auditable.
+
+## Next Tutorials (Roadmap)
+
+1. Detecting CoinJoin-like Patterns
+2. Building a Privacy-Better Spend with Smith
+3. Investigating Suspicious Flow Patterns
+4. Wallet Fingerprinting Walkthrough

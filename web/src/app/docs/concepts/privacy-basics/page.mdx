@@ -1,0 +1,40 @@
+# Privacy Basics
+
+Bitcoin is public by default. Identities are not directly stored, but transaction graphs are visible to everyone.
+
+## Core Idea
+
+Privacy in Bitcoin means reducing how easily someone can link addresses, transactions, and behavior back to you.
+
+## Simple Analogy
+
+Imagine wearing different outfits every day (new addresses), but always taking the same route and paying exact same amount. People can still recognize you from patterns.
+
+On-chain privacy works the same way.
+
+## Common Privacy Leaks
+
+- Reusing addresses.
+- Merging many old UTXOs in one spend.
+- Predictable change outputs.
+- Unique payment amounts and timing patterns.
+
+## Better Habits
+
+- Use fresh addresses.
+- Avoid unnecessary UTXO merges.
+- Prefer wallets with good privacy defaults.
+- Understand what your wallet reveals when building transactions.
+
+## Why txray Helps
+
+txray does not just score privacy; it explains *why* a score changed.
+
+That helps you learn and improve behavior over time.
+
+---
+
+Related:
+
+- [Change Detection](/docs/heuristics/change-detection)
+- [Wallet Fingerprinting](/docs/heuristics/fingerprinting)

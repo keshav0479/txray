@@ -1,0 +1,49 @@
+# Transaction Structure
+
+A Bitcoin transaction is a compact data packet with predictable fields.
+
+## Big Picture
+
+Most transactions contain:
+
+- **Version**: rules/format indicator.
+- **Inputs**: previous outputs being spent.
+- **Outputs**: new spendable outputs.
+- **Locktime**: optional timing constraint.
+- **Witness** (SegWit): signature-related data.
+
+## Simple Analogy
+
+Think of a shipping form:
+
+- sender references old packages (inputs),
+- creates new deliveries (outputs),
+- signs authorization,
+- optionally adds delivery timing rules.
+
+## Why Structure Matters
+
+Structure gives both power and visibility:
+
+- You can verify valid spending paths.
+- You can estimate fees from size/weight.
+- You can infer behavior patterns from construction style.
+
+## Practical Reading Tips
+
+When reading a transaction, start in this order:
+
+1. Number of inputs and outputs
+2. Script types used
+3. Fee rate and weight
+4. Change likelihood
+5. Heuristic flags
+
+This keeps analysis understandable and avoids jumping to conclusions.
+
+---
+
+Related:
+
+- [UTXO Model](/docs/concepts/utxo-model)
+- [Privacy Basics](/docs/concepts/privacy-basics)

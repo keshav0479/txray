@@ -1,0 +1,46 @@
+# Change Detection
+
+## Why Change Exists
+
+Bitcoin spends full UTXOs. If your input value is bigger than your payment, the leftover amount comes back to you as **change**.
+
+Finding which output is change is a core step in privacy analysis.
+
+## Simple Analogy
+
+You buy coffee with a large bill. The barista gives product + change.
+
+On-chain, outputs are those two results. Analysts try to identify which output is the "change back to sender" output.
+
+## Signals We Check
+
+No single signal is perfect. We combine multiple weak clues:
+
+1. **Round-number behavior**: payment outputs are often human-round values.
+2. **Address/script match**: change may reuse sender wallet script style.
+3. **Output position**: some wallet implementations place change in predictable spots.
+4. **Value relationship**: one output often looks like payment intent, the other looks like remainder.
+
+## When It Fails
+
+- Wallets can randomize output order.
+- Users can manually choose unusual values.
+- CoinJoin and collaborative transactions break typical patterns.
+- Merchants may use script types similar to sender wallets.
+
+## How txray Scores Change
+
+txray computes a confidence score from combined signals.
+
+- High score: change output is likely identified.
+- Medium score: plausible but uncertain.
+- Low score: treat as ambiguous.
+
+Use this together with ownership and clustering signals, never alone.
+
+---
+
+Related:
+
+- [Common Input Ownership](/docs/heuristics/common-input-ownership)
+- [Address Clustering](/docs/heuristics/address-clustering)

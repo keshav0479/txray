@@ -6,6 +6,7 @@ import { useState, useRef, useEffect } from "react";
 import { TxrayLogo } from "@/components/shared/TxrayLogo";
 import { motion, AnimatePresence } from "framer-motion";
 import {
+  ArrowLeft,
   Search,
   ChevronDown,
   Menu,
@@ -90,10 +91,63 @@ export function Header() {
 
   const isExplore = pathname.startsWith("/explore");
   const isBuild = pathname.startsWith("/build");
+  const isDocs = pathname.startsWith("/docs");
+
+  const openDocsSearch = () => {
+    window.dispatchEvent(new Event("txray:open-doc-search"));
+  };
+
+  if (isDocs) {
+    return (
+      <header className="fixed top-0 inset-x-0 h-16 border-b border-[var(--docs-panel-border)] bg-[var(--docs-bg)]/95 backdrop-blur-xl z-50 flex items-center justify-between px-4 lg:px-8 shadow-[0_1px_0_rgba(0,0,0,0.25)]">
+        <div className="flex items-center gap-4">
+          <Link
+            href="/"
+            className="flex items-center hover:opacity-80 transition-opacity shrink-0"
+          >
+            <TxrayLogo variant="wordmark" className="h-7" />
+          </Link>
+          <span className="hidden sm:inline text-xs uppercase tracking-wide text-[var(--docs-muted)] border border-[var(--docs-panel-border)] rounded-full px-2 py-1">
+            Docs
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={openDocsSearch}
+            className="hidden md:flex items-center gap-2 rounded-lg border border-[var(--docs-panel-border)] bg-[var(--docs-panel)] px-3 py-1.5 text-sm text-[var(--docs-muted)] hover:text-[var(--docs-text)] transition-all duration-300 hover:translate-y-[-1px]"
+            aria-label="Open docs search"
+          >
+            <Search className="h-4 w-4" />
+            <span>Search docs</span>
+            <span className="ml-2 rounded border border-[var(--docs-panel-border)] px-1.5 py-0.5 text-[11px] text-[var(--docs-muted)]">
+              Ctrl K / ⌘K
+            </span>
+          </button>
+
+          <button
+            onClick={openDocsSearch}
+            className="md:hidden p-2 text-[var(--docs-muted)] hover:text-[var(--docs-text)] transition-colors rounded-lg border border-[var(--docs-panel-border)]"
+            aria-label="Open docs search"
+          >
+            <Search className="w-4 h-4" />
+          </button>
+
+          <Link
+            href="/"
+            className="hidden sm:inline-flex items-center gap-1 rounded-lg border border-[var(--docs-panel-border)] px-3 py-1.5 text-sm text-[var(--docs-muted)] hover:text-[var(--docs-text)] hover:bg-[var(--docs-panel)] transition-all duration-300 hover:translate-y-[-1px]"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back to app
+          </Link>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <>
-      <header className="fixed top-0 inset-x-0 h-14 border-b border-white/5 bg-black/60 backdrop-blur-xl z-50 flex items-center justify-between px-4 lg:px-8">
+      <header className="fixed top-0 inset-x-0 h-16 border-b border-white/5 bg-black/60 backdrop-blur-xl z-50 flex items-center justify-between px-4 lg:px-8">
         {/* Logo */}
         <Link
           href="/"
@@ -184,6 +238,29 @@ export function Header() {
             )}
             <span className="relative z-10">Build</span>
           </Link>
+
+          {/* Docs */}
+          <Link
+            href="/docs"
+            className={`relative px-3 py-1.5 text-sm font-medium transition-colors rounded-lg ${
+              isDocs
+                ? "text-white"
+                : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
+            }`}
+          >
+            {isDocs && (
+              <motion.div
+                layoutId="activeNav"
+                className="absolute inset-0 rounded-lg bg-white/10"
+                transition={{
+                  type: "spring",
+                  bounce: 0.2,
+                  duration: 0.5,
+                }}
+              />
+            )}
+            <span className="relative z-10">Docs</span>
+          </Link>
         </nav>
 
         {/* Right side: search + mobile toggle */}
@@ -254,7 +331,7 @@ export function Header() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 bg-black/90 backdrop-blur-xl pt-14"
+            className="fixed inset-0 z-40 bg-black/90 backdrop-blur-xl pt-16"
           >
             <div className="flex flex-col p-6 gap-2">
               {/* Mobile search */}
@@ -316,6 +393,18 @@ export function Header() {
                   <div className="font-medium">About txray</div>
                   <div className="text-xs text-zinc-500">
                     8 Rust crates, zero backend
+                  </div>
+                </div>
+              </Link>
+              <Link
+                href="/docs"
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-300 hover:bg-white/5 transition-colors"
+              >
+                <BookOpen className="w-5 h-5 text-zinc-500" />
+                <div>
+                  <div className="font-medium">Docs</div>
+                  <div className="text-xs text-zinc-500">
+                    Learn with guided documentation
                   </div>
                 </div>
               </Link>

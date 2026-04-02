@@ -1,0 +1,43 @@
+# UTXO Model
+
+The Unspent Transaction Output model is Bitcoin's core accounting system.
+
+## How It Works
+
+Bitcoin works more like cash than bank balances. You spend discrete outputs (UTXOs), not an account balance.
+
+If Alice has `1 BTC`, `0.5 BTC`, and `0.25 BTC`, and wants to pay Bob `0.7 BTC`, she can spend the `1 BTC` UTXO and create:
+
+- `0.7 BTC` to Bob
+- `0.3 BTC` back to herself as change
+
+## Transaction Anatomy
+
+### Inputs
+
+- References to earlier UTXOs
+- Unlocking data proving spend authority
+
+### Outputs
+
+- Value amounts
+- Spending conditions (script)
+
+### Change Output
+
+When inputs exceed the payment amount, the remainder becomes a change output.
+
+## Why It Matters for Privacy
+
+The UTXO model leaks patterns that analysis tools can detect:
+
+1. Input selection patterns
+2. Change output patterns
+3. Address reuse links
+4. Multi-input ownership links
+
+Understanding this model is essential for interpreting txray results.
+
+---
+
+See also: [Transaction Structure](/docs/concepts/transaction-structure), [Change Detection](/docs/heuristics/change-detection)

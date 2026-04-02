@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { Header } from "@/components/shared/Header";
-import { SmithBackground } from "@/components/smith/SmithBackground";
+import { AppChrome } from "@/components/shared/AppChrome";
 import "./globals.css";
 
 const inter = Inter({
@@ -39,13 +39,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body
-        className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}
-      >
-        {/* Global background - persists across all pages */}
-        <SmithBackground />
-        <Header />
-        <main className="pt-16">{children}</main>
+      <body className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}>
+        <AppChrome>
+          <Header />
+          <main className="pt-16 min-h-screen">{children}</main>
+        </AppChrome>
       </body>
     </html>
   );

@@ -1,0 +1,45 @@
+# Address Clustering
+
+## What Clustering Means
+
+Address clustering is the process of grouping addresses that are likely controlled by the same entity.
+
+The goal is not certainty. The goal is useful, transparent probability.
+
+## Simple Analogy
+
+Imagine seeing many social media accounts that always post together, at the same time, with similar style. You cannot prove they are one person, but you can infer they are linked.
+
+Address clustering does a similar thing with transaction behavior.
+
+## How Graph Clustering Works
+
+At a high level:
+
+1. Build a graph where addresses are nodes.
+2. Add edges when heuristics suggest a link.
+3. Score edge strength from evidence.
+4. Form clusters from strong linked components.
+
+txray emphasizes explainable edges (why two addresses were linked).
+
+## Limits and False Links
+
+- Collaborative transactions can create false edges.
+- Shared infrastructure (for example exchanges) can blur ownership.
+- One heuristic can be noisy in isolation.
+
+That is why txray keeps confidence and rationale visible.
+
+## How to Read Results
+
+- Treat clusters as investigative maps, not court-proof identity claims.
+- Start from strongest links, then expand outward.
+- Re-check with fingerprinting and transaction-type context.
+
+---
+
+Related:
+
+- [Common Input Ownership](/docs/heuristics/common-input-ownership)
+- [Wallet Fingerprinting](/docs/heuristics/fingerprinting)
