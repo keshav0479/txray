@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { Header } from "@/components/shared/Header";
 import { AppChrome } from "@/components/shared/AppChrome";
+import { MempoolProvider } from "@/context/MempoolContext";
 import "./globals.css";
 
 const inter = Inter({
@@ -42,10 +43,12 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}
       >
-        <AppChrome>
-          <Header />
-          <main className="pt-16 min-h-screen">{children}</main>
-        </AppChrome>
+        <MempoolProvider>
+          <AppChrome>
+            <Header />
+            <main className="pt-16 min-h-screen">{children}</main>
+          </AppChrome>
+        </MempoolProvider>
       </body>
     </html>
   );

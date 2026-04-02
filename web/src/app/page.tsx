@@ -32,8 +32,12 @@ import {
 } from "lucide-react";
 import { FAMOUS_ENTRIES, type FamousEntry } from "@/lib/famous";
 import { detectSearchType } from "@/lib/mempool";
+import dynamic from "next/dynamic";
 import { Footer } from "@/components/shared/Footer";
-import { SmithBackground } from "@/components/smith/SmithBackground";
+const SmithBackground = dynamic(
+  () => import("@/components/smith/SmithBackground").then(mod => mod.SmithBackground),
+  { ssr: false }
+);
 import {
   LensMini,
   SherlockMini,
@@ -41,12 +45,23 @@ import {
 } from "@/components/shared/LandingIllustrations";
 import { TiltCard } from "@/components/shared/TiltCard";
 import { TxrayLogo } from "@/components/shared/TxrayLogo";
-import { useMempoolWS } from "@/hooks/useMempoolWS";
+import { useMempool } from "@/context/MempoolContext";
 import { Tooltip } from "@/components/ui/Tooltip";
 
-// pick a cleaner subset of famous entries for the landing chips
-const CHIP_ENTRIES = FAMOUS_ENTRIES.filter((e) =>
-  ["pizza-tx", "segwit-activation", "first-taproot"].includes(e.id),
+// Curated pool — rotate 3 per day so returning users see variety
+const CHIP_POOL_IDS = [
+  "genesis",
+  "satoshi-to-finney",
+  "pizza-tx",
+  "segwit-activation",
+  "wasabi-coinjoin",
+  "first-taproot",
+  "mtgox-theft",
+];
+const CHIP_POOL = FAMOUS_ENTRIES.filter((e) => CHIP_POOL_IDS.includes(e.id));
+const dayIndex = Math.floor(Date.now() / 86_400_000); // changes daily
+const CHIP_ENTRIES = [0, 1, 2].map(
+  (i) => CHIP_POOL[(dayIndex + i) % CHIP_POOL.length],
 );
 
 const CAPABILITIES = [
@@ -74,7 +89,7 @@ const CAPABILITIES = [
   },
   {
     icon: Hammer,
-    title: "Build",
+    title: "Construct",
     subtitle: "Smith",
     cta: "Build",
     description:
@@ -110,6 +125,8 @@ export default function HomePage() {
   const holdDelayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const holdActivatedRef = useRef(false);
   const holdProgressRef = useRef(0);
+  const prevTipHeightRef = useRef<number | null>(null);
+  const blockPulseReturnRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [scanOrigin, setScanOrigin] = useState<{ x: number; y: number } | null>(
     null,
@@ -120,7 +137,7 @@ export default function HomePage() {
   const [nowSec, setNowSec] = useState(() => Math.floor(Date.now() / 1_000));
   const [pulseVisible, setPulseVisible] = useState(false);
   const { tipHeight, fees, mempoolTxCount, lastBlockTimestamp, isConnected } =
-    useMempoolWS();
+    useMempool();
 
   const blockAgeSec =
     lastBlockTimestamp !== null
@@ -218,8 +235,45 @@ export default function HomePage() {
       if (holdDelayRef.current) clearTimeout(holdDelayRef.current);
       if (holdTimerRef.current) clearInterval(holdTimerRef.current);
       if (fadeTimerRef.current) clearInterval(fadeTimerRef.current);
+      if (blockPulseReturnRef.current) clearTimeout(blockPulseReturnRef.current);
     };
   }, []);
+
+  // New block mined → max glow instantly, then slow fade (~4s total)
+  useEffect(() => {
+    if (tipHeight === null) return;
+    if (prevTipHeightRef.current === null) {
+      prevTipHeightRef.current = tipHeight;
+      return;
+    }
+    if (tipHeight > prevTipHeightRef.current) {
+      // Kill any ongoing fade
+      if (fadeTimerRef.current) { clearInterval(fadeTimerRef.current); fadeTimerRef.current = null; }
+      if (blockPulseReturnRef.current) clearTimeout(blockPulseReturnRef.current);
+
+      // Instantly max out the hold glow
+      holdProgressRef.current = 1;
+      setHoldProgress(1);
+
+      // Hold at full brightness for 1s, then fade slowly over ~3s
+      blockPulseReturnRef.current = setTimeout(() => {
+        fadeTimerRef.current = setInterval(() => {
+          setHoldProgress((prev) => {
+            const next = prev - 0.008; // ~3.3s to fade from 1→0 (vs 0.04 for manual release)
+            if (next <= 0) {
+              if (fadeTimerRef.current) clearInterval(fadeTimerRef.current);
+              holdActivatedRef.current = false;
+              holdProgressRef.current = 0;
+              return 0;
+            }
+            holdProgressRef.current = next;
+            return next;
+          });
+        }, 33);
+      }, 1000);
+    }
+    prevTipHeightRef.current = tipHeight;
+  }, [tipHeight]);
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -360,13 +414,13 @@ export default function HomePage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Enter a txid, block height, or block hash..."
-                className="w-full bg-stone-800/40 hover:bg-stone-800/60 backdrop-blur-3xl border border-white/20 hover:border-white/30 rounded-2xl pl-12 pr-12 py-4 text-white placeholder:text-stone-400 focus:outline-none focus:border-amber-500/60 focus:ring-4 focus:ring-amber-500/20 focus:bg-stone-900/90 search-input transition-all shadow-[0_8px_30px_rgb(0,0,0,0.5)]"
+                className="w-full bg-stone-800/40 hover:bg-stone-800/60 backdrop-blur-3xl border border-white/20 hover:border-white/30 rounded-2xl pl-12 pr-28 py-4 text-white placeholder:text-stone-400 focus:outline-none focus:border-amber-500/60 focus:ring-4 focus:ring-amber-500/20 focus:bg-stone-900/90 search-input transition-all shadow-[0_8px_30px_rgb(0,0,0,0.5)]"
               />
 
               {!searchQuery.trim() && (
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-60 group-focus-within:opacity-0 transition-opacity">
-                  <span className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded border border-white/10 bg-white/5 text-[10px] font-mono font-medium text-stone-400">
-                    ⌘K
+                  <span className="hidden sm:inline-flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-[11px] text-stone-400">
+                    Ctrl K / ⌘K
                   </span>
                 </div>
               )}
@@ -428,13 +482,15 @@ export default function HomePage() {
                   {tipHeight !== null ? (
                     <Link
                       href={`/explore/block/${tipHeight}`}
-                      className="inline-flex items-center gap-1 text-white hover:text-amber-400 transition-colors"
+                      className="inline-flex items-center gap-1"
                     >
-                      <SmoothNumber
-                        value={tipHeight}
-                        formatter={(value) => `#${value.toLocaleString()}`}
-                      />
-                      <ArrowUpRight className="w-3 h-3 opacity-50 hidden sm:block" />
+                      <span className="shimmer-text">
+                        <SmoothNumber
+                          value={tipHeight}
+                          formatter={(value) => `#${value.toLocaleString()}`}
+                        />
+                      </span>
+                      <ArrowUpRight className="w-3 h-3 text-amber-400/60 hidden sm:block" />
                     </Link>
                   ) : (
                     <span className="text-stone-700">--</span>
@@ -493,13 +549,15 @@ export default function HomePage() {
                     {tipHeight !== null ? (
                       <Link
                         href={`/explore/block/${tipHeight}`}
-                        className="inline-flex items-center gap-1.5 text-white hover:text-amber-400 transition-colors"
+                        className="inline-flex items-center gap-1.5"
                       >
-                        <SmoothNumber
-                          value={tipHeight}
-                          formatter={(value) => `#${value.toLocaleString()}`}
-                        />
-                        <ArrowUpRight className="w-3 h-3 opacity-40 shrink-0" />
+                        <span className="shimmer-text">
+                          <SmoothNumber
+                            value={tipHeight}
+                            formatter={(value) => `#${value.toLocaleString()}`}
+                          />
+                        </span>
+                        <ArrowUpRight className="w-3 h-3 text-amber-400/60 shrink-0" />
                       </Link>
                     ) : (
                       <span className="text-stone-700">--</span>

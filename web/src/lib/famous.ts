@@ -31,32 +31,6 @@ export const FAMOUS_ENTRIES: FamousEntry[] = [
     category: "genesis",
   },
   {
-    id: "first-transfer",
-    name: "First Transaction",
-    type: "block",
-    height: 170,
-    date: "Jan 12, 2009",
-    tagline: "Satoshi sends Bitcoin to Hal Finney",
-    story:
-      "Block 170 contains the first-ever Bitcoin transfer between two people. Satoshi Nakamoto sent 10 BTC to cryptographer Hal Finney.",
-    whyInteresting:
-      "Uses Pay-to-Public-Key (P2PK), the earliest script type. No addresses, just raw public keys. Zero fee, because fees weren't needed yet.",
-    category: "genesis",
-  },
-  {
-    id: "pizza",
-    name: "Pizza Transaction",
-    type: "block",
-    height: 57043,
-    date: "May 22, 2010",
-    tagline: "10,000 BTC for two pizzas",
-    story:
-      "Laszlo Hanyecz paid 10,000 BTC for two Papa John's pizzas, marking the first real-world Bitcoin purchase. May 22 is now celebrated as Bitcoin Pizza Day.",
-    whyInteresting:
-      "The first commercial Bitcoin transaction. Those 10,000 BTC would be worth hundreds of millions today. Shows early P2PK script usage.",
-    category: "cultural",
-  },
-  {
     id: "first-op-return",
     name: "First OP_RETURN",
     type: "block",
@@ -151,7 +125,7 @@ export const FAMOUS_ENTRIES: FamousEntry[] = [
   },
   {
     id: "mtgox-theft",
-    name: "Mt. Gox Hack Tx",
+    name: "Mt. Gox Collapse",
     type: "tx",
     txid: "05f6dff67d2f64e09e62fcfcdf59c3c7d0e7c51b92663adb0abe4252dd42bb40",
     date: "Mar 1, 2014",

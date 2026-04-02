@@ -2,6 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 
 const MEMPOOL_BASE = "https://mempool.space/api";
 
+// In-memory LRU cache — blocks are immutable once confirmed
+const CACHE_MAX = 25;
+const blockCache = new Map<string, object>();
+
+function cacheSet(key: string, value: object) {
+  if (blockCache.size >= CACHE_MAX) {
+    // Evict oldest entry (Map preserves insertion order)
+    blockCache.delete(blockCache.keys().next().value!);
+  }
+  blockCache.set(key, value);
+}
+
 /**
  * Fetch block from mempool.space by height or hash, transform into
  * the BlockAnalysis shape that BlockOverview expects.
@@ -14,6 +26,11 @@ export async function GET(
 ) {
   try {
     const { height: heightOrHash } = await params;
+
+    // Serve from cache if available
+    if (blockCache.has(heightOrHash)) {
+      return NextResponse.json(blockCache.get(heightOrHash));
+    }
 
     // Step 1: Resolve block hash
     let blockHash: string;
@@ -33,6 +50,11 @@ export async function GET(
       blockHash = await hashRes.text();
     } else {
       blockHash = heightOrHash;
+    }
+
+    // Also check by resolved hash (covers hash-keyed lookups)
+    if (blockCache.has(blockHash)) {
+      return NextResponse.json(blockCache.get(blockHash));
     }
 
     // Step 2: Fetch block metadata
@@ -119,6 +141,10 @@ export async function GET(
         script_type_summary: scriptTypeSummary,
       },
     };
+
+    // Cache by both height and hash for instant lookup either way
+    cacheSet(heightOrHash, blockAnalysis);
+    if (blockHash !== heightOrHash) cacheSet(blockHash, blockAnalysis);
 
     return NextResponse.json(blockAnalysis);
   } catch (error) {

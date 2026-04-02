@@ -12,28 +12,12 @@ import {
   Menu,
   X,
   History,
-  Blocks,
   BookOpen,
   Hammer,
   ScanSearch,
   FingerprintPattern,
 } from "lucide-react";
 import { detectSearchType } from "@/lib/mempool";
-
-const EXPLORE_ITEMS = [
-  {
-    href: "/explore/famous",
-    label: "Bitcoin History",
-    icon: History,
-    desc: "Significant blocks and transactions through time",
-  },
-  {
-    href: "/explore/block/170",
-    label: "Block Explorer",
-    icon: Blocks,
-    desc: "Inspect any block by height",
-  },
-];
 
 const TOOLS_ITEMS = [
   {
@@ -61,18 +45,14 @@ export function Header() {
   const router = useRouter();
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [exploreOpen, setExploreOpen] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
-  const exploreRef = useRef<HTMLDivElement>(null);
   const toolsRef = useRef<HTMLDivElement>(null);
 
   // close dropdowns on outside click
   useEffect(() => {
     function handler(e: MouseEvent) {
-      if (exploreRef.current && !exploreRef.current.contains(e.target as Node))
-        setExploreOpen(false);
       if (toolsRef.current && !toolsRef.current.contains(e.target as Node))
         setToolsOpen(false);
     }
@@ -80,16 +60,17 @@ export function Header() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // focus search input when opened
+  // focus search input when opened — delay lets animation mount the input first
   useEffect(() => {
-    if (searchOpen) searchRef.current?.focus();
+    if (!searchOpen) return;
+    const id = setTimeout(() => searchRef.current?.focus(), 50);
+    return () => clearTimeout(id);
   }, [searchOpen]);
 
   // close menus on route change
   useEffect(() => {
     const id = setTimeout(() => {
       setMobileOpen(false);
-      setExploreOpen(false);
       setToolsOpen(false);
     }, 0);
     return () => clearTimeout(id);
@@ -115,6 +96,19 @@ export function Header() {
     pathname.startsWith("/build");
   const isDocs = pathname.startsWith("/docs");
   const isHome = pathname === "/";
+
+  // Ctrl+K / ⌘K opens navbar search (not on home — hero has its own)
+  useEffect(() => {
+    if (isHome) return;
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [isHome]);
 
   const openDocsSearch = () => {
     window.dispatchEvent(new Event("txray:open-doc-search"));
@@ -189,69 +183,30 @@ export function Header() {
 
           {/* ── Center: Nav ── */}
           <nav className="hidden md:flex flex-none items-center gap-1">
-            {/* Explore dropdown */}
-            <div ref={exploreRef} className="relative">
-              <button
-                onClick={() => {
-                  setExploreOpen(!exploreOpen);
-                  setToolsOpen(false);
-                }}
-                className={`relative px-3 py-1.5 text-sm font-medium transition-colors rounded-lg flex items-center gap-1 ${
-                  isExplore
-                    ? "text-white"
-                    : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
-                }`}
-              >
-                {isExplore && (
-                  <motion.div
-                    layoutId="activeNav"
-                    className="absolute inset-0 rounded-lg bg-white/10"
-                    transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
-                  />
-                )}
-                <span className="relative z-10">Explore</span>
-                <ChevronDown
-                  className={`w-3.5 h-3.5 relative z-10 transition-transform duration-200 ${exploreOpen ? "rotate-180" : ""}`}
+            {/* Explore link */}
+            <Link
+              href="/explore/famous"
+              className={`relative px-3 py-1.5 text-sm font-medium transition-colors rounded-lg ${
+                isExplore
+                  ? "text-white"
+                  : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
+              }`}
+            >
+              {isExplore && (
+                <motion.div
+                  layoutId="activeNav"
+                  className="absolute inset-0 rounded-lg bg-white/10"
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
                 />
-              </button>
-
-              <AnimatePresence>
-                {exploreOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -6, scale: 0.97 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -6, scale: 0.97 }}
-                    transition={{ duration: 0.15 }}
-                    className={dropdownClass}
-                  >
-                    {EXPLORE_ITEMS.map((item) => (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        className="flex items-start gap-3 px-4 py-3 hover:bg-white/5 transition-colors group"
-                      >
-                        <item.icon className="w-4 h-4 text-amber-500/60 group-hover:text-amber-400 mt-0.5 shrink-0 transition-colors" />
-                        <div>
-                          <div className="text-sm font-medium text-white">
-                            {item.label}
-                          </div>
-                          <div className="text-xs text-zinc-500">
-                            {item.desc}
-                          </div>
-                        </div>
-                      </Link>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+              )}
+              <span className="relative z-10">Explore</span>
+            </Link>
 
             {/* Tools dropdown */}
             <div ref={toolsRef} className="relative">
               <button
                 onClick={() => {
                   setToolsOpen(!toolsOpen);
-                  setExploreOpen(false);
                 }}
                 className={`relative px-3 py-1.5 text-sm font-medium transition-colors rounded-lg flex items-center gap-1 ${
                   isTools
@@ -435,23 +390,17 @@ export function Header() {
                 </form>
               )}
 
-              {/* Explore group */}
-              <p className="text-[10px] uppercase tracking-widest text-zinc-600 px-4 mb-1 mt-2">
-                Explore
-              </p>
-              {EXPLORE_ITEMS.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-300 hover:bg-white/5 transition-colors"
-                >
-                  <item.icon className="w-5 h-5 text-zinc-500" />
-                  <div>
-                    <div className="font-medium">{item.label}</div>
-                    <div className="text-xs text-zinc-500">{item.desc}</div>
-                  </div>
-                </Link>
-              ))}
+              {/* Explore link */}
+              <Link
+                href="/explore/famous"
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-300 hover:bg-white/5 transition-colors"
+              >
+                <History className="w-5 h-5 text-zinc-500" />
+                <div>
+                  <div className="font-medium">Explore</div>
+                  <div className="text-xs text-zinc-500">Bitcoin history and famous blocks</div>
+                </div>
+              </Link>
 
               {/* Tools group */}
               <p className="text-[10px] uppercase tracking-widest text-zinc-600 px-4 mb-1 mt-4">

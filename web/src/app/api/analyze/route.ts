@@ -193,8 +193,8 @@ export async function POST(req: Request) {
         writeFile(xorPath, Buffer.from(await xorFile.arrayBuffer())),
       ]);
 
-      // Pass basenames and tmpDir so CLI runs from correct directory
-      return parseBlockFiles(blkName, revName, xorName, tmpDir);
+      // Pass absolute paths so CLI doesn't depend on cwd
+      return parseBlockFiles(blkPath, revPath, xorPath);
     }
 
     return NextResponse.json(

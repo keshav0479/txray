@@ -18,14 +18,15 @@ import type { AnalyzedTx } from "@/lib/layout";
 
 interface AnalysisViewProps {
   data: AnalyzedTx;
-  onReset: () => void;
+  onReset?: () => void;
   onBack?: () => void;
+  hideTerminal?: boolean;
 }
 
 // Hoisted outside component to avoid new array identity each render
 const CARD_IDS = ["card-0", "card-1", "card-2", "card-3"];
 
-export function AnalysisView({ data, onReset, onBack }: AnalysisViewProps) {
+export function AnalysisView({ data, onReset, onBack, hideTerminal }: AnalysisViewProps) {
   // Track which card is in view
   const activeCardId = useScrollSpy(CARD_IDS, "-40% 0px -40% 0px");
 
@@ -61,23 +62,27 @@ export function AnalysisView({ data, onReset, onBack }: AnalysisViewProps) {
 
   return (
     <div className="w-full bg-transparent text-white animate-in fade-in duration-1000">
-      {/* Floating action bar for results */}
-      <div className="w-full max-w-7xl mx-auto px-6 py-3 flex justify-end gap-3 z-50 relative">
-        {onBack && (
-          <button
-            onClick={onBack}
-            className="text-sm font-medium text-zinc-400 hover:text-white border border-white/10 hover:border-white/20 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full transition-all"
-          >
-            ← Back to Overview
-          </button>
-        )}
-        <button
-          onClick={onReset}
-          className="text-sm font-medium text-white hover:text-white border border-lens-500/50 bg-lens-500/20 hover:bg-lens-500/40 backdrop-blur-md px-5 py-2 rounded-full transition-all shadow-[0_0_15px_rgba(59,130,246,0.3)]"
-        >
-          Analyze Another
-        </button>
-      </div>
+      {/* Floating action bar — only shown when handlers provided (Lens page, not /tx/ page) */}
+      {(onBack || onReset) && (
+        <div className="w-full max-w-7xl mx-auto px-6 py-3 flex justify-end gap-3 z-50 relative">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="text-sm font-medium text-zinc-400 hover:text-white border border-white/10 hover:border-white/20 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full transition-all"
+            >
+              ← Back to Overview
+            </button>
+          )}
+          {onReset && (
+            <button
+              onClick={onReset}
+              className="text-sm font-medium text-white hover:text-white border border-lens-500/50 bg-lens-500/20 hover:bg-lens-500/40 backdrop-blur-md px-5 py-2 rounded-full transition-all shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+            >
+              Analyze Another
+            </button>
+          )}
+        </div>
+      )}
       <div className="pt-0">
         <ScrollytellingLayout
           graphObject={
@@ -498,7 +503,7 @@ export function AnalysisView({ data, onReset, onBack }: AnalysisViewProps) {
         </ScrollytellingLayout>
       </div>
 
-      <HexTerminal rawJsonData={data} />
+      {!hideTerminal && <HexTerminal rawJsonData={data} />}
     </div>
   );
 }

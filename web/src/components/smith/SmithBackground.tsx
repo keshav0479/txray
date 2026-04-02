@@ -15,33 +15,6 @@ const BTC_PATH =
 
 const LOGO_TRANSFORM = "translate(13.27, 12.88) scale(1.5)";
 
-// Inject keyframe animations once via a <style> tag
-const KEYFRAMES_CSS = `
-@keyframes mould-glow {
-  0%, 12% { opacity: 0; }
-  18% { opacity: 0.8; }
-  25% { opacity: 1; }
-  32% { opacity: 0.8; }
-  38%, 100% { opacity: 0; }
-}
-
-@keyframes scan-glow {
-  0% { opacity: 0; }
-  20% { opacity: 1; }
-  50% { opacity: 0.6; }
-  100% { opacity: 0; }
-}
-
-@keyframes pulse-h {
-  from { stroke-dashoffset: 2080; }
-  to { stroke-dashoffset: -2080; }
-}
-
-@keyframes pulse-v {
-  from { stroke-dashoffset: 1860; }
-  to { stroke-dashoffset: -1860; }
-}
-`;
 
 function MouldTile({ delay, uniqueId }: { delay: number; uniqueId: string }) {
   const gradId = `fill-sweep-${uniqueId}`;
@@ -170,12 +143,10 @@ export function SmithBackground({
 
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden bg-transparent z-0">
-      <style dangerouslySetInnerHTML={{ __html: KEYFRAMES_CSS }} />
-
       <div
         className="absolute w-full h-full"
         style={{
-          opacity: 0.28 + holdProgress * 0.35, // ramps from 0.28 to 0.63 (balanced visibility)
+          opacity: 0.28 + holdProgress * 0.35,
           transition: holdProgress > 0 ? "none" : "opacity 0.8s ease",
         }}
       >

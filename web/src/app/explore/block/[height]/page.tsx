@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowLeft, AlertTriangle } from "lucide-react";
+import { ArrowLeft, AlertTriangle, ExternalLink } from "lucide-react";
 import { BlockOverview } from "@/components/lens/BlockOverview";
 import { AnalysisView } from "@/components/lens/AnalysisView";
 import { ContentScanLoader } from "@/components/lens/ContentScanLoader";
@@ -22,9 +22,11 @@ export default function BlockExplorePage({
   const [selectedTx, setSelectedTx] = useState<AnalyzedTx | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [blockHeight, setBlockHeight] = useState<string | null>(null);
 
   useEffect(() => {
     params.then(async (p) => {
+      setBlockHeight(p.height);
       try {
         const start = Date.now();
         const res = await fetch(`/api/block/${p.height}`);
@@ -41,6 +43,7 @@ export default function BlockExplorePage({
         setTimeout(() => {
           setBlockData(data);
           setLoading(false);
+          window.scrollTo({ top: 0, behavior: "instant" });
         }, remaining);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load block");
@@ -99,19 +102,31 @@ export default function BlockExplorePage({
     <div className="min-h-screen flex flex-col">
       <div className="flex-1">
         {/* Back button + Famous annotation */}
-        <div className="max-w-7xl mx-auto px-6 pt-20 pb-0">
-          <Link
-            href={famousEntry ? "/explore/famous" : "/"}
-            className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-white transition-colors mb-6"
-          >
-            <ArrowLeft className="w-4 h-4" /> Back
-          </Link>
+        <div className="max-w-7xl mx-auto px-6 pt-8 pb-0">
+          <div className="flex items-center justify-between mb-6">
+            <Link
+              href={famousEntry ? "/explore/famous" : "/"}
+              className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-white transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" /> Back
+            </Link>
+            <a
+              href={`https://mempool.space/block/${blockData.block_header.block_hash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-amber-400 transition-colors"
+            >
+              <span className="w-3 h-3 rounded-full bg-amber-500/20 border border-amber-500/40 inline-block" />
+              mempool.space
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
 
           {famousEntry && (
             <motion.div
               initial={{ opacity: 0, y: -5 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-8 p-4 rounded-xl bg-amber-500/5 border border-amber-500/15"
+              className="mb-3 p-4 rounded-xl bg-linear-to-br from-amber-950/40 via-stone-900/60 to-stone-950/80 border border-amber-500/20 backdrop-blur-xl"
             >
               <div className="text-[10px] uppercase tracking-widest text-amber-400 font-mono font-bold mb-1">
                 Famous Block
@@ -133,6 +148,7 @@ export default function BlockExplorePage({
           blockData={blockData}
           onSelectTx={(tx) => setSelectedTx(tx)}
           onReset={() => router.push("/")}
+          resetLabel="← Back to Search"
         />
       </div>
 

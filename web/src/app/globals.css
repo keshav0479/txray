@@ -148,6 +148,32 @@ pre,
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
 }
 
+/* ─── Smith Background keyframes ─── */
+@keyframes mould-glow {
+  0%, 12% { opacity: 0; }
+  18% { opacity: 0.8; }
+  25% { opacity: 1; }
+  32% { opacity: 0.8; }
+  38%, 100% { opacity: 0; }
+}
+
+@keyframes scan-glow {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 0; }
+}
+
+@keyframes pulse-h {
+  from { stroke-dashoffset: 2080; }
+  to { stroke-dashoffset: -2080; }
+}
+
+@keyframes pulse-v {
+  from { stroke-dashoffset: 1860; }
+  to { stroke-dashoffset: -1860; }
+}
+
 /* ─── Lens orb animations ─── */
 @keyframes orb-lr-1 {
   0% {

@@ -2,14 +2,14 @@
 
 import { useState, useMemo } from "react";
 import {
-  Table,
+  ArrowLeftRight,
   Coins,
   ShieldCheck,
   AlertTriangle,
   Layers,
   Zap,
-  Hash,
-  Box,
+  Fingerprint,
+  Blocks,
   ChevronLeft,
   ChevronRight,
   HelpCircle,
@@ -33,12 +33,14 @@ interface BlockOverviewProps {
   blockData: BlockAnalysis;
   onSelectTx: (tx: AnalyzedTx) => void;
   onReset: () => void;
+  resetLabel?: string;
 }
 
 export function BlockOverview({
   blockData,
   onSelectTx,
   onReset,
+  resetLabel = "← Analyze Another",
 }: BlockOverviewProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
@@ -130,12 +132,12 @@ export function BlockOverview({
   const scriptAnalogies = SCRIPT_ANALOGIES;
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-6 py-12 min-h-screen animate-in fade-in duration-1000 text-white">
+    <div className="w-full max-w-7xl mx-auto px-6 py-12 min-h-screen animate-in fade-in duration-1000 text-white relative z-10">
       {/* Top Bar */}
       <div className="mb-8 flex justify-between items-center">
         <div className="flex items-center gap-3">
           <div className="p-2.5 rounded-xl bg-lens-500/10 border border-lens-500/20 text-lens-400">
-            <Box className="w-6 h-6" />
+            <Blocks className="w-6 h-6" />
           </div>
           <div>
             <h1 className="text-2xl font-bold tracking-tight">
@@ -148,9 +150,9 @@ export function BlockOverview({
         </div>
         <button
           onClick={onReset}
-          className="text-sm font-medium text-zinc-400 hover:text-white border border-white/10 hover:border-white/20 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full transition-all"
+          className="text-sm font-medium text-zinc-400 hover:text-white border border-white/10 hover:border-white/20 bg-black/40 backdrop-blur-xl px-4 py-2 rounded-full transition-all"
         >
-          ← Analyze Another
+          {resetLabel}
         </button>
       </div>
 
@@ -158,7 +160,7 @@ export function BlockOverview({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <CopyableHash hash={block_header.block_hash} />
         <StatCard
-          icon={<Table />}
+          icon={<ArrowLeftRight />}
           title={
             <Tooltip
               term="Transactions"
@@ -210,7 +212,7 @@ export function BlockOverview({
 
       {/* Merkle Validation & Weights Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-12">
-        <div className="p-5 rounded-2xl border border-surface-border bg-surface-card/30 backdrop-blur-md lg:col-span-2 flex flex-col justify-center">
+        <div className="p-5 rounded-2xl border border-surface-border bg-surface-card/50 backdrop-blur-xl lg:col-span-2 flex flex-col justify-center">
           <div className="flex items-center gap-2 mb-3">
             <Layers className="w-4 h-4 text-zinc-400" />
             <span className="text-sm font-medium text-zinc-400">
@@ -256,7 +258,7 @@ export function BlockOverview({
         </div>
 
         <div
-          className={`p-5 rounded-2xl border ${block_header.merkle_root_valid ? "border-surface-border bg-surface-card/30" : "border-red-500/30 bg-red-500/10"} backdrop-blur-md flex flex-col justify-center`}
+          className={`p-5 rounded-2xl border ${block_header.merkle_root_valid ? "border-surface-border bg-surface-card/50" : "border-red-500/30 bg-red-950/80"} backdrop-blur-xl flex flex-col justify-center`}
         >
           <div className="flex items-center gap-2 mb-2">
             {block_header.merkle_root_valid ? (
@@ -410,7 +412,7 @@ export function BlockOverview({
           </div>
         </div>
 
-        <div className="w-full rounded-2xl border border-surface-border bg-surface-card/30 overflow-hidden backdrop-blur-sm shadow-xl">
+        <div className="w-full rounded-2xl border border-surface-border bg-surface-card/50 overflow-hidden backdrop-blur-sm shadow-xl">
           <div className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-surface-border bg-black/60 text-xs font-bold tracking-wider text-zinc-500 uppercase">
             <div className="col-span-1 hidden md:block">#</div>
             <div className="col-span-6 md:col-span-4">TXID</div>
@@ -511,12 +513,12 @@ function CopyableHash({ hash }: { hash: string }) {
   };
   return (
     <div
-      className="p-5 rounded-2xl border border-surface-border bg-surface-card/30 backdrop-blur-md cursor-pointer group hover:border-lens-500/30 transition-all"
+      className="p-5 rounded-2xl border border-surface-border bg-surface-card/50 backdrop-blur-xl cursor-pointer group hover:border-lens-500/30 transition-all"
       onClick={handleCopy}
     >
       <div className="flex items-center gap-2 mb-2 text-zinc-400 text-sm font-medium">
         <div className="text-lens-500">
-          <Hash />
+          <Fingerprint />
         </div>
         <Tooltip
           term="Block Hash"
@@ -556,7 +558,7 @@ function StatCard({
   value: React.ReactNode;
 }) {
   return (
-    <div className="p-5 rounded-2xl border border-surface-border bg-surface-card/30 backdrop-blur-md">
+    <div className="p-5 rounded-2xl border border-surface-border bg-surface-card/50 backdrop-blur-xl">
       <div className="flex items-center gap-2 mb-2 text-zinc-400 text-sm font-medium">
         <div className="text-lens-500">{icon}</div>
         {title}
