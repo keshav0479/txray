@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { usePathname } from "next/navigation";
 import { List } from "lucide-react";
 import { DOCS_TOC } from "@/components/docs/docs-config";
@@ -15,7 +15,7 @@ function toAnchor(value: string) {
 
 export function DocToc() {
   const pathname = usePathname();
-  const headings = DOCS_TOC[pathname] ?? [];
+  const headings = useMemo(() => DOCS_TOC[pathname] ?? [], [pathname]);
   const [active, setActive] = useState<string | null>(null);
 
   useEffect(() => {
@@ -59,7 +59,7 @@ export function DocToc() {
         <ul className="space-y-1 relative">
           {/* Progress line */}
           <div className="absolute left-0 top-0 bottom-0 w-px bg-[var(--docs-panel-border)]" />
-          
+
           {headings.map((heading) => {
             const anchor = toAnchor(heading);
             const isActive = active === anchor;

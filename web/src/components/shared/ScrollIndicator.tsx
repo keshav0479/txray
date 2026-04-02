@@ -12,9 +12,12 @@ interface ScrollIndicatorProps {
  * Unified scroll indicator for all tool pages.
  * Shows a "How it works" label with an animated dot.
  */
-export function ScrollIndicator({ theme, label = "How it works" }: ScrollIndicatorProps) {
+export function ScrollIndicator({
+  theme,
+  label = "How it works",
+}: ScrollIndicatorProps) {
   const colors = THEMES[theme];
-  
+
   return (
     <div className="flex flex-col items-center gap-3 py-16 relative z-10">
       <p className="text-xs uppercase tracking-[0.2em] text-stone-500 font-mono">

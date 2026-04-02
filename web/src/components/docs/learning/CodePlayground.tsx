@@ -46,7 +46,9 @@ export function CodePlayground({
         setOutput("// Code executed successfully\n// Output would appear here");
       }
     } catch (err) {
-      setOutput(`Error: ${err instanceof Error ? err.message : "Unknown error"}`);
+      setOutput(
+        `Error: ${err instanceof Error ? err.message : "Unknown error"}`,
+      );
     } finally {
       setIsRunning(false);
     }
@@ -79,9 +81,13 @@ export function CodePlayground({
             <Code2 className="w-4 h-4 text-violet-400" />
           </div>
           <div>
-            <h4 className="text-base font-semibold text-[var(--docs-text)]">{title}</h4>
+            <h4 className="text-base font-semibold text-[var(--docs-text)]">
+              {title}
+            </h4>
             {description && (
-              <p className="text-sm text-[var(--docs-muted)] mt-0.5">{description}</p>
+              <p className="text-sm text-[var(--docs-muted)] mt-0.5">
+                {description}
+              </p>
             )}
           </div>
         </div>
@@ -100,7 +106,11 @@ export function CodePlayground({
             className="p-2 rounded-lg bg-[var(--docs-bg)]/80 backdrop-blur border border-[var(--docs-panel-border)] text-[var(--docs-muted)] hover:text-[var(--docs-text)] transition-colors"
             title="Copy code"
           >
-            {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+            {copied ? (
+              <Check className="w-4 h-4 text-emerald-400" />
+            ) : (
+              <Copy className="w-4 h-4" />
+            )}
           </button>
           {editable && code !== initialCode && (
             <button
@@ -184,7 +194,9 @@ export function CodePlayground({
             <div className="px-5 py-3 border-t border-[var(--docs-panel-border)] bg-amber-500/5">
               <div className="flex items-start gap-2">
                 <span className="text-amber-400 text-sm">💡</span>
-                <p className="text-sm text-[var(--docs-text)]">{hints[hintIndex]}</p>
+                <p className="text-sm text-[var(--docs-text)]">
+                  {hints[hintIndex]}
+                </p>
               </div>
             </div>
           </motion.div>

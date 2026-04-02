@@ -14,7 +14,11 @@ interface LogoProps extends React.SVGProps<SVGSVGElement> {
  *   <TxrayLogo variant="mark" className="w-8 h-8 text-amber-500" />
  *   <TxrayLogo variant="wordmark" className="h-7" />
  */
-export function TxrayLogo({ variant = "mark", className = "", ...props }: LogoProps) {
+export function TxrayLogo({
+  variant = "mark",
+  className = "",
+  ...props
+}: LogoProps) {
   // Path traced from Inkscape, border sub-path removed.
   // The <g> transform matches the original SVG asset exactly.
   const logoMark = (
@@ -37,10 +41,10 @@ export function TxrayLogo({ variant = "mark", className = "", ...props }: LogoPr
   if (variant === "wordmark") {
     return (
       <div className={`flex items-center gap-2.5 ${className}`}>
-        <div className="w-7 h-7 shrink-0 text-white">
+        <div className="w-7 h-7 shrink-0 text-[var(--docs-text,white)]">
           {logoMark}
         </div>
-        <span className="font-mono text-lg font-bold tracking-tight text-white uppercase">
+        <span className="font-mono text-lg font-bold tracking-tight text-[var(--docs-text,white)] uppercase">
           txray
         </span>
       </div>

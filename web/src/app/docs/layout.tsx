@@ -16,12 +16,12 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
         <DocsScrollProgress />
         <DocsCommandPalette />
         <DocsZenPill />
-        
+
         {/* Fixed sidebar - stays in place while content scrolls */}
         <DocsSidebar />
-        
+
         {/* Main content area - has left margin to account for fixed sidebar */}
-        <main 
+        <main
           className="docs-main-content min-h-[calc(100vh-4rem)]"
           style={{ background: "var(--docs-bg-gradient)" }}
         >
@@ -48,7 +48,7 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
                 </article>
                 <DocsPager />
               </div>
-              
+
               {/* TOC - hidden on smaller screens, hidden in zen */}
               <aside className="docs-toc-wrap hidden xl:block shrink-0">
                 <DocToc />

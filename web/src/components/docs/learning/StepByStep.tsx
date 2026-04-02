@@ -2,13 +2,13 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  Check, 
-  Circle, 
+import {
+  ChevronLeft,
+  ChevronRight,
+  Check,
+  Circle,
   BookOpen,
-  RotateCcw
+  RotateCcw,
 } from "lucide-react";
 
 interface Step {
@@ -35,11 +35,14 @@ export function StepByStep({
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [isComplete, setIsComplete] = useState(false);
 
-  const goToStep = useCallback((index: number) => {
-    if (index >= 0 && index < steps.length) {
-      setCurrentStep(index);
-    }
-  }, [steps.length]);
+  const goToStep = useCallback(
+    (index: number) => {
+      if (index >= 0 && index < steps.length) {
+        setCurrentStep(index);
+      }
+    },
+    [steps.length],
+  );
 
   const nextStep = useCallback(() => {
     // Mark current step as completed
@@ -77,9 +80,13 @@ export function StepByStep({
               <BookOpen className="w-4 h-4 text-blue-400" />
             </div>
             <div>
-              <h4 className="text-base font-semibold text-[var(--docs-text)]">{title}</h4>
+              <h4 className="text-base font-semibold text-[var(--docs-text)]">
+                {title}
+              </h4>
               {description && (
-                <p className="text-sm text-[var(--docs-muted)] mt-0.5">{description}</p>
+                <p className="text-sm text-[var(--docs-muted)] mt-0.5">
+                  {description}
+                </p>
               )}
             </div>
           </div>
@@ -119,14 +126,16 @@ export function StepByStep({
                 index === currentStep
                   ? "bg-[var(--docs-accent)]/10 text-[var(--docs-accent)]"
                   : completedSteps.has(index)
-                  ? "text-emerald-400 hover:bg-[var(--docs-panel-hover)]"
-                  : "text-[var(--docs-muted)] hover:bg-[var(--docs-panel-hover)] hover:text-[var(--docs-text)]"
+                    ? "text-emerald-400 hover:bg-[var(--docs-panel-hover)]"
+                    : "text-[var(--docs-muted)] hover:bg-[var(--docs-panel-hover)] hover:text-[var(--docs-text)]"
               }`}
             >
               {completedSteps.has(index) ? (
                 <Check className="w-4 h-4" />
               ) : (
-                <Circle className={`w-4 h-4 ${index === currentStep ? "fill-current" : ""}`} />
+                <Circle
+                  className={`w-4 h-4 ${index === currentStep ? "fill-current" : ""}`}
+                />
               )}
               <span className="font-medium">{index + 1}</span>
             </button>
@@ -179,7 +188,7 @@ export function StepByStep({
                   Step {currentStep + 1} of {steps.length}
                 </span>
               </div>
-              
+
               <h3 className="text-lg font-semibold text-[var(--docs-text)] mb-4">
                 {steps[currentStep].title}
               </h3>

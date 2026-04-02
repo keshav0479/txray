@@ -46,7 +46,10 @@ export function DocsThemeToggle({ compact = false }: DocsThemeToggleProps) {
     if (!open) return;
 
     function handleClickOutside(event: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         setOpen(false);
       }
     }
@@ -85,8 +88,8 @@ export function DocsThemeToggle({ compact = false }: DocsThemeToggleProps) {
         {compact ? (
           <div className="relative">
             {/* Subtle glow effect on theme dot */}
-            <div 
-              className="absolute inset-0 rounded-full blur-sm opacity-50 group-hover:opacity-75 transition-opacity" 
+            <div
+              className="absolute inset-0 rounded-full blur-sm opacity-50 group-hover:opacity-75 transition-opacity"
               style={{ background: currentTheme?.preview }}
             />
             <span
@@ -108,32 +111,32 @@ export function DocsThemeToggle({ compact = false }: DocsThemeToggleProps) {
 
       {open && (
         <div className="absolute right-0 top-full mt-2 z-50 min-w-[140px] rounded-xl border border-[var(--docs-panel-border)] bg-[var(--docs-panel)]/95 backdrop-blur-xl p-1.5 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200">
-            {THEMES.map((t) => (
-              <button
-                key={t.key}
-                onClick={() => selectTheme(t.key)}
-                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
-                  theme === t.key
-                    ? "bg-[var(--docs-accent)]/10 text-[var(--docs-accent)]"
-                    : "text-[var(--docs-muted)] hover:text-[var(--docs-text)] hover:bg-[var(--docs-panel-hover)]"
-                }`}
-              >
-                <div className="relative">
-                  {theme === t.key && (
-                    <div 
-                      className="absolute inset-0 rounded-full blur-md opacity-40"
-                      style={{ background: t.preview }}
-                    />
-                  )}
-                  <span
-                    className="relative block w-4 h-4 rounded-full border border-white/10 shrink-0 shadow-sm"
+          {THEMES.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => selectTheme(t.key)}
+              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
+                theme === t.key
+                  ? "bg-[var(--docs-accent)]/10 text-[var(--docs-accent)]"
+                  : "text-[var(--docs-muted)] hover:text-[var(--docs-text)] hover:bg-[var(--docs-panel-hover)]"
+              }`}
+            >
+              <div className="relative">
+                {theme === t.key && (
+                  <div
+                    className="absolute inset-0 rounded-full blur-md opacity-40"
                     style={{ background: t.preview }}
                   />
-                </div>
-                <span className="flex-1 text-left">{t.label}</span>
-                {theme === t.key && <Check className="w-3.5 h-3.5" />}
-              </button>
-            ))}
+                )}
+                <span
+                  className="relative block w-4 h-4 rounded-full border border-white/10 shrink-0 shadow-sm"
+                  style={{ background: t.preview }}
+                />
+              </div>
+              <span className="flex-1 text-left">{t.label}</span>
+              {theme === t.key && <Check className="w-3.5 h-3.5" />}
+            </button>
+          ))}
         </div>
       )}
     </div>

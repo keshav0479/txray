@@ -1,6 +1,11 @@
 import type { MDXComponents } from "mdx/types";
 import type { ReactNode } from "react";
-import { Link as LinkIcon, Lightbulb, AlertTriangle, Code2 } from "lucide-react";
+import {
+  Link as LinkIcon,
+  Lightbulb,
+  AlertTriangle,
+  Code2,
+} from "lucide-react";
 import {
   AudienceBlock,
   AudienceHelpInline,
@@ -10,12 +15,15 @@ import {
 
 type CalloutVariant = "tip" | "warning" | "example";
 
-const CALLOUT_STYLES: Record<CalloutVariant, {
-  border: string;
-  bg: string;
-  title: string;
-  icon: React.ComponentType<{ className?: string }>;
-}> = {
+const CALLOUT_STYLES: Record<
+  CalloutVariant,
+  {
+    border: string;
+    bg: string;
+    title: string;
+    icon: React.ComponentType<{ className?: string }>;
+  }
+> = {
   tip: {
     border: "border-blue-500/30",
     bg: "bg-blue-500/5",
@@ -49,10 +57,14 @@ function Callout({
   const Icon = styles.icon;
 
   return (
-    <div className={`my-6 rounded-xl border ${styles.border} ${styles.bg} px-5 py-4`}>
+    <div
+      className={`my-6 rounded-xl border ${styles.border} ${styles.bg} px-5 py-4`}
+    >
       <div className="flex items-center gap-2 mb-2">
         <Icon className={`w-4 h-4 ${styles.title}`} />
-        <p className={`text-xs font-semibold uppercase tracking-wider ${styles.title}`}>
+        <p
+          className={`text-xs font-semibold uppercase tracking-wider ${styles.title}`}
+        >
           {title}
         </p>
       </div>
@@ -99,8 +111,8 @@ function H2(props: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h2 id={id} className="group scroll-mt-24" {...props}>
       {props.children}
-      <a 
-        href={`#${id}`} 
+      <a
+        href={`#${id}`}
         className="ml-2 opacity-0 group-hover:opacity-60 transition-opacity duration-200 text-[var(--docs-muted)] hover:text-[var(--docs-accent)]"
         aria-label={`Link to ${props.children}`}
       >
@@ -122,8 +134,8 @@ function H3(props: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h3 id={id} className="group scroll-mt-24" {...props}>
       {props.children}
-      <a 
-        href={`#${id}`} 
+      <a
+        href={`#${id}`}
         className="ml-2 opacity-0 group-hover:opacity-60 transition-opacity duration-200 text-[var(--docs-muted)] hover:text-[var(--docs-accent)]"
         aria-label={`Link to ${props.children}`}
       >

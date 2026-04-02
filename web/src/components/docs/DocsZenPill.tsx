@@ -18,7 +18,10 @@ export function DocsZenPill() {
 
     // Observe body class changes
     const observer = new MutationObserver(checkZen);
-    observer.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
 
     return () => observer.disconnect();
   }, []);
@@ -48,16 +51,19 @@ export function DocsZenPill() {
   }, [isZen]);
 
   // Show pill on mouse movement near top of screen
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isZen) return;
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (!isZen) return;
 
-    if (e.clientY < 80) {
-      setIsVisible(true);
-      if (hideTimeout) clearTimeout(hideTimeout);
-      const timeout = setTimeout(() => setIsVisible(false), 2500);
-      setHideTimeout(timeout);
-    }
-  }, [isZen, hideTimeout]);
+      if (e.clientY < 80) {
+        setIsVisible(true);
+        if (hideTimeout) clearTimeout(hideTimeout);
+        const timeout = setTimeout(() => setIsVisible(false), 2500);
+        setHideTimeout(timeout);
+      }
+    },
+    [isZen, hideTimeout],
+  );
 
   useEffect(() => {
     window.addEventListener("mousemove", handleMouseMove, { passive: true });
@@ -74,8 +80,8 @@ export function DocsZenPill() {
   return (
     <div
       className={`fixed top-3 left-1/2 -translate-x-1/2 z-[60] transition-all duration-300 ease-out ${
-        isVisible 
-          ? "opacity-100 translate-y-0" 
+        isVisible
+          ? "opacity-100 translate-y-0"
           : "opacity-0 -translate-y-4 pointer-events-none"
       }`}
       onMouseEnter={() => {
@@ -98,11 +104,11 @@ export function DocsZenPill() {
       >
         {/* Zen focus icon */}
         <Focus className="w-4 h-4 text-[var(--docs-accent)] transition-transform group-hover:scale-110" />
-        
+
         <span className="text-sm text-[var(--docs-muted)] group-hover:text-[var(--docs-text)] transition-colors">
           Exit Zen
         </span>
-        
+
         {/* Keyboard hint */}
         <kbd className="px-1.5 py-0.5 text-[10px] rounded bg-[var(--docs-bg)]/80 text-[var(--docs-muted)] border border-[var(--docs-panel-border)] font-mono">
           Esc

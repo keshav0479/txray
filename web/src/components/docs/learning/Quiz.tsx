@@ -2,13 +2,13 @@
 
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Check, 
-  X, 
-  HelpCircle, 
+import {
+  Check,
+  X,
+  HelpCircle,
   RotateCcw,
   ChevronRight,
-  Trophy
+  Trophy,
 } from "lucide-react";
 
 interface QuizOption {
@@ -41,7 +41,9 @@ export function Quiz({
   const [isAnswered, setIsAnswered] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
-  const [answers, setAnswers] = useState<Record<number, { selected: string; correct: boolean }>>({});
+  const [answers, setAnswers] = useState<
+    Record<number, { selected: string; correct: boolean }>
+  >({});
 
   const question = questions[currentQuestion];
   const correctOption = question?.options.find((o) => o.isCorrect);
@@ -49,8 +51,9 @@ export function Quiz({
   const submitAnswer = useCallback(() => {
     if (!selectedAnswer || isAnswered) return;
 
-    const isCorrect = question.options.find((o) => o.id === selectedAnswer)?.isCorrect || false;
-    
+    const isCorrect =
+      question.options.find((o) => o.id === selectedAnswer)?.isCorrect || false;
+
     setAnswers((prev) => ({
       ...prev,
       [currentQuestion]: { selected: selectedAnswer, correct: isCorrect },
@@ -112,7 +115,9 @@ export function Quiz({
               <HelpCircle className="w-4 h-4 text-amber-400" />
             </div>
             <div>
-              <h4 className="text-base font-semibold text-[var(--docs-text)]">{title}</h4>
+              <h4 className="text-base font-semibold text-[var(--docs-text)]">
+                {title}
+              </h4>
               {showProgress && !isComplete && (
                 <p className="text-sm text-[var(--docs-muted)] mt-0.5">
                   Question {currentQuestion + 1} of {questions.length}
@@ -137,7 +142,9 @@ export function Quiz({
             <motion.div
               className="h-full bg-gradient-to-r from-amber-500 to-orange-400"
               initial={{ width: 0 }}
-              animate={{ width: `${((currentQuestion + 1) / questions.length) * 100}%` }}
+              animate={{
+                width: `${((currentQuestion + 1) / questions.length) * 100}%`,
+              }}
               transition={{ duration: 0.3 }}
             />
           </div>
@@ -163,23 +170,26 @@ export function Quiz({
                   score >= 70 ? "bg-emerald-500/10" : "bg-amber-500/10"
                 }`}
               >
-                <Trophy className={`w-10 h-10 ${score >= 70 ? "text-emerald-400" : "text-amber-400"}`} />
+                <Trophy
+                  className={`w-10 h-10 ${score >= 70 ? "text-emerald-400" : "text-amber-400"}`}
+                />
               </motion.div>
 
               <h3 className="text-2xl font-bold text-[var(--docs-text)] mb-2">
                 {score}%
               </h3>
               <p className="text-[var(--docs-muted)] mb-2">
-                You got {correctCount} out of {questions.length} questions correct
+                You got {correctCount} out of {questions.length} questions
+                correct
               </p>
               <p className="text-sm text-[var(--docs-muted)] mb-6">
-                {score >= 90 
-                  ? "Excellent! You really know your stuff!" 
-                  : score >= 70 
-                  ? "Good job! You have a solid understanding." 
-                  : score >= 50 
-                  ? "Not bad! Review the concepts and try again."
-                  : "Keep learning! Review the material and retry."}
+                {score >= 90
+                  ? "Excellent! You really know your stuff!"
+                  : score >= 70
+                    ? "Good job! You have a solid understanding."
+                    : score >= 50
+                      ? "Not bad! Review the concepts and try again."
+                      : "Keep learning! Review the material and retry."}
               </p>
 
               {/* Question summary */}
@@ -224,7 +234,9 @@ export function Quiz({
                     className={`w-full text-left p-4 rounded-xl border transition-all duration-200 ${getOptionStyle(option)}`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-[var(--docs-text)]">{option.text}</span>
+                      <span className="text-[var(--docs-text)]">
+                        {option.text}
+                      </span>
                       {isAnswered && (
                         <span>
                           {option.isCorrect ? (
@@ -250,7 +262,9 @@ export function Quiz({
                   >
                     <div className="mt-4 p-4 rounded-xl bg-[var(--docs-bg)] border border-[var(--docs-panel-border)]">
                       <p className="text-sm text-[var(--docs-muted)]">
-                        <span className="font-semibold text-[var(--docs-text)]">Explanation:</span>{" "}
+                        <span className="font-semibold text-[var(--docs-text)]">
+                          Explanation:
+                        </span>{" "}
                         {question.explanation}
                       </p>
                     </div>
@@ -284,7 +298,9 @@ export function Quiz({
               onClick={nextQuestion}
               className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--docs-accent)]/10 text-[var(--docs-accent)] font-medium hover:bg-[var(--docs-accent)]/20 transition-colors"
             >
-              {currentQuestion === questions.length - 1 ? "See Results" : "Next"}
+              {currentQuestion === questions.length - 1
+                ? "See Results"
+                : "Next"}
               <ChevronRight className="w-4 h-4" />
             </button>
           ) : (

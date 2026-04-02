@@ -7,7 +7,10 @@ type Audience = "beginner" | "analyst" | "builder";
 
 const STORAGE_KEY = "txray-docs-audience";
 
-const AUDIENCE_CONFIG: Record<Audience, { label: string; icon: React.ComponentType<{ className?: string }> }> = {
+const AUDIENCE_CONFIG: Record<
+  Audience,
+  { label: string; icon: React.ComponentType<{ className?: string }> }
+> = {
   beginner: { label: "Beginner", icon: BookOpen },
   analyst: { label: "Analyst", icon: BarChart3 },
   builder: { label: "Builder", icon: Terminal },
@@ -19,14 +22,17 @@ const AudienceContext = createContext<{
 } | null>(null);
 
 function useAudienceState() {
-  const [audience, setAudience] = useState<Audience>("beginner");
-
-  useEffect(() => {
-    const saved = window.localStorage.getItem(STORAGE_KEY) as Audience | null;
+  // Initialize from localStorage on client
+  const getInitialAudience = (): Audience => {
+    if (typeof window === "undefined") return "beginner";
+    const saved = window.localStorage.getItem(STORAGE_KEY);
     if (saved === "beginner" || saved === "analyst" || saved === "builder") {
-      setAudience(saved);
+      return saved;
     }
-  }, []);
+    return "beginner";
+  };
+
+  const [audience, setAudience] = useState<Audience>(getInitialAudience);
 
   useEffect(() => {
     window.localStorage.setItem(STORAGE_KEY, audience);
@@ -35,11 +41,23 @@ function useAudienceState() {
   return { audience, setAudience };
 }
 
-export function DocsAudienceProvider({ children }: { children: React.ReactNode }) {
+export function DocsAudienceProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const state = useAudienceState();
-  const value = useMemo(() => state, [state.audience, state.setAudience]);
+  const value = useMemo(
+    () => state,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [state.audience]
+  );
 
-  return <AudienceContext.Provider value={value}>{children}</AudienceContext.Provider>;
+  return (
+    <AudienceContext.Provider value={value}>
+      {children}
+    </AudienceContext.Provider>
+  );
 }
 
 export function AudienceSelector() {
@@ -92,7 +110,8 @@ export function AudienceHelpInline() {
         </p>
       </div>
       <p className="text-sm text-[var(--docs-muted)] leading-relaxed">
-        Content adapts based on your selected audience level. Change it from the controls above.
+        Content adapts based on your selected audience level. Change it from the
+        controls above.
       </p>
     </div>
   );
@@ -108,7 +127,8 @@ export function AudienceIntro() {
   return (
     <div className="my-6 rounded-xl border border-[var(--docs-panel-border)] bg-[var(--docs-panel)] px-5 py-4">
       <p className="text-xs font-semibold uppercase tracking-wider text-[var(--docs-muted)] mb-1">
-        Current audience: <span className="text-[var(--docs-accent)]">{ctx.audience}</span>
+        Current audience:{" "}
+        <span className="text-[var(--docs-accent)]">{ctx.audience}</span>
       </p>
       <p className="text-sm text-[var(--docs-muted)]">
         Switch audience from the control bar to adapt this page.
@@ -138,9 +158,13 @@ export function AudienceBlock({
     <div className="my-6 rounded-xl border border-[var(--docs-accent)]/30 bg-[var(--docs-accent)]/5 p-5">
       <div className="flex items-center gap-2 mb-3">
         <Icon className="w-4 h-4 text-[var(--docs-accent)]" />
-        <p className="text-xs font-semibold uppercase tracking-wider text-[var(--docs-accent)]">{title}</p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-[var(--docs-accent)]">
+          {title}
+        </p>
       </div>
-      <div className="text-[var(--docs-text)] text-[15px] leading-relaxed [&>*:last-child]:mb-0">{children}</div>
+      <div className="text-[var(--docs-text)] text-[15px] leading-relaxed [&>*:last-child]:mb-0">
+        {children}
+      </div>
     </div>
   );
 }

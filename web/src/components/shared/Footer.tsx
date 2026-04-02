@@ -3,23 +3,33 @@
 import Link from "next/link";
 import { Zap } from "lucide-react";
 import { TxrayLogo } from "@/components/shared/TxrayLogo";
+import { motion } from "framer-motion";
 
 export function Footer() {
   return (
-    <footer className="relative z-10 w-full border-t border-white/5">
+    <motion.footer
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.6 }}
+      className="relative z-10 w-full border-t border-white/5"
+    >
       <div className="w-full px-6 sm:px-10 py-10">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8">
           {/* Brand */}
           <div className="flex flex-col gap-3">
             <Link href="/" className="flex items-center gap-2 group">
-              <TxrayLogo variant="mark" className="w-5 h-5 text-zinc-600 group-hover:text-white transition-colors" />
+              <TxrayLogo
+                variant="mark"
+                className="w-5 h-5 text-zinc-600 group-hover:text-white transition-colors"
+              />
               <span className="font-mono text-sm font-bold tracking-tight text-zinc-500 uppercase group-hover:text-white transition-colors">
                 txray
               </span>
             </Link>
             <p className="text-xs text-zinc-600 max-w-xs leading-relaxed">
-              Bitcoin transaction analysis toolkit. Privacy heuristics, structural
-              breakdowns, and transaction construction. All in your browser.
+              Bitcoin transaction analysis toolkit. Privacy heuristics,
+              structural breakdowns, and transaction construction. Open source.
             </p>
           </div>
 
@@ -42,6 +52,12 @@ export function Footer() {
               className="text-xs text-zinc-600 hover:text-white transition-colors"
             >
               Smith
+            </Link>
+            <Link
+              href="/docs"
+              className="text-xs text-zinc-600 hover:text-white transition-colors"
+            >
+              Docs
             </Link>
             <span className="text-zinc-800">•</span>
             <a
@@ -69,6 +85,6 @@ export function Footer() {
           </div>
         </div>
       </div>
-    </footer>
+    </motion.footer>
   );
 }

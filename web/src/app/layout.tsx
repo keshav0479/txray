@@ -39,7 +39,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}>
+      <body
+        className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}
+      >
         <AppChrome>
           <Header />
           <main className="pt-16 min-h-screen">{children}</main>

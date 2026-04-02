@@ -14,17 +14,22 @@ export const SCRIPT_NAMES: Record<string, string> = {
 };
 
 export const SCRIPT_DEFINITIONS: Record<string, string> = {
-  p2wpkh: "A modern, highly efficient address format starting with 'bc1q'. It separates signature data to save space.",
+  p2wpkh:
+    "A modern, highly efficient address format starting with 'bc1q'. It separates signature data to save space.",
   p2tr: "The newest privacy-focused format ('bc1p'). It bundles complex multi-sig conditions into what looks like a single signature.",
   p2sh: "Often used for multi-signature wallets (starting with '3'). It hashes the script requirements to keep the address size small.",
-  p2pkh: "The original Bitcoin address format (starting with '1'). It is heavier and costs more in fees.",
-  p2wsh: "A larger, complex smart-contract format optimized for the SegWit upgrade.",
-  op_return: "A provably unspendable output used to etch arbitrary data (like text or rules) permanently into the blockchain.",
+  p2pkh:
+    "The original Bitcoin address format (starting with '1'). It is heavier and costs more in fees.",
+  p2wsh:
+    "A larger, complex smart-contract format optimized for the SegWit upgrade.",
+  op_return:
+    "A provably unspendable output used to etch arbitrary data (like text or rules) permanently into the blockchain.",
   unknown: "A non-standard or unrecognized cryptographic locking script.",
 };
 
 export const SCRIPT_ANALOGIES: Record<string, string> = {
-  p2wpkh: "Like upgrading your shipping boxes to be lighter and cheaper to send.",
+  p2wpkh:
+    "Like upgrading your shipping boxes to be lighter and cheaper to send.",
   p2tr: "Like a smart contract that looks exactly like a normal transaction to outsiders.",
   p2sh: "Like requiring multiple keys to open a safety deposit box.",
   p2pkh: "The original, heavier way Bitcoin was sent in the early days.",
@@ -45,11 +50,19 @@ export const SCRIPT_COLORS: Record<string, string> = {
 
 /** Available demo fixture IDs -- single source of truth for UI + API */
 export const DEMO_FIXTURES = [
-  { id: "04330", label: "Block 04330", description: "Very early format (Pre-SegWit)" },
-  { id: "05051", label: "Block 05051", description: "Includes SegWit transactions" },
+  {
+    id: "04330",
+    label: "Block 04330",
+    description: "Very early format (Pre-SegWit)",
+  },
+  {
+    id: "05051",
+    label: "Block 05051",
+    description: "Includes SegWit transactions",
+  },
 ] as const;
 
-export type DemoFixtureId = typeof DEMO_FIXTURES[number]["id"];
+export type DemoFixtureId = (typeof DEMO_FIXTURES)[number]["id"];
 
 /** Translate a raw script type to a friendly name */
 export function translateScript(type?: string): string {
@@ -60,5 +73,7 @@ export function translateScript(type?: string): string {
 /** Get the definition for a script type */
 export function getScriptDefinition(type?: string): string {
   if (!type) return SCRIPT_DEFINITIONS.unknown;
-  return SCRIPT_DEFINITIONS[type] || "Cryptographic lock format securing the output.";
+  return (
+    SCRIPT_DEFINITIONS[type] || "Cryptographic lock format securing the output."
+  );
 }

@@ -61,11 +61,17 @@ enum Commands {
     Fingerprint {
         /// Path to fixture JSON file
         fixture: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
     },
     /// Calculate Boltzmann entropy of a transaction
     Entropy {
         /// Path to fixture JSON file
         fixture: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
     },
     /// Step through Bitcoin script execution
     DebugScript {
@@ -87,6 +93,9 @@ enum Commands {
     Advise {
         /// Path to fixture JSON file
         fixture: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
     },
 }
 
@@ -122,8 +131,8 @@ async fn main() -> Result<()> {
         Commands::Fetch { block, tx, source } => cmd_fetch(block, tx, &source).await?,
         Commands::Famous { query } => cmd_famous(query.as_deref())?,
         Commands::Explain { fixture } => cmd_explain(&fixture)?,
-        Commands::Fingerprint { fixture } => cmd_fingerprint(&fixture)?,
-        Commands::Entropy { fixture } => cmd_entropy(&fixture)?,
+        Commands::Fingerprint { fixture, json } => cmd_fingerprint(&fixture, json)?,
+        Commands::Entropy { fixture, json } => cmd_entropy(&fixture, json)?,
         Commands::DebugScript {
             script_hex,
             script_sig,
@@ -132,7 +141,7 @@ async fn main() -> Result<()> {
             cmd_debug_script(&script_hex, &script_sig, &witness)?;
         }
         Commands::Inspect { psbt } => cmd_inspect(&psbt)?,
-        Commands::Advise { fixture } => cmd_advise(&fixture)?,
+        Commands::Advise { fixture, json } => cmd_advise(&fixture, json)?,
     }
 
     Ok(())
@@ -188,7 +197,7 @@ fn cmd_explain(fixture_path: &str) -> Result<()> {
     Ok(())
 }
 
-fn cmd_fingerprint(fixture_path: &str) -> Result<()> {
+fn cmd_fingerprint(fixture_path: &str, json_output: bool) -> Result<()> {
     let json_str = std::fs::read_to_string(fixture_path).context("failed to read fixture file")?;
     let report: serde_json::Value =
         serde_json::from_str(&json_str).context("failed to parse fixture JSON")?;
@@ -216,11 +225,15 @@ fn cmd_fingerprint(fixture_path: &str) -> Result<()> {
         });
 
     let fp = txray_sherlock::fingerprint::fingerprint_transaction(&parsed, prevouts.as_deref());
-    println!("{}", fp);
+    if json_output {
+        println!("{}", serde_json::to_string(&fp)?);
+    } else {
+        println!("{}", fp);
+    }
     Ok(())
 }
 
-fn cmd_entropy(fixture_path: &str) -> Result<()> {
+fn cmd_entropy(fixture_path: &str, json_output: bool) -> Result<()> {
     let json_str = std::fs::read_to_string(fixture_path).context("failed to read fixture file")?;
     let report: serde_json::Value =
         serde_json::from_str(&json_str).context("failed to parse fixture JSON")?;
@@ -249,8 +262,20 @@ fn cmd_entropy(fixture_path: &str) -> Result<()> {
     }
 
     match txray_sherlock::entropy::compute_entropy(&input_amounts, &output_amounts) {
-        Some(result) => println!("{}", result),
-        None => println!("Cannot compute entropy: empty inputs or outputs"),
+        Some(result) => {
+            if json_output {
+                println!("{}", serde_json::to_string(&result)?);
+            } else {
+                println!("{}", result);
+            }
+        }
+        None => {
+            if json_output {
+                println!("null");
+            } else {
+                println!("Cannot compute entropy: empty inputs or outputs");
+            }
+        }
     }
     Ok(())
 }
@@ -298,7 +323,7 @@ fn cmd_inspect(psbt_input: &str) -> Result<()> {
     Ok(())
 }
 
-fn cmd_advise(fixture_path: &str) -> Result<()> {
+fn cmd_advise(fixture_path: &str, json_output: bool) -> Result<()> {
     let json_str = std::fs::read_to_string(fixture_path).context("failed to read fixture file")?;
     let report: serde_json::Value =
         serde_json::from_str(&json_str).context("failed to parse fixture JSON")?;
@@ -354,7 +379,19 @@ fn cmd_advise(fixture_path: &str) -> Result<()> {
         Some(&fingerprint),
     );
 
-    println!("{}", advice);
+    if json_output {
+        // Return combined JSON with all privacy analysis data
+        let combined = serde_json::json!({
+            "advice": advice,
+            "fingerprint": fingerprint,
+            "entropy": entropy,
+            "heuristics": analysis.heuristics,
+            "classification": analysis.classification,
+        });
+        println!("{}", serde_json::to_string(&combined)?);
+    } else {
+        println!("{}", advice);
+    }
     Ok(())
 }
 

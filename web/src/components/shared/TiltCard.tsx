@@ -33,12 +33,24 @@ export function TiltCard({
 
   // Spring-based tilt for buttery smooth movement
   const springConfig = { stiffness, damping, mass: 0.5 };
-  const rotateX = useSpring(useTransform(mouseY, [0, 1], [maxTilt, -maxTilt]), springConfig);
-  const rotateY = useSpring(useTransform(mouseX, [0, 1], [-maxTilt, maxTilt]), springConfig);
+  const rotateX = useSpring(
+    useTransform(mouseY, [0, 1], [maxTilt, -maxTilt]),
+    springConfig,
+  );
+  const rotateY = useSpring(
+    useTransform(mouseX, [0, 1], [-maxTilt, maxTilt]),
+    springConfig,
+  );
 
   // Spotlight position for the glare
-  const glareX = useSpring(useTransform(mouseX, [0, 1], [0, 100]), springConfig);
-  const glareY = useSpring(useTransform(mouseY, [0, 1], [0, 100]), springConfig);
+  const glareX = useSpring(
+    useTransform(mouseX, [0, 1], [0, 100]),
+    springConfig,
+  );
+  const glareY = useSpring(
+    useTransform(mouseY, [0, 1], [0, 100]),
+    springConfig,
+  );
 
   function handleMouseMove(e: MouseEvent<HTMLDivElement>) {
     if (!ref.current) return;
@@ -83,7 +95,7 @@ export function TiltCard({
           background: useTransform(
             [glareX, glareY],
             ([x, y]) =>
-              `radial-gradient(circle at ${x}% ${y}%, rgba(245,158,11,${isHovered ? glareIntensity : 0}) 0%, transparent 60%)`
+              `radial-gradient(circle at ${x}% ${y}%, rgba(245,158,11,${isHovered ? glareIntensity : 0}) 0%, transparent 60%)`,
           ),
           opacity: isHovered ? 1 : 0,
           transition: "opacity 0.3s ease",

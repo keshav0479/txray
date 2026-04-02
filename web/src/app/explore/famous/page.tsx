@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Sparkles, Clock } from "lucide-react";
+import { ArrowRight, History, Clock } from "lucide-react";
 import { FAMOUS_ENTRIES, type FamousEntry } from "@/lib/famous";
 import { Footer } from "@/components/shared/Footer";
 
@@ -42,16 +42,10 @@ const CATEGORY_STYLE: Record<
   },
 };
 
-function FamousCard({
-  entry,
-  index,
-}: {
-  entry: FamousEntry;
-  index: number;
-}) {
+function FamousCard({ entry, index }: { entry: FamousEntry; index: number }) {
   const href =
     entry.type === "tx"
-      ? `/explore/tx/${entry.txid}`
+      ? `/tx/${entry.txid}`
       : `/explore/block/${entry.height}`;
 
   const cat = CATEGORY_STYLE[entry.category] || CATEGORY_STYLE.technical;
@@ -113,7 +107,7 @@ function FamousCard({
 
 export default function FamousPage() {
   return (
-      <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col">
       <div className="flex-1 max-w-5xl mx-auto px-6 pt-24 pb-16 w-full">
         {/* Header */}
         <motion.div
@@ -122,14 +116,14 @@ export default function FamousPage() {
           className="mb-12"
         >
           <div className="flex items-center gap-3 mb-3">
-            <Sparkles className="w-5 h-5 text-amber-400" />
+            <History className="w-5 h-5 text-amber-400" />
             <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
-              Famous Transactions
+              Bitcoin History
             </h1>
           </div>
           <p className="text-zinc-400 max-w-lg">
-            Historically significant Bitcoin transactions and blocks. Each
-            one taught the world something new about the protocol.
+            Historically significant blocks and transactions. Each one revealed
+            something new about the protocol.
           </p>
         </motion.div>
 

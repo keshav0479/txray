@@ -61,13 +61,40 @@ export interface BlockFileData {
 }
 
 // Classification display config
-export const CLASSIFICATION_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  coinjoin: { label: "CoinJoin", color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/20" },
-  consolidation: { label: "Consolidation", color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/20" },
-  self_transfer: { label: "Self-Transfer", color: "text-cyan-400", bg: "bg-cyan-500/10 border-cyan-500/20" },
-  batch_payment: { label: "Batch", color: "text-orange-400", bg: "bg-orange-500/10 border-orange-500/20" },
-  simple_payment: { label: "Simple", color: "text-zinc-400", bg: "bg-zinc-500/10 border-zinc-500/20" },
-  unknown: { label: "Unknown", color: "text-zinc-600", bg: "bg-zinc-800/50 border-zinc-700/20" },
+export const CLASSIFICATION_CONFIG: Record<
+  string,
+  { label: string; color: string; bg: string }
+> = {
+  coinjoin: {
+    label: "CoinJoin",
+    color: "text-purple-400",
+    bg: "bg-purple-500/10 border-purple-500/20",
+  },
+  consolidation: {
+    label: "Consolidation",
+    color: "text-blue-400",
+    bg: "bg-blue-500/10 border-blue-500/20",
+  },
+  self_transfer: {
+    label: "Self-Transfer",
+    color: "text-cyan-400",
+    bg: "bg-cyan-500/10 border-cyan-500/20",
+  },
+  batch_payment: {
+    label: "Batch",
+    color: "text-orange-400",
+    bg: "bg-orange-500/10 border-orange-500/20",
+  },
+  simple_payment: {
+    label: "Simple",
+    color: "text-zinc-400",
+    bg: "bg-zinc-500/10 border-zinc-500/20",
+  },
+  unknown: {
+    label: "Unknown",
+    color: "text-zinc-600",
+    bg: "bg-zinc-800/50 border-zinc-700/20",
+  },
 };
 
 export const HEURISTIC_LABELS: Record<string, string> = {

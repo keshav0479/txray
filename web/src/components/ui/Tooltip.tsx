@@ -40,7 +40,7 @@ export function Tooltip({
         };
 
   return (
-    <span 
+    <span
       className="relative inline-block cursor-help group z-30"
       onMouseEnter={() => setIsVisible(true)}
       onMouseLeave={() => setIsVisible(false)}
@@ -48,16 +48,20 @@ export function Tooltip({
       onBlur={() => setIsVisible(false)}
       tabIndex={0}
       role="term"
-      aria-describedby={isVisible ? `tooltip-${term.replace(/\s/g, '-')}` : undefined}
+      aria-describedby={
+        isVisible ? `tooltip-${term.replace(/\s/g, "-")}` : undefined
+      }
     >
-      <span className={`border-b-[1.5px] border-dotted border-zinc-500 transition-colors ${accent.underline}`}>
+      <span
+        className={`border-b-[1.5px] border-dotted border-zinc-500 transition-colors ${accent.underline}`}
+      >
         {children}
       </span>
 
       <AnimatePresence>
         {isVisible && (
           <motion.span
-            id={`tooltip-${term.replace(/\s/g, '-')}`}
+            id={`tooltip-${term.replace(/\s/g, "-")}`}
             role="tooltip"
             initial={{ opacity: 0, y: 5, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -74,11 +78,15 @@ export function Tooltip({
             >
               {term}
             </span>
-            <span className={`block text-white leading-relaxed ${isCompact ? "text-xs mb-0" : "text-sm mb-2"}`}>
+            <span
+              className={`block text-white leading-relaxed ${isCompact ? "text-xs mb-0" : "text-sm mb-2"}`}
+            >
               {definition}
             </span>
             {analogy && !hideAnalogy && (
-              <span className={`block text-xs text-zinc-400 italic border-l-2 pl-2 mt-2 ${accent.analogy}`}>
+              <span
+                className={`block text-xs text-zinc-400 italic border-l-2 pl-2 mt-2 ${accent.analogy}`}
+              >
                 {analogy}
               </span>
             )}

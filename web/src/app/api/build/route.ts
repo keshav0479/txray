@@ -2,10 +2,7 @@ import { NextResponse } from "next/server";
 import { mkdtemp, rm, writeFile } from "fs/promises";
 import os from "os";
 import path from "path";
-import {
-  parseJsonFromCliOutput,
-  runTxray,
-} from "@/lib/server/txrayCli";
+import { parseJsonFromCliOutput, runTxray } from "@/lib/server/txrayCli";
 
 export const runtime = "nodejs";
 
@@ -49,7 +46,8 @@ export async function POST(req: Request) {
     const output = parseJsonFromCliOutput(result.stdout);
     return NextResponse.json(output);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown build error";
+    const message =
+      error instanceof Error ? error.message : "Unknown build error";
     return NextResponse.json(
       {
         ok: false,

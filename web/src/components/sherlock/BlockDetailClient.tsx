@@ -2,7 +2,26 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight, Search, Filter, ChevronDown, ChevronUp, Activity, AlertTriangle, Zap, Database, Link2, Coins, Repeat, Blend, Package, ArrowLeftRight, FileCode, Target } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Search,
+  Filter,
+  ChevronDown,
+  ChevronUp,
+  Activity,
+  AlertTriangle,
+  Zap,
+  Database,
+  Link2,
+  Coins,
+  Repeat,
+  Blend,
+  Package,
+  ArrowLeftRight,
+  FileCode,
+  Target,
+} from "lucide-react";
 import Link from "next/link";
 import type { BlockFileData, Transaction } from "@/lib/sherlockTypes";
 import { CLASSIFICATION_CONFIG, HEURISTIC_LABELS } from "@/lib/sherlockTypes";
@@ -10,13 +29,20 @@ import { ContentScanLoader } from "@/components/sherlock/ContentScanLoader";
 
 const HEURISTIC_DESCRIPTIONS: Record<string, string> = {
   cioh: "If multiple inputs are spent together, they likely belong to the same wallet owner",
-  change_detection: "Identifies which output is leftover 'change' sent back to the sender",
-  address_reuse: "Flags when the same address appears multiple times, weakening privacy",
-  coinjoin: "Spots privacy-mixing transactions where multiple users combine their coins",
-  consolidation: "Detects when many small coins are merged into one larger coin",
-  self_transfer: "Identifies transactions where someone sends Bitcoin to themselves",
-  op_return: "Analyzes embedded data messages stored permanently on the blockchain",
-  round_number_payment: "Flags round BTC amounts (like 0.1 BTC) which are likely payments, not change",
+  change_detection:
+    "Identifies which output is leftover 'change' sent back to the sender",
+  address_reuse:
+    "Flags when the same address appears multiple times, weakening privacy",
+  coinjoin:
+    "Spots privacy-mixing transactions where multiple users combine their coins",
+  consolidation:
+    "Detects when many small coins are merged into one larger coin",
+  self_transfer:
+    "Identifies transactions where someone sends Bitcoin to themselves",
+  op_return:
+    "Analyzes embedded data messages stored permanently on the blockchain",
+  round_number_payment:
+    "Flags round BTC amounts (like 0.1 BTC) which are likely payments, not change",
 };
 
 const HEURISTIC_ICONS: Record<string, React.ElementType> = {
@@ -30,22 +56,50 @@ const HEURISTIC_ICONS: Record<string, React.ElementType> = {
   round_number_payment: Target,
 };
 
-function StatCard({ label, value, sub, icon: Icon, alert }: { label: string; value: string | number; sub?: string; icon?: React.ElementType; alert?: boolean }) {
+function StatCard({
+  label,
+  value,
+  sub,
+  icon: Icon,
+  alert,
+}: {
+  label: string;
+  value: string | number;
+  sub?: string;
+  icon?: React.ElementType;
+  alert?: boolean;
+}) {
   return (
     <div className="rounded-2xl border border-white/5 bg-black/40 backdrop-blur-md p-5 flex flex-col justify-between">
       <div className="flex items-center gap-2 mb-2">
-        {Icon && <Icon className={`w-4 h-4 ${alert ? "text-amber-500" : "text-zinc-500"}`} />}
-        <div className="text-xs uppercase tracking-widest text-zinc-500 font-medium">{label}</div>
+        {Icon && (
+          <Icon
+            className={`w-4 h-4 ${alert ? "text-amber-500" : "text-zinc-500"}`}
+          />
+        )}
+        <div className="text-xs uppercase tracking-widest text-zinc-500 font-medium">
+          {label}
+        </div>
       </div>
-      <div className={`text-2xl font-bold font-mono ${alert ? "text-amber-500 drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]" : "text-white"}`}>{value}</div>
+      <div
+        className={`text-2xl font-bold font-mono ${alert ? "text-amber-500 drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]" : "text-white"}`}
+      >
+        {value}
+      </div>
       {sub && <div className="text-xs text-zinc-500 mt-1">{sub}</div>}
     </div>
   );
 }
 
-function ClassificationPieChart({ counts, total }: { counts: Record<string, number>; total: number }) {
+function ClassificationPieChart({
+  counts,
+  total,
+}: {
+  counts: Record<string, number>;
+  total: number;
+}) {
   const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-  
+
   const colorTailwindMap: Record<string, string> = {
     coinjoin: "bg-purple-500",
     consolidation: "bg-blue-500",
@@ -54,7 +108,7 @@ function ClassificationPieChart({ counts, total }: { counts: Record<string, numb
     simple_payment: "bg-zinc-500",
     unknown: "bg-zinc-700",
   };
-  
+
   const colorHexMap: Record<string, string> = {
     coinjoin: "#a855f7",
     consolidation: "#3b82f6",
@@ -66,16 +120,22 @@ function ClassificationPieChart({ counts, total }: { counts: Record<string, numb
 
   const radius = 35;
   const circumference = 2 * Math.PI * radius;
-  
+
   // Use reduce for pure calculation of offsets to satisfy React Compiler
-  type PieSlice = { cls: string; count: number; percent: number; strokeLength: number; dashOffset: number };
+  type PieSlice = {
+    cls: string;
+    count: number;
+    percent: number;
+    strokeLength: number;
+    dashOffset: number;
+  };
   const pieData = sorted.reduce<PieSlice[]>((acc, [cls, count]) => {
     const percent = count / total;
     const strokeLength = percent * circumference;
     const lastOffset = acc.length > 0 ? acc[acc.length - 1].dashOffset : 0;
     const lastLength = acc.length > 0 ? acc[acc.length - 1].strokeLength : 0;
     const dashOffset = lastOffset - lastLength;
-    
+
     acc.push({ cls, count, percent, strokeLength, dashOffset });
     return acc;
   }, []);
@@ -83,22 +143,34 @@ function ClassificationPieChart({ counts, total }: { counts: Record<string, numb
   return (
     <div className="rounded-2xl border border-white/5 bg-black/40 backdrop-blur-md p-5 flex items-center h-full">
       <div className="flex-1">
-        <div className="text-xs uppercase tracking-widest text-zinc-500 mb-4 font-medium">Classification Distribution</div>
+        <div className="text-xs uppercase tracking-widest text-zinc-500 mb-4 font-medium">
+          Classification Distribution
+        </div>
         <div className="grid grid-cols-2 gap-x-2 gap-y-2.5">
           {sorted.map(([cls, count]) => (
             <div key={cls} className="flex items-center gap-2 text-xs">
-              <div className={`w-2 h-2 rounded-full shrink-0 ${colorTailwindMap[cls] || "bg-zinc-700"}`} />
-              <span className={`truncate ${CLASSIFICATION_CONFIG[cls]?.color || "text-zinc-500"}`} title={CLASSIFICATION_CONFIG[cls]?.label || cls}>
+              <div
+                className={`w-2 h-2 rounded-full shrink-0 ${colorTailwindMap[cls] || "bg-zinc-700"}`}
+              />
+              <span
+                className={`truncate ${CLASSIFICATION_CONFIG[cls]?.color || "text-zinc-500"}`}
+                title={CLASSIFICATION_CONFIG[cls]?.label || cls}
+              >
                 {CLASSIFICATION_CONFIG[cls]?.label || cls}
               </span>
-              <span className="text-zinc-600 font-mono text-[11px] ml-auto">{count}</span>
+              <span className="text-zinc-600 font-mono text-[11px] ml-auto">
+                {count}
+              </span>
             </div>
           ))}
         </div>
       </div>
-      
+
       <div className="w-32 h-32 shrink-0 ml-4 relative">
-        <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90 drop-shadow-md">
+        <svg
+          viewBox="0 0 100 100"
+          className="w-full h-full transform -rotate-90 drop-shadow-md"
+        >
           {/* Background Ring */}
           <circle
             cx="50"
@@ -112,15 +184,16 @@ function ClassificationPieChart({ counts, total }: { counts: Record<string, numb
           {pieData.map(({ cls, count, percent, strokeLength, dashOffset }) => {
             if (count === 0) return null;
             // Gap of 2px between segments (unless it's the only segment)
-            const gap = pieData.filter(d => d.count > 0).length > 1 ? 2 : 0;
+            const gap = pieData.filter((d) => d.count > 0).length > 1 ? 2 : 0;
             // Ensure tiny slices don't completely disappear due to the gap
             const visualGap = Math.min(gap, strokeLength * 0.5);
             const adjustedLength = Math.max(0.1, strokeLength - visualGap);
             const dashArray = `${adjustedLength} ${circumference}`;
-            
+
             const pctStr = percent * 100;
-            const displayPct = pctStr > 0 && pctStr < 0.1 ? "<0.1" : pctStr.toFixed(1);
-            
+            const displayPct =
+              pctStr > 0 && pctStr < 0.1 ? "<0.1" : pctStr.toFixed(1);
+
             return (
               <motion.circle
                 key={cls}
@@ -142,24 +215,36 @@ function ClassificationPieChart({ counts, total }: { counts: Record<string, numb
           })}
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <span className="text-[10px] text-zinc-500 font-medium uppercase tracking-wider translate-y-1">Total</span>
-          <span className="text-xs font-mono text-white/90 translate-y-0.5">{total}</span>
+          <span className="text-[10px] text-zinc-500 font-medium uppercase tracking-wider translate-y-1">
+            Total
+          </span>
+          <span className="text-xs font-mono text-white/90 translate-y-0.5">
+            {total}
+          </span>
         </div>
       </div>
     </div>
   );
 }
 
-function ScriptTypeChart({ distribution }: { distribution: Record<string, number> }) {
+function ScriptTypeChart({
+  distribution,
+}: {
+  distribution: Record<string, number>;
+}) {
   const sorted = Object.entries(distribution).sort((a, b) => b[1] - a[1]);
   const max = sorted[0]?.[1] || 1;
   return (
     <div className="rounded-2xl border border-white/5 bg-black/40 backdrop-blur-md p-5">
-      <div className="text-xs uppercase tracking-widest text-zinc-500 mb-4 font-medium">Script Type Distribution</div>
+      <div className="text-xs uppercase tracking-widest text-zinc-500 mb-4 font-medium">
+        Script Type Distribution
+      </div>
       <div className="space-y-3">
         {sorted.map(([type, count]) => (
           <div key={type} className="flex items-center gap-3">
-            <div className="w-16 text-[10px] uppercase tracking-wider font-mono text-zinc-400 text-right shrink-0">{type}</div>
+            <div className="w-16 text-[10px] uppercase tracking-wider font-mono text-zinc-400 text-right shrink-0">
+              {type}
+            </div>
             <div className="flex-1 h-1.5 bg-white/5 rounded-sm overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
@@ -168,7 +253,9 @@ function ScriptTypeChart({ distribution }: { distribution: Record<string, number
                 className="h-full bg-blue-500/80 rounded-sm"
               />
             </div>
-            <div className="w-12 text-xs font-mono text-zinc-500 text-right">{count.toLocaleString()}</div>
+            <div className="w-12 text-xs font-mono text-zinc-500 text-right">
+              {count.toLocaleString()}
+            </div>
           </div>
         ))}
       </div>
@@ -176,9 +263,22 @@ function ScriptTypeChart({ distribution }: { distribution: Record<string, number
   );
 }
 
-function TxRow({ tx, stem, isExpanded, onToggle }: { tx: Transaction; stem: string; isExpanded: boolean; onToggle: () => void }) {
-  const cfg = CLASSIFICATION_CONFIG[tx.classification] || CLASSIFICATION_CONFIG.unknown;
-  const detectedHeuristics = Object.entries(tx.heuristics).filter(([, v]) => v.detected);
+function TxRow({
+  tx,
+  stem,
+  isExpanded,
+  onToggle,
+}: {
+  tx: Transaction;
+  stem: string;
+  isExpanded: boolean;
+  onToggle: () => void;
+}) {
+  const cfg =
+    CLASSIFICATION_CONFIG[tx.classification] || CLASSIFICATION_CONFIG.unknown;
+  const detectedHeuristics = Object.entries(tx.heuristics).filter(
+    ([, v]) => v.detected,
+  );
 
   return (
     <div className="border-b border-white/5 last:border-b-0">
@@ -187,14 +287,20 @@ function TxRow({ tx, stem, isExpanded, onToggle }: { tx: Transaction; stem: stri
         className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/2 transition-colors text-left"
       >
         <div className="flex-1 min-w-0">
-          <span className="text-sm font-mono text-zinc-300 truncate block">{tx.txid.slice(0, 16)}…{tx.txid.slice(-8)}</span>
+          <span className="text-sm font-mono text-zinc-300 truncate block">
+            {tx.txid.slice(0, 16)}…{tx.txid.slice(-8)}
+          </span>
         </div>
-        <span className={`text-xs px-2.5 py-1 rounded-full border font-medium shrink-0 ${cfg.bg} ${cfg.color}`}>
+        <span
+          className={`text-xs px-2.5 py-1 rounded-full border font-medium shrink-0 ${cfg.bg} ${cfg.color}`}
+        >
           {cfg.label}
         </span>
         <span className="text-xs text-zinc-600 w-6 shrink-0 flex items-center justify-center">
           {detectedHeuristics.length > 0 ? (
-            <span className={`px-1.5 py-0.5 rounded font-mono font-bold text-[10px] ${detectedHeuristics.length >= 3 ? 'bg-red-500/20 text-red-400 border border-red-500/30 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]' : detectedHeuristics.length === 2 ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'}`}>
+            <span
+              className={`px-1.5 py-0.5 rounded font-mono font-bold text-[10px] ${detectedHeuristics.length >= 3 ? "bg-red-500/20 text-red-400 border border-red-500/30 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]" : detectedHeuristics.length === 2 ? "bg-amber-500/20 text-amber-400 border border-amber-500/30" : "bg-blue-500/20 text-blue-400 border border-blue-500/30"}`}
+            >
               {detectedHeuristics.length}
             </span>
           ) : (
@@ -221,12 +327,17 @@ function TxRow({ tx, stem, isExpanded, onToggle }: { tx: Transaction; stem: stri
               <div className="flex flex-wrap gap-1.5 flex-1">
                 {detectedHeuristics.length > 0 ? (
                   detectedHeuristics.map(([key]) => (
-                    <span key={key} className="text-[10px] px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-400 border border-brand-500/20 font-medium">
+                    <span
+                      key={key}
+                      className="text-[10px] px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-400 border border-brand-500/20 font-medium"
+                    >
                       {HEURISTIC_LABELS[key] || key}
                     </span>
                   ))
                 ) : (
-                  <span className="text-xs text-zinc-600">No heuristics triggered</span>
+                  <span className="text-xs text-zinc-600">
+                    No heuristics triggered
+                  </span>
                 )}
               </div>
               <Link
@@ -260,8 +371,14 @@ export default function BlockDetailClient({ stem }: { stem: string }) {
   useEffect(() => {
     fetch(`/api/results/${stem}`)
       .then((r) => r.json())
-      .then((d) => { setData(d); setLoading(false); })
-      .catch(() => { setError("Failed to load data"); setLoading(false); });
+      .then((d) => {
+        setData(d);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError("Failed to load data");
+        setLoading(false);
+      });
   }, [stem]);
 
   // Block 0 has full transactions
@@ -281,21 +398,26 @@ export default function BlockDetailClient({ stem }: { stem: string }) {
   // Filtered + searchable transactions
   const filteredTxs = useMemo(() => {
     let list = txs;
-    if (classFilter) list = list.filter((tx) => tx.classification === classFilter);
-    if (searchQuery) list = list.filter((tx) => tx.txid.includes(searchQuery.toLowerCase()));
+    if (classFilter)
+      list = list.filter((tx) => tx.classification === classFilter);
+    if (searchQuery)
+      list = list.filter((tx) => tx.txid.includes(searchQuery.toLowerCase()));
     return list;
   }, [txs, classFilter, searchQuery]);
 
-  const paginatedTxs = filteredTxs.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  const paginatedTxs = filteredTxs.slice(
+    page * PAGE_SIZE,
+    (page + 1) * PAGE_SIZE,
+  );
   const totalPages = Math.ceil(filteredTxs.length / PAGE_SIZE);
 
   if (showLoader) {
     return (
-      <ContentScanLoader 
-        dataReady={!loading} 
+      <ContentScanLoader
+        dataReady={!loading}
         onComplete={() => {
           setShowLoader(false);
-        }} 
+        }}
       />
     );
   }
@@ -303,7 +425,9 @@ export default function BlockDetailClient({ stem }: { stem: string }) {
   if (loading) {
     return (
       <div className="w-full min-h-screen flex items-center justify-center">
-        <div className="text-zinc-500 animate-pulse">Loading analysis data…</div>
+        <div className="text-zinc-500 animate-pulse">
+          Loading analysis data…
+        </div>
       </div>
     );
   }
@@ -319,26 +443,40 @@ export default function BlockDetailClient({ stem }: { stem: string }) {
   return (
     <div className="w-full max-w-6xl mx-auto px-6 pt-24 pb-16 z-10 relative">
       {/* Back nav */}
-      <Link href="/sherlock" className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-white transition-colors mb-6">
+      <Link
+        href="/sherlock"
+        className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-white transition-colors mb-6"
+      >
         <ArrowLeft className="w-4 h-4" /> Back to Sherlock
       </Link>
 
       {/* Title */}
       <div className="mb-8">
-        <div className="text-[10px] font-mono uppercase tracking-widest text-blue-400 font-bold mb-2">Case File</div>
-        <h1 className="text-3xl md:text-5xl font-bold text-white tracking-tight drop-shadow-md">{data.file}</h1>
-        <p className="text-zinc-500 mt-2 font-mono text-sm">{data.block_count} blocks in volume</p>
+        <div className="text-[10px] font-mono uppercase tracking-widest text-blue-400 font-bold mb-2">
+          Case File
+        </div>
+        <h1 className="text-3xl md:text-5xl font-bold text-white tracking-tight drop-shadow-md">
+          {data.file}
+        </h1>
+        <p className="text-zinc-500 mt-2 font-mono text-sm">
+          {data.block_count} blocks in volume
+        </p>
       </div>
 
       {/* Heuristics Applied */}
       {summary?.heuristics_applied && summary.heuristics_applied.length > 0 && (
         <div className="mb-8">
-          <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-600 mb-3">Heuristics Applied</div>
+          <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-600 mb-3">
+            Heuristics Applied
+          </div>
           <div className="flex flex-wrap gap-2">
             {summary.heuristics_applied.map((h) => (
               <div key={h} className="group relative">
                 <span className="inline-flex items-center gap-1.5 text-[11px] font-mono px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/15 cursor-default hover:bg-blue-500/20 hover:border-blue-500/30 transition-all">
-                  {(() => { const Icon = HEURISTIC_ICONS[h] || Search; return <Icon className="w-3 h-3" />; })()}
+                  {(() => {
+                    const Icon = HEURISTIC_ICONS[h] || Search;
+                    return <Icon className="w-3 h-3" />;
+                  })()}
                   {HEURISTIC_LABELS[h] || h}
                 </span>
                 {/* Tooltip */}
@@ -354,16 +492,40 @@ export default function BlockDetailClient({ stem }: { stem: string }) {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <StatCard icon={Activity} label="Total Txs" value={summary?.total_transactions_analyzed.toLocaleString() || "—"} />
-        <StatCard icon={AlertTriangle} alert label="Flagged" value={summary?.flagged_transactions.toLocaleString() || "—"} sub={`${summary ? ((summary.flagged_transactions / summary.total_transactions_analyzed) * 100).toFixed(1) : 0}% of total transactions`} />
-        <StatCard icon={Zap} label="Median Fee" value={`${summary?.fee_rate_stats.median_sat_vb || 0} sat/vB`} sub={`${summary?.fee_rate_stats.min_sat_vb}–${summary?.fee_rate_stats.max_sat_vb} range`} />
-        <StatCard icon={Database} label="Base Block Height" value={block0.block_height.toLocaleString()} />
+        <StatCard
+          icon={Activity}
+          label="Total Txs"
+          value={summary?.total_transactions_analyzed.toLocaleString() || "—"}
+        />
+        <StatCard
+          icon={AlertTriangle}
+          alert
+          label="Flagged"
+          value={summary?.flagged_transactions.toLocaleString() || "—"}
+          sub={`${summary ? ((summary.flagged_transactions / summary.total_transactions_analyzed) * 100).toFixed(1) : 0}% of total transactions`}
+        />
+        <StatCard
+          icon={Zap}
+          label="Median Fee"
+          value={`${summary?.fee_rate_stats.median_sat_vb || 0} sat/vB`}
+          sub={`${summary?.fee_rate_stats.min_sat_vb}–${summary?.fee_rate_stats.max_sat_vb} range`}
+        />
+        <StatCard
+          icon={Database}
+          label="Base Block Height"
+          value={block0.block_height.toLocaleString()}
+        />
       </div>
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
-        <ClassificationPieChart counts={classificationCounts} total={txs.length} />
-        <ScriptTypeChart distribution={block0.analysis_summary.script_type_distribution} />
+        <ClassificationPieChart
+          counts={classificationCounts}
+          total={txs.length}
+        />
+        <ScriptTypeChart
+          distribution={block0.analysis_summary.script_type_distribution}
+        />
       </div>
 
       {/* Transaction List */}
@@ -376,7 +538,10 @@ export default function BlockDetailClient({ stem }: { stem: string }) {
               type="text"
               placeholder="Search by txid..."
               value={searchQuery}
-              onChange={(e) => { setSearchQuery(e.target.value); setPage(0); }}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setPage(0);
+              }}
               className="w-full bg-white/5 border border-white/5 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-brand-500/30"
             />
           </div>
@@ -384,15 +549,20 @@ export default function BlockDetailClient({ stem }: { stem: string }) {
             <Filter className="w-4 h-4 text-zinc-600" />
             <select
               value={classFilter || ""}
-              onChange={(e) => { setClassFilter(e.target.value || null); setPage(0); }}
+              onChange={(e) => {
+                setClassFilter(e.target.value || null);
+                setPage(0);
+              }}
               className="bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm text-zinc-400 focus:outline-none focus:border-brand-500/30 appearance-none cursor-pointer"
             >
               <option value="">All ({txs.length})</option>
-              {Object.entries(classificationCounts).sort((a, b) => b[1] - a[1]).map(([cls, count]) => (
-                <option key={cls} value={cls}>
-                  {CLASSIFICATION_CONFIG[cls]?.label || cls} ({count})
-                </option>
-              ))}
+              {Object.entries(classificationCounts)
+                .sort((a, b) => b[1] - a[1])
+                .map(([cls, count]) => (
+                  <option key={cls} value={cls}>
+                    {CLASSIFICATION_CONFIG[cls]?.label || cls} ({count})
+                  </option>
+                ))}
             </select>
           </div>
         </div>
@@ -412,19 +582,25 @@ export default function BlockDetailClient({ stem }: { stem: string }) {
             tx={tx}
             stem={stem}
             isExpanded={expandedTx === tx.txid}
-            onToggle={() => setExpandedTx(expandedTx === tx.txid ? null : tx.txid)}
+            onToggle={() =>
+              setExpandedTx(expandedTx === tx.txid ? null : tx.txid)
+            }
           />
         ))}
 
         {filteredTxs.length === 0 && (
-          <div className="px-4 py-12 text-center text-zinc-600 text-sm">No transactions match your filter.</div>
+          <div className="px-4 py-12 text-center text-zinc-600 text-sm">
+            No transactions match your filter.
+          </div>
         )}
 
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-white/5">
             <span className="text-xs text-zinc-600">
-              Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, filteredTxs.length)} of {filteredTxs.length.toLocaleString()}
+              Showing {page * PAGE_SIZE + 1}–
+              {Math.min((page + 1) * PAGE_SIZE, filteredTxs.length)} of{" "}
+              {filteredTxs.length.toLocaleString()}
             </span>
             <div className="flex gap-1">
               <button

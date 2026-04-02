@@ -46,7 +46,9 @@ function isRecord(value: unknown): value is AnyRecord {
 }
 
 function toFiniteNumber(value: unknown): number | undefined {
-  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+  return typeof value === "number" && Number.isFinite(value)
+    ? value
+    : undefined;
 }
 
 function readNumber(record: AnyRecord, keys: string[]): number | undefined {
@@ -190,7 +192,10 @@ function extractMempoolTxCount(payload: AnyRecord): number | undefined {
   return undefined;
 }
 
-function mergeFees(previous: LiveFeeRates | null, patch: FeePatch | null): LiveFeeRates | null {
+function mergeFees(
+  previous: LiveFeeRates | null,
+  patch: FeePatch | null,
+): LiveFeeRates | null {
   if (!patch) return previous;
 
   const fastestFee = patch.fastestFee ?? previous?.fastestFee;
@@ -251,7 +256,11 @@ function mergeBlockProgress(
   }
 
   // Timestamp-only packets can initialize timestamp if we have nothing yet.
-  if (tipHeight === null && candidateTimestamp !== undefined && lastBlockTimestamp === null) {
+  if (
+    tipHeight === null &&
+    candidateTimestamp !== undefined &&
+    lastBlockTimestamp === null
+  ) {
     lastBlockTimestamp = candidateTimestamp;
   }
 
@@ -447,7 +456,10 @@ export function useMempoolWS(): UseMempoolWSResult {
 
     const syncLatestSnapshot = async () => {
       try {
-        const [tip, feeData] = await Promise.all([fetchTipHeight(), fetchFees()]);
+        const [tip, feeData] = await Promise.all([
+          fetchTipHeight(),
+          fetchFees(),
+        ]);
         if (disposedRef.current) return;
 
         let tipTimestamp: number | undefined;

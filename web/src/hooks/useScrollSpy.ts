@@ -1,9 +1,12 @@
 "use client";
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from "react";
 
 // A lightweight hook to track which StoryCard is currently focal on the screen
-export function useScrollSpy(elementIds: string[], offset = '0px 0px -50% 0px') {
+export function useScrollSpy(
+  elementIds: string[],
+  offset = "0px 0px -50% 0px",
+) {
   const [activeId, setActiveId] = useState<string>(elementIds[0]);
   const observer = useRef<IntersectionObserver | null>(null);
 
@@ -16,7 +19,7 @@ export function useScrollSpy(elementIds: string[], offset = '0px 0px -50% 0px') 
           }
         });
       },
-      { rootMargin: offset }
+      { rootMargin: offset },
     );
 
     elementIds.forEach((id) => {

@@ -66,7 +66,10 @@ interface ContentScanLoaderProps {
   dataReady: boolean;
 }
 
-export function ContentScanLoader({ onComplete, dataReady }: ContentScanLoaderProps) {
+export function ContentScanLoader({
+  onComplete,
+  dataReady,
+}: ContentScanLoaderProps) {
   const [stepIndex, setStepIndex] = useState(0);
 
   useEffect(() => {
@@ -99,7 +102,7 @@ export function ContentScanLoader({ onComplete, dataReady }: ContentScanLoaderPr
   const charWidth = 5.4;
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, filter: "blur(8px)", scale: 0.95 }}
       animate={{ opacity: 1, filter: "blur(0px)", scale: 1 }}
       exit={{ opacity: 0, scale: 1.05, filter: "blur(4px)" }}
@@ -112,10 +115,16 @@ export function ContentScanLoader({ onComplete, dataReady }: ContentScanLoaderPr
           <defs>
             <clipPath id="scan-reveal">
               <motion.rect
-                y="0" height={SVG_H}
+                y="0"
+                height={SVG_H}
                 initial={{ x: 0, width: 0 }}
                 animate={{ width: [0, SVG_W, SVG_W, 0] }}
-                transition={{ duration: cycle, times: [0, 0.65, 0.88, 1], repeat: Infinity, ease: "easeInOut" }}
+                transition={{
+                  duration: cycle,
+                  times: [0, 0.65, 0.88, 1],
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
               />
             </clipPath>
             <linearGradient id="beamGlow" x1="0" y1="0" x2="1" y2="0">
@@ -171,7 +180,13 @@ export function ContentScanLoader({ onComplete, dataReady }: ContentScanLoaderPr
                         fontSize={fontSize}
                         fontFamily="monospace"
                         opacity={seg.color === highlightColor ? 1 : 0.6}
-                        style={seg.color === highlightColor ? { filter: `drop-shadow(0 0 4px ${highlightColor}80)` } : {}}
+                        style={
+                          seg.color === highlightColor
+                            ? {
+                                filter: `drop-shadow(0 0 4px ${highlightColor}80)`,
+                              }
+                            : {}
+                        }
                       >
                         {seg.text}
                       </text>
@@ -186,15 +201,29 @@ export function ContentScanLoader({ onComplete, dataReady }: ContentScanLoaderPr
           <motion.g
             initial={{ x: 0 }}
             animate={{ x: [0, SVG_W, SVG_W, 0] }}
-            transition={{ duration: cycle, times: [0, 0.65, 0.88, 1], repeat: Infinity, ease: "easeInOut" }}
+            transition={{
+              duration: cycle,
+              times: [0, 0.65, 0.88, 1],
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
           >
             <line
-              x1="0" y1="0" x2="0" y2={SVG_H}
-              stroke={accentColor} strokeWidth="1.5"
-              style={{ filter: `drop-shadow(0 0 6px ${accentColor}) drop-shadow(0 0 16px rgba(59,130,246,0.3))` }}
+              x1="0"
+              y1="0"
+              x2="0"
+              y2={SVG_H}
+              stroke={accentColor}
+              strokeWidth="1.5"
+              style={{
+                filter: `drop-shadow(0 0 6px ${accentColor}) drop-shadow(0 0 16px rgba(59,130,246,0.3))`,
+              }}
             />
             <rect
-              x="-45" y="0" width="45" height={SVG_H}
+              x="-45"
+              y="0"
+              width="45"
+              height={SVG_H}
               fill="url(#beamGlow)"
             />
           </motion.g>
@@ -223,7 +252,15 @@ export function ContentScanLoader({ onComplete, dataReady }: ContentScanLoaderPr
             ) : (
               <div className="w-4 h-4 rounded-full border border-zinc-700 shrink-0" />
             )}
-            <span className={i < stepIndex ? "text-zinc-500" : i === stepIndex ? "text-blue-100" : "text-zinc-700"}>
+            <span
+              className={
+                i < stepIndex
+                  ? "text-zinc-500"
+                  : i === stepIndex
+                    ? "text-blue-100"
+                    : "text-zinc-700"
+              }
+            >
               {step}
             </span>
           </motion.div>

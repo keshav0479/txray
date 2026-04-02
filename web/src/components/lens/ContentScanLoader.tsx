@@ -94,18 +94,22 @@ export function ContentScanLoader() {
 
   return (
     <div className="w-full max-w-md mx-auto flex flex-col items-center gap-5">
-      
       <div className="relative w-full rounded-2xl border border-lens-500/15 bg-[#060610] overflow-hidden shadow-[0_0_60px_-15px_rgba(59,130,246,0.15)]">
         <svg viewBox={`0 0 ${SVG_W} ${SVG_H}`} className="w-full" fill="none">
-          
           <defs>
             {/* Clip for color-coded hex (revealed by scanner) */}
             <clipPath id="scan-reveal">
               <motion.rect
-                y="0" height={SVG_H}
+                y="0"
+                height={SVG_H}
                 initial={{ x: 0, width: 0 }}
                 animate={{ width: [0, SVG_W, SVG_W, 0] }}
-                transition={{ duration: cycle, times: [0, 0.65, 0.88, 1], repeat: Infinity, ease: "easeInOut" }}
+                transition={{
+                  duration: cycle,
+                  times: [0, 0.65, 0.88, 1],
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
               />
             </clipPath>
             {/* Beam glow gradient */}
@@ -147,7 +151,7 @@ export function ContentScanLoader() {
           <g clipPath="url(#scan-reveal)">
             {/* Opaque background to fully cover dim text beneath */}
             <rect x="0" y="0" width={SVG_W} height={SVG_H} fill="#060610" />
-            
+
             {hexLines.map((segments, row) => {
               let xOffset = 0;
               return (
@@ -165,7 +169,13 @@ export function ContentScanLoader() {
                           fontSize={fontSize}
                           fontFamily="monospace"
                           opacity={seg.color === highlightColor ? 1 : 0.6}
-                          style={seg.color === highlightColor ? { filter: `drop-shadow(0 0 4px ${highlightColor}80)` } : {}}
+                          style={
+                            seg.color === highlightColor
+                              ? {
+                                  filter: `drop-shadow(0 0 4px ${highlightColor}80)`,
+                                }
+                              : {}
+                          }
                         >
                           {seg.text}
                         </text>
@@ -181,21 +191,35 @@ export function ContentScanLoader() {
           <motion.g
             initial={{ x: 0 }}
             animate={{ x: [0, SVG_W, SVG_W, 0] }}
-            transition={{ duration: cycle, times: [0, 0.65, 0.88, 1], repeat: Infinity, ease: "easeInOut" }}
+            transition={{
+              duration: cycle,
+              times: [0, 0.65, 0.88, 1],
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
           >
             {/* Vertical laser */}
             <line
-              x1="0" y1="0" x2="0" y2={SVG_H}
-              stroke="#3b82f6" strokeWidth="1.5"
-              style={{ filter: "drop-shadow(0 0 6px #3b82f6) drop-shadow(0 0 16px rgba(59,130,246,0.3))" }}
+              x1="0"
+              y1="0"
+              x2="0"
+              y2={SVG_H}
+              stroke="#3b82f6"
+              strokeWidth="1.5"
+              style={{
+                filter:
+                  "drop-shadow(0 0 6px #3b82f6) drop-shadow(0 0 16px rgba(59,130,246,0.3))",
+              }}
             />
             {/* Trailing glow */}
             <rect
-              x="-45" y="0" width="45" height={SVG_H}
+              x="-45"
+              y="0"
+              width="45"
+              height={SVG_H}
               fill="url(#beamGlow)"
             />
           </motion.g>
-
         </svg>
       </div>
 
@@ -214,7 +238,6 @@ export function ContentScanLoader() {
           </motion.span>
         </AnimatePresence>
       </div>
-
     </div>
   );
 }

@@ -62,14 +62,18 @@ export function TransactionDiagram({
   });
 
   const getInputStyle = (index: number) => {
-    if (step === 0) return "border-[var(--docs-panel-border)] bg-[var(--docs-panel)]";
-    if (step >= 1) return "border-blue-500/50 bg-blue-500/10 ring-2 ring-blue-500/30";
+    if (step === 0)
+      return "border-[var(--docs-panel-border)] bg-[var(--docs-panel)]";
+    if (step >= 1)
+      return "border-blue-500/50 bg-blue-500/10 ring-2 ring-blue-500/30";
     return "border-[var(--docs-panel-border)] bg-[var(--docs-panel)]";
   };
 
   const getOutputStyle = (index: number) => {
-    if (step < 2) return "border-[var(--docs-panel-border)] bg-[var(--docs-panel)] opacity-40";
-    if (step >= 2) return "border-emerald-500/50 bg-emerald-500/10 ring-2 ring-emerald-500/30";
+    if (step < 2)
+      return "border-[var(--docs-panel-border)] bg-[var(--docs-panel)] opacity-40";
+    if (step >= 2)
+      return "border-emerald-500/50 bg-emerald-500/10 ring-2 ring-emerald-500/30";
     return "border-[var(--docs-panel-border)] bg-[var(--docs-panel)]";
   };
 
@@ -78,9 +82,13 @@ export function TransactionDiagram({
       {/* Header */}
       <div className="px-5 py-4 border-b border-[var(--docs-panel-border)] flex items-center justify-between">
         <div>
-          <h4 className="text-base font-semibold text-[var(--docs-text)]">{title}</h4>
+          <h4 className="text-base font-semibold text-[var(--docs-text)]">
+            {title}
+          </h4>
           {description && (
-            <p className="text-sm text-[var(--docs-muted)] mt-0.5">{description}</p>
+            <p className="text-sm text-[var(--docs-muted)] mt-0.5">
+              {description}
+            </p>
           )}
         </div>
         <div className="flex items-center gap-2">
@@ -88,7 +96,11 @@ export function TransactionDiagram({
             onClick={() => setIsPlaying(!isPlaying)}
             className="p-2 rounded-lg border border-[var(--docs-panel-border)] text-[var(--docs-muted)] hover:text-[var(--docs-text)] hover:bg-[var(--docs-panel-hover)] transition-colors"
           >
-            {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+            {isPlaying ? (
+              <Pause className="w-4 h-4" />
+            ) : (
+              <Play className="w-4 h-4" />
+            )}
           </button>
           <button
             onClick={reset}
@@ -116,7 +128,9 @@ export function TransactionDiagram({
                 className={`p-3 rounded-xl border transition-all duration-300 ${getInputStyle(i)}`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-mono text-[var(--docs-text)]">{input.value}</span>
+                  <span className="text-sm font-mono text-[var(--docs-text)]">
+                    {input.value}
+                  </span>
                   {step >= 1 && (
                     <span className="text-[10px] uppercase tracking-wider text-blue-400 font-semibold">
                       Selected
@@ -161,16 +175,18 @@ export function TransactionDiagram({
               <motion.div
                 key={output.id}
                 initial={{ opacity: 0, x: 20 }}
-                animate={{ 
-                  opacity: step >= 2 ? 1 : 0.4, 
+                animate={{
+                  opacity: step >= 2 ? 1 : 0.4,
                   x: 0,
-                  scale: step >= 3 ? [1, 1.02, 1] : 1
+                  scale: step >= 3 ? [1, 1.02, 1] : 1,
                 }}
                 transition={{ delay: i * 0.1 }}
                 className={`p-3 rounded-xl border transition-all duration-300 ${getOutputStyle(i)}`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-mono text-[var(--docs-text)]">{output.value}</span>
+                  <span className="text-sm font-mono text-[var(--docs-text)]">
+                    {output.value}
+                  </span>
                   {step >= 3 && (
                     <span className="text-[10px] uppercase tracking-wider text-emerald-400 font-semibold">
                       Confirmed
@@ -198,16 +214,19 @@ export function TransactionDiagram({
                   i === step
                     ? "bg-[var(--docs-accent)] scale-125"
                     : i < step
-                    ? "bg-[var(--docs-accent)]/50"
-                    : "bg-[var(--docs-panel-border)]"
+                      ? "bg-[var(--docs-accent)]/50"
+                      : "bg-[var(--docs-panel-border)]"
                 }`}
               />
             ))}
           </div>
           <div className="flex items-center gap-3">
             <span className="text-sm text-[var(--docs-muted)]">
-              <span className="text-[var(--docs-text)] font-medium">{steps[step].label}</span>
-              {" — "}{steps[step].description}
+              <span className="text-[var(--docs-text)] font-medium">
+                {steps[step].label}
+              </span>
+              {" — "}
+              {steps[step].description}
             </span>
             <button
               onClick={nextStep}

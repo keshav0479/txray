@@ -1,11 +1,21 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Hammer, Zap, Package, Shuffle, SendHorizontal, Blocks,
-  ChevronDown, FileJson, AlertCircle, Loader2,
+  Hammer,
+  Zap,
+  Package,
+  Shuffle,
+  SendHorizontal,
+  Blocks,
+  AlertCircle,
+  Loader2,
+  Grid3x3,
+  FileJson,
+  Download,
+  Code2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TimelineSection } from "@/components/shared/TimelineCard";
@@ -20,30 +30,37 @@ import {
 } from "@/components/smith/StoryGraphics";
 import { Footer } from "@/components/shared/Footer";
 
+type TabId = "templates" | "paste" | "import";
+
 const STORY_CARDS = [
   {
     title: "Your wallet holds coins, not a balance",
-    description: "Bitcoin doesn\u2019t track a single \u2018balance\u2019 like a bank account. Your wallet actually holds individual digital coins called UTXOs \u2014 just like having specific \u20b9500, \u20b9200, and \u20b9100 bills in a physical leather wallet.",
+    description:
+      "Bitcoin doesn't track a single 'balance' like a bank account. Your wallet actually holds individual digital coins called UTXOs, just like having specific ₹500, ₹200, and ₹100 bills in a physical leather wallet.",
     Graphic: AnimatedWallet,
   },
   {
-    title: "You can\u2019t split a coin \u2014 you spend it whole",
-    description: "Want to pay \u20b9300? You hand over your \u20b9500 bill and get \u20b9200 back as \u2018change.\u2019 Bitcoin works exactly the same \u2014 you must put the whole coin into the transaction, sending the leftover back to yourself.",
+    title: "You can't split a coin, you spend it whole",
+    description:
+      "Want to pay ₹300? You hand over your ₹500 bill and get ₹200 back as 'change.' Bitcoin works exactly the same: you must put the whole coin into the transaction, sending the leftover back to yourself.",
     Graphic: AnimatedChange,
   },
   {
-    title: "The miner\u2019s fee depends on transaction size",
-    description: "Every transaction requires a fee to get confirmed by miners. But the fee isn\u2019t based on how much money you send \u2014 it\u2019s based on data size (vBytes). More input coins = a physically larger transaction = a higher fee.",
+    title: "The miner's fee depends on transaction size",
+    description:
+      "Every transaction requires a fee to get confirmed by miners. But the fee isn't based on how much money you send, it's based on data size (vBytes). More input coins equal a physically larger transaction, requiring a higher fee.",
     Graphic: AnimatedFee,
   },
   {
-    title: "Tiny amounts become \u2018dust\u2019 \u2014 unusable forever",
-    description: "If your change output is too small, it will cost more in miner fees to spend than it\u2019s actually worth. These tiny \u2018dust\u2019 amounts get permanently stuck in your wallet. Smart wallets avoid creating them.",
+    title: "Tiny amounts become 'dust', unusable forever",
+    description:
+      "If your change output is too small, it will cost more in miner fees to spend than it's actually worth. These tiny 'dust' amounts get permanently stuck in your wallet. Smart wallets avoid creating them.",
     Graphic: AnimatedDust,
   },
   {
-    title: "Enter txray Smith",
-    description: "txray Smith handles all of this automatically. Upload your wallet, tell it where to send, and it picks the optimal coins, calculates precise fees, prevents dust, and constructs a safe unsigned transaction (PSBT) for your hardware wallet.",
+    title: "Smith handles the complexity automatically",
+    description:
+      "Smith handles all of this automatically. Choose a template to see how different transaction types work, or build your own with full control over inputs, outputs, scripts, and fees.",
     Graphic: AnimatedForge,
   },
 ];
@@ -89,14 +106,13 @@ const PRESETS = [
 
 export default function BuildPage() {
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState<TabId>("templates");
   const [isBuilding, setIsBuilding] = useState(false);
   const [activePreset, setActivePreset] = useState<string | null>(null);
-  const [showCustom, setShowCustom] = useState(false);
   const [pasteContent, setPasteContent] = useState("");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
-  const customRef = useRef<HTMLDivElement>(null);
   const [navigating, setNavigating] = useState(false);
 
   const navigateTo = (path: string) => {
@@ -104,7 +120,6 @@ export default function BuildPage() {
     setTimeout(() => router.push(path), 400);
   };
 
-  // load fixture from /public/fixtures/ instead of /api/demo
   const handlePreset = async (fixtureId: string) => {
     setIsBuilding(true);
     setActivePreset(fixtureId);
@@ -150,7 +165,8 @@ export default function BuildPage() {
       setErrorMsg(null);
       try {
         const parsed = JSON.parse(text);
-        if (!parsed.fee_rate_sat_vb || !parsed.utxos) throw new Error("Invalid fixture");
+        if (!parsed.fee_rate_sat_vb || !parsed.utxos)
+          throw new Error("Invalid fixture");
         sessionStorage.setItem("coinsmith_fixture", text);
         navigateTo("/build/result");
       } catch (err) {
@@ -168,113 +184,249 @@ export default function BuildPage() {
   };
 
   return (
-    <div className={`w-full min-h-screen flex flex-col items-center pt-24 pb-12 px-6 transition-all duration-500 ease-out ${navigating ? 'opacity-0 scale-95 blur-sm' : 'opacity-100 scale-100'}`}>
-        {/* Header */}
+    <div className="min-h-screen flex flex-col">
+      <div
+        className={`flex-1 max-w-4xl mx-auto px-6 pt-24 pb-16 w-full relative z-10 transition-all duration-500 ${navigating ? "opacity-0 scale-95 blur-sm" : "opacity-100 scale-100"}`}
+      >
+        {/* Hero */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-2xl text-center mb-12 z-10"
+          className="text-center mb-12"
         >
-          <div className="text-[10px] font-mono uppercase tracking-widest text-smith-400 font-bold mb-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-smith-500/10 border border-smith-500/20 text-smith-400 text-xs font-mono uppercase tracking-widest mb-4">
+            <Hammer className="w-3.5 h-3.5" />
             Smith
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-4">
-            Load the Forge
+          <h1 className="text-4xl sm:text-5xl font-bold text-white tracking-tight mb-4">
+            Transaction Builder
           </h1>
-          <p className="text-zinc-400 text-lg max-w-md mx-auto">
-            Choose your raw materials -- a wallet of coins and a list of payments. Pick a preset or supply your own fixture.
+          <p className="text-stone-400 text-lg max-w-lg mx-auto">
+            Build Bitcoin transactions with full control over inputs, outputs,
+            scripts, and fees. Choose a template or craft your own.
           </p>
         </motion.div>
 
-        {/* Preset Grid */}
+        {/* Tab Bar */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="w-full max-w-2xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 z-10 mb-6"
+          className="flex justify-center mb-10"
         >
-          {PRESETS.map((preset, i) => {
-            const Icon = preset.icon;
-            const loading = isBuilding && activePreset === preset.id;
-            return (
-              <motion.button
-                key={preset.id}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05 * i }}
-                disabled={isBuilding}
-                onClick={() => handlePreset(preset.id)}
-                className={cn(
-                  "group relative p-5 rounded-2xl border text-left transition-all duration-300",
-                  "bg-zinc-900/80 backdrop-blur-md border-white/10 hover:border-smith-500/30 hover:bg-zinc-900/90",
-                  "disabled:opacity-50 disabled:cursor-wait",
-                )}
+          <div className="inline-flex rounded-2xl bg-stone-950/60 backdrop-blur-xl border border-white/8 p-1 max-w-full overflow-x-auto scrollbar-hide">
+            {[
+              {
+                id: "templates" as const,
+                icon: Grid3x3,
+                label: "Use Template",
+              },
+              { id: "paste" as const, icon: Code2, label: "Paste JSON" },
+              { id: "import" as const, icon: Download, label: "Import File" },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  setErrorMsg(null);
+                }}
+                className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
+                  activeTab === tab.id
+                    ? "bg-smith-500/15 text-smith-400 border border-smith-500/20"
+                    : "text-stone-500 hover:text-stone-300"
+                }`}
               >
-                <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-3 group-hover:bg-smith-500/10 group-hover:border-smith-500/20 transition-colors">
-                  {loading ? (
-                    <Loader2 className="w-5 h-5 text-smith-400 animate-spin" />
-                  ) : (
-                    <Icon className="w-5 h-5 text-zinc-400 group-hover:text-smith-400 transition-colors" />
-                  )}
-                </div>
-                <h3 className="text-sm font-bold text-white mb-1">{preset.label}</h3>
-                <p className="text-xs text-zinc-500 leading-relaxed">{preset.desc}</p>
-              </motion.button>
-            );
-          })}
+                <tab.icon className="w-4 h-4 shrink-0" />
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </motion.div>
 
-        {/* Error */}
+        {/* Error Message */}
         {errorMsg && (
-          <div className="w-full max-w-2xl mb-4 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 flex gap-3 text-red-400 items-start relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex gap-3 text-red-400 items-start relative max-w-2xl mx-auto"
+          >
             <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-            <p className="text-sm font-medium leading-relaxed">{errorMsg}</p>
-            <button onClick={() => setErrorMsg(null)} className="absolute top-3 right-3 p-1 text-red-400/50 hover:text-red-400 transition-colors">
+            <p className="text-sm font-medium leading-relaxed flex-1">
+              {errorMsg}
+            </p>
+            <button
+              onClick={() => setErrorMsg(null)}
+              className="p-1 text-red-400/50 hover:text-red-400 transition-colors"
+            >
               &times;
             </button>
-          </div>
+          </motion.div>
         )}
 
-        {/* Custom Fixture Collapsible */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="w-full max-w-2xl z-10"
-        >
-          <button
-            onClick={() => {
-              const willOpen = !showCustom;
-              setShowCustom(willOpen);
-              if (willOpen) {
-                setTimeout(() => customRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }), 300);
-              }
-            }}
-            className="w-full flex items-center justify-between p-4 rounded-2xl bg-surface-card border border-surface-border text-sm font-medium text-zinc-400 hover:text-white hover:border-white/20 transition-all"
-          >
-            <span className="flex items-center gap-3">
-              <FileJson className="w-4 h-4" />
-              Custom Fixture
-            </span>
-            <ChevronDown className={cn("w-4 h-4 transition-transform duration-300", showCustom && "rotate-180")} />
-          </button>
-
-          {showCustom && (
+        {/* Tab Content */}
+        <AnimatePresence mode="wait">
+          {/* Templates Tab */}
+          {activeTab === "templates" && (
             <motion.div
-              ref={customRef}
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              className="mt-2 bg-surface-card border border-surface-border rounded-2xl overflow-hidden"
+              key="templates"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3 }}
+              className="max-w-2xl mx-auto"
             >
-              <div className="p-5">
+              <div className="text-center mb-8">
+                <Grid3x3 className="w-10 h-10 text-smith-500 mx-auto mb-3 opacity-80" />
+                <h3 className="text-xl font-bold text-white mb-2">
+                  Transaction Templates
+                </h3>
+                <p className="text-sm text-stone-400">
+                  Pre-built examples showing different transaction types and
+                  patterns.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {PRESETS.map((preset, i) => {
+                  const Icon = preset.icon;
+                  const loading = isBuilding && activePreset === preset.id;
+                  return (
+                    <motion.button
+                      key={preset.id}
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.05 * i }}
+                      disabled={isBuilding}
+                      onClick={() => handlePreset(preset.id)}
+                      className="group relative p-5 rounded-2xl border text-left transition-all bg-stone-900/80 backdrop-blur-md border-white/10 hover:border-smith-500/30 hover:bg-stone-900/90 disabled:opacity-50 disabled:cursor-wait"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-3 group-hover:bg-smith-500/10 group-hover:border-smith-500/20 transition-colors">
+                        {loading ? (
+                          <Loader2 className="w-5 h-5 text-smith-400 animate-spin" />
+                        ) : (
+                          <Icon className="w-5 h-5 text-zinc-400 group-hover:text-smith-400 transition-colors" />
+                        )}
+                      </div>
+                      <h3 className="text-sm font-bold text-white mb-1">
+                        {preset.label}
+                      </h3>
+                      <p className="text-xs text-zinc-500 leading-relaxed">
+                        {preset.desc}
+                      </p>
+                    </motion.button>
+                  );
+                })}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Paste JSON Tab */}
+          {activeTab === "paste" && (
+            <motion.div
+              key="paste"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3 }}
+              className="max-w-lg mx-auto"
+            >
+              <div className="rounded-3xl border border-white/8 bg-stone-950/50 backdrop-blur-xl p-8">
+                <div className="text-center mb-6">
+                  <FileJson className="w-10 h-10 text-smith-500 mx-auto mb-3 opacity-80" />
+                  <h3 className="text-xl font-bold text-white mb-2">
+                    Paste JSON Fixture
+                  </h3>
+                  <p className="text-sm text-stone-400">
+                    Paste a transaction fixture with UTXOs and payment
+                    instructions.
+                  </p>
+                </div>
+
+                <div className="mb-4">
+                  <label className="text-[10px] font-mono text-stone-500 uppercase tracking-widest ml-1 mb-1 block">
+                    JSON Fixture <span className="text-red-400">*</span>
+                  </label>
+                  <textarea
+                    value={pasteContent}
+                    onChange={(e) => setPasteContent(e.target.value)}
+                    placeholder={`{
+  "fee_rate_sat_vb": 10,
+  "utxos": [
+    {
+      "txid": "abc123...",
+      "vout": 0,
+      "value_sats": 50000,
+      "script_pubkey_hex": "76a914..."
+    }
+  ],
+  "payments": [
+    {
+      "address": "bc1q...",
+      "value_sats": 30000
+    }
+  ]
+}`}
+                    className="w-full h-56 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs text-stone-300 font-mono placeholder:text-stone-600 focus:outline-none focus:border-smith-500/40 transition-colors resize-none"
+                  />
+                </div>
+
+                <button
+                  onClick={handleCustomSubmit}
+                  disabled={!pasteContent.trim() || isBuilding}
+                  className="group w-full flex items-center justify-center gap-2 font-bold px-6 py-4 rounded-xl transition-all duration-300 border bg-transparent border-smith-500/50 text-smith-400 hover:bg-smith-500/10 hover:border-smith-400 hover:text-smith-300 hover:shadow-[0_0_20px_rgba(16,185,129,0.3),inset_0_0_10px_rgba(16,185,129,0.1)] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-none disabled:hover:bg-transparent disabled:hover:border-smith-500/50 disabled:hover:text-smith-400 text-sm"
+                >
+                  {isBuilding ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" /> Building...
+                    </>
+                  ) : (
+                    <>
+                      <Hammer className="w-4 h-4 opacity-80 group-hover:opacity-100 transition-opacity" />{" "}
+                      Build Transaction
+                    </>
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Import File Tab */}
+          {activeTab === "import" && (
+            <motion.div
+              key="import"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3 }}
+              className="max-w-lg mx-auto"
+            >
+              <div className="rounded-3xl border border-white/8 bg-stone-950/50 backdrop-blur-xl p-8">
+                <div className="text-center mb-6">
+                  <Download className="w-10 h-10 text-smith-500 mx-auto mb-3 opacity-80" />
+                  <h3 className="text-xl font-bold text-white mb-2">
+                    Import JSON File
+                  </h3>
+                  <p className="text-sm text-stone-400">
+                    Upload a .json file containing transaction fixture data.
+                  </p>
+                </div>
+
                 <div
                   className={cn(
-                    "border-2 border-dashed rounded-xl transition-all relative",
-                    dragActive ? "border-smith-500 bg-smith-500/5" : "border-surface-border hover:border-smith-500/30",
-                    isBuilding && "opacity-50 pointer-events-none"
+                    "border-2 border-dashed rounded-xl transition-all relative min-h-[200px] flex items-center justify-center",
+                    dragActive
+                      ? "border-smith-500 bg-smith-500/5"
+                      : "border-white/10 hover:border-smith-500/30",
+                    isBuilding && "opacity-50 pointer-events-none",
                   )}
-                  onDragEnter={(e) => { e.preventDefault(); setDragActive(true); }}
-                  onDragLeave={(e) => { e.preventDefault(); setDragActive(false); }}
+                  onDragEnter={(e) => {
+                    e.preventDefault();
+                    setDragActive(true);
+                  }}
+                  onDragLeave={(e) => {
+                    e.preventDefault();
+                    setDragActive(false);
+                  }}
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={handleDrop}
                 >
@@ -287,70 +439,70 @@ export default function BuildPage() {
                     disabled={isBuilding}
                   />
 
-                  <textarea
-                    value={pasteContent}
-                    onChange={(e) => setPasteContent(e.target.value)}
-                    placeholder="Paste or type JSON here, or drag a .json file..."
-                    className="w-full h-40 bg-transparent p-4 text-sm text-white font-mono resize-none focus:outline-none placeholder:text-zinc-600 overflow-y-auto"
-                    disabled={isBuilding}
-                  />
+                  <div className="text-center p-6">
+                    <FileJson className="w-12 h-12 text-stone-600 mx-auto mb-3" />
+                    <p className="text-sm text-stone-400 mb-3">
+                      Drag and drop a .json file here
+                    </p>
+                    <button
+                      onClick={() => fileRef.current?.click()}
+                      className="text-sm text-smith-400 hover:text-smith-300 transition-colors font-medium"
+                    >
+                      or click to browse
+                    </button>
+                  </div>
                 </div>
 
-                <div className="mt-3 flex items-center justify-between">
-                  <button
-                    onClick={() => fileRef.current?.click()}
-                    className="text-xs text-zinc-500 hover:text-white transition-colors underline underline-offset-2"
-                  >
-                    Browse file...
-                  </button>
-                  <button
-                    onClick={handleCustomSubmit}
-                    disabled={!pasteContent.trim() || isBuilding}
-                    className="bg-smith-500 text-white font-bold px-6 py-2.5 rounded-full text-sm disabled:opacity-50 hover:bg-smith-600 active:scale-95 transition-all"
-                  >
-                    Build Transaction
-                  </button>
-                </div>
+                {pasteContent && (
+                  <div className="mt-4">
+                    <p className="text-xs text-stone-500 mb-2">
+                      File loaded. Preview:
+                    </p>
+                    <pre className="text-[10px] text-stone-400 bg-black/40 border border-white/5 rounded-lg p-3 max-h-32 overflow-auto font-mono">
+                      {pasteContent.slice(0, 200)}...
+                    </pre>
+                    <button
+                      onClick={handleCustomSubmit}
+                      disabled={isBuilding}
+                      className="mt-4 group w-full flex items-center justify-center gap-2 font-bold px-6 py-4 rounded-xl transition-all duration-300 border bg-transparent border-smith-500/50 text-smith-400 hover:bg-smith-500/10 hover:border-smith-400 hover:text-smith-300 hover:shadow-[0_0_20px_rgba(16,185,129,0.3),inset_0_0_10px_rgba(16,185,129,0.1)] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-none disabled:hover:bg-transparent disabled:hover:border-smith-500/50 disabled:hover:text-smith-400 text-sm"
+                    >
+                      {isBuilding ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />{" "}
+                          Building...
+                        </>
+                      ) : (
+                        <>
+                          <Hammer className="w-4 h-4 opacity-80 group-hover:opacity-100 transition-opacity" />{" "}
+                          Build Transaction
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
               </div>
             </motion.div>
           )}
-        </motion.div>
-
-        {/* Explore link */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="mt-12 z-10 text-center"
-        >
-          <p className="text-xs text-zinc-600 mb-2">
-            Want to analyze an existing transaction instead?
-          </p>
-          <a
-            href="/explore/famous"
-            className="text-xs text-smith-400 hover:text-smith-300 transition-colors"
-          >
-            Browse famous transactions →
-          </a>
-        </motion.div>
-
-        {/* Scroll indicator */}
-        <ScrollIndicator theme="smith" />
-
-        {/* Vertical scroll story */}
-        <TimelineSection theme="smith" cards={STORY_CARDS} />
-
-        {/* Bottom CTA */}
-        <BottomCTA
-          theme="smith"
-          title="Ready to build better transactions?"
-          description="Upload your wallet data. We'll handle the selection, the fees, and the math."
-          buttonLabel="Start Forging"
-          buttonIcon={<Hammer className="w-5 h-5" />}
-          onAction={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        />
-
-        <Footer />
+        </AnimatePresence>
       </div>
+
+      {/* Scroll indicator */}
+      <ScrollIndicator theme="smith" />
+
+      {/* Story Section */}
+      <TimelineSection theme="smith" cards={STORY_CARDS} />
+
+      {/* Bottom CTA */}
+      <BottomCTA
+        theme="smith"
+        title="Ready to build better transactions?"
+        description="Choose a template to learn how different transaction types work, or build your own with full control."
+        buttonLabel="Start Building"
+        buttonIcon={<Hammer className="w-5 h-5" />}
+        onAction={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      />
+
+      <Footer />
+    </div>
   );
 }

@@ -7,7 +7,9 @@ import { DOCS_NAV_SECTIONS } from "@/components/docs/docs-config";
 
 type FlatItem = { label: string; href: string };
 
-const FLAT_DOCS: FlatItem[] = DOCS_NAV_SECTIONS.flatMap((section) => section.items);
+const FLAT_DOCS: FlatItem[] = DOCS_NAV_SECTIONS.flatMap(
+  (section) => section.items,
+);
 
 export function DocsPager() {
   const pathname = usePathname();
@@ -32,7 +34,9 @@ export function DocsPager() {
               <ChevronLeft className="w-4 h-4 text-[var(--docs-muted)] group-hover:text-[var(--docs-accent)] transition-colors" />
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] uppercase tracking-wider text-[var(--docs-muted)] mb-1">Previous</p>
+              <p className="text-[11px] uppercase tracking-wider text-[var(--docs-muted)] mb-1">
+                Previous
+              </p>
               <p className="text-sm font-medium text-[var(--docs-text)] truncate group-hover:text-[var(--docs-accent)] transition-colors">
                 {prev.label}
               </p>
@@ -47,7 +51,9 @@ export function DocsPager() {
             className="docs-card group flex items-center justify-end gap-3 rounded-xl border border-[var(--docs-panel-border)] bg-[var(--docs-panel)] px-5 py-4 hover:border-[var(--docs-accent-muted)] text-right"
           >
             <div className="min-w-0">
-              <p className="text-[11px] uppercase tracking-wider text-[var(--docs-muted)] mb-1">Next</p>
+              <p className="text-[11px] uppercase tracking-wider text-[var(--docs-muted)] mb-1">
+                Next
+              </p>
               <p className="text-sm font-medium text-[var(--docs-text)] truncate group-hover:text-[var(--docs-accent)] transition-colors">
                 {next.label}
               </p>

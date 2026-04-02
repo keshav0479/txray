@@ -21,3 +21,4 @@ target
 #.idea/
 web/node_modules/
 web/.next/
+out/

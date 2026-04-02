@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { DOCS_NAV_SECTIONS } from "@/components/docs/docs-config";
 
 const INDEX = DOCS_NAV_SECTIONS.flatMap((section) =>
-  section.items.map((item) => ({ ...item, section: section.title }))
+  section.items.map((item) => ({ ...item, section: section.title })),
 );
 
 export function DocsCommandPalette() {
@@ -25,11 +25,12 @@ export function DocsCommandPalette() {
     return INDEX.filter(
       (item) =>
         item.label.toLowerCase().includes(q) ||
-        item.section.toLowerCase().includes(q)
+        item.section.toLowerCase().includes(q),
     ).slice(0, 12);
   }, [query]);
 
   // Reset selection when results change
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     setSelectedIndex(0);
   }, [results]);
@@ -37,18 +38,23 @@ export function DocsCommandPalette() {
   // Scroll selected item into view
   useEffect(() => {
     if (listRef.current) {
-      const selectedItem = listRef.current.children[selectedIndex] as HTMLElement;
+      const selectedItem = listRef.current.children[
+        selectedIndex
+      ] as HTMLElement;
       if (selectedItem) {
         selectedItem.scrollIntoView({ block: "nearest" });
       }
     }
   }, [selectedIndex]);
 
-  const handleNavigate = useCallback((href: string) => {
-    setOpen(false);
-    setQuery("");
-    router.push(href);
-  }, [router]);
+  const handleNavigate = useCallback(
+    (href: string) => {
+      setOpen(false);
+      setQuery("");
+      router.push(href);
+    },
+    [router],
+  );
 
   useEffect(() => {
     function onOpen() {
@@ -75,34 +81,37 @@ export function DocsCommandPalette() {
     };
   }, []);
 
-  const handleInputKeyDown = useCallback((event: React.KeyboardEvent) => {
-    if (event.key === "ArrowDown") {
-      event.preventDefault();
-      setSelectedIndex((prev) => Math.min(prev + 1, results.length - 1));
-    } else if (event.key === "ArrowUp") {
-      event.preventDefault();
-      setSelectedIndex((prev) => Math.max(prev - 1, 0));
-    } else if (event.key === "Enter") {
-      event.preventDefault();
-      if (results[selectedIndex]) {
-        handleNavigate(results[selectedIndex].href);
+  const handleInputKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        setSelectedIndex((prev) => Math.min(prev + 1, results.length - 1));
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+        setSelectedIndex((prev) => Math.max(prev - 1, 0));
+      } else if (event.key === "Enter") {
+        event.preventDefault();
+        if (results[selectedIndex]) {
+          handleNavigate(results[selectedIndex].href);
+        }
       }
-    }
-  }, [results, selectedIndex, handleNavigate]);
+    },
+    [results, selectedIndex, handleNavigate],
+  );
 
   if (!open) {
     return null;
   }
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-[70] flex items-start justify-center bg-black/60 px-4 pt-[15vh] backdrop-blur-sm animate-in fade-in duration-150"
       onClick={() => {
         setOpen(false);
         setQuery("");
       }}
     >
-      <div 
+      <div
         className="w-full max-w-xl rounded-2xl border border-[var(--docs-panel-border)] bg-[var(--docs-panel)] shadow-2xl animate-in slide-in-from-top-4 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
@@ -126,8 +135,12 @@ export function DocsCommandPalette() {
         <ul ref={listRef} className="max-h-[50vh] overflow-y-auto p-2">
           {results.length === 0 ? (
             <li className="px-4 py-10 text-center">
-              <p className="text-sm text-[var(--docs-muted)]">No results for "{query}"</p>
-              <p className="text-xs text-[var(--docs-muted)] mt-1 opacity-60">Try a different search term</p>
+              <p className="text-sm text-[var(--docs-muted)]">
+                No results for &quot;{query}&quot;
+              </p>
+              <p className="text-xs text-[var(--docs-muted)] mt-1 opacity-60">
+                Try a different search term
+              </p>
             </li>
           ) : (
             results.map((result, index) => (
@@ -145,26 +158,36 @@ export function DocsCommandPalette() {
                       : "hover:bg-[var(--docs-panel-hover)]"
                   }`}
                 >
-                  <div className={`p-2 rounded-lg transition-colors ${
-                    index === selectedIndex 
-                      ? "bg-[var(--docs-accent)]/20 text-[var(--docs-accent)]" 
-                      : "bg-[var(--docs-panel-hover)] text-[var(--docs-muted)]"
-                  }`}>
+                  <div
+                    className={`p-2 rounded-lg transition-colors ${
+                      index === selectedIndex
+                        ? "bg-[var(--docs-accent)]/20 text-[var(--docs-accent)]"
+                        : "bg-[var(--docs-panel-hover)] text-[var(--docs-muted)]"
+                    }`}
+                  >
                     <FileText className="w-4 h-4" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-medium truncate ${
-                      index === selectedIndex ? "text-[var(--docs-accent)]" : "text-[var(--docs-text)]"
-                    }`}>
+                    <p
+                      className={`text-sm font-medium truncate ${
+                        index === selectedIndex
+                          ? "text-[var(--docs-accent)]"
+                          : "text-[var(--docs-text)]"
+                      }`}
+                    >
                       {result.label}
                     </p>
-                    <p className="text-xs text-[var(--docs-muted)] mt-0.5">{result.section}</p>
+                    <p className="text-xs text-[var(--docs-muted)] mt-0.5">
+                      {result.section}
+                    </p>
                   </div>
-                  <ArrowRight className={`w-4 h-4 transition-all ${
-                    index === selectedIndex 
-                      ? "opacity-60 text-[var(--docs-accent)]" 
-                      : "opacity-0 -translate-x-2 group-hover:opacity-40 group-hover:translate-x-0"
-                  }`} />
+                  <ArrowRight
+                    className={`w-4 h-4 transition-all ${
+                      index === selectedIndex
+                        ? "opacity-60 text-[var(--docs-accent)]"
+                        : "opacity-0 -translate-x-2 group-hover:opacity-40 group-hover:translate-x-0"
+                    }`}
+                  />
                 </Link>
               </li>
             ))
@@ -176,16 +199,24 @@ export function DocsCommandPalette() {
           <div className="border-t border-[var(--docs-panel-border)] px-4 py-2.5 flex items-center justify-between text-[11px] text-[var(--docs-muted)]">
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1.5">
-                <kbd className="rounded border border-[var(--docs-panel-border)] bg-[var(--docs-bg)] px-1.5 py-0.5">↑</kbd>
-                <kbd className="rounded border border-[var(--docs-panel-border)] bg-[var(--docs-bg)] px-1.5 py-0.5">↓</kbd>
+                <kbd className="rounded border border-[var(--docs-panel-border)] bg-[var(--docs-bg)] px-1.5 py-0.5">
+                  ↑
+                </kbd>
+                <kbd className="rounded border border-[var(--docs-panel-border)] bg-[var(--docs-bg)] px-1.5 py-0.5">
+                  ↓
+                </kbd>
                 <span>navigate</span>
               </span>
               <span className="flex items-center gap-1.5">
-                <kbd className="rounded border border-[var(--docs-panel-border)] bg-[var(--docs-bg)] px-1.5 py-0.5">↵</kbd>
+                <kbd className="rounded border border-[var(--docs-panel-border)] bg-[var(--docs-bg)] px-1.5 py-0.5">
+                  ↵
+                </kbd>
                 <span>open</span>
               </span>
             </div>
-            <span>{results.length} result{results.length !== 1 ? "s" : ""}</span>
+            <span>
+              {results.length} result{results.length !== 1 ? "s" : ""}
+            </span>
           </div>
         )}
       </div>

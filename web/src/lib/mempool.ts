@@ -103,9 +103,15 @@ async function fetchJSON<T>(path: string): Promise<T> {
     const res = await fetch(`${BASE}${path}`);
     if (!res.ok) {
       if (res.status === 404) {
-        throw new MempoolError("Not found. Check the txid or block height.", 404);
+        throw new MempoolError(
+          "Not found. Check the txid or block height.",
+          404,
+        );
       }
-      throw new MempoolError(`mempool.space returned ${res.status}`, res.status);
+      throw new MempoolError(
+        `mempool.space returned ${res.status}`,
+        res.status,
+      );
     }
     const data = (await res.json()) as T;
     setCached(key, data, ttlForPath(path));
@@ -129,7 +135,10 @@ async function fetchText(path: string): Promise<string> {
   const request = (async () => {
     const res = await fetch(`${BASE}${path}`);
     if (!res.ok) {
-      throw new MempoolError(`mempool.space returned ${res.status}`, res.status);
+      throw new MempoolError(
+        `mempool.space returned ${res.status}`,
+        res.status,
+      );
     }
     const text = await res.text();
     setCached(key, text, ttlForPath(path));

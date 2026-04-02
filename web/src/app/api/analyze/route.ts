@@ -34,22 +34,7 @@ async function resolveDemoFixturePaths(
   if (!fixture) return null;
 
   const workspaceRoot = getWorkspaceRoot();
-  const blocksCandidateDirs = [
-    path.join(workspaceRoot, "fixtures", "blocks"),
-    path.resolve(
-      workspaceRoot,
-      "..",
-      "2026-developer-challenge-1-chain-lens-keshav0479",
-      "fixtures",
-      "blocks",
-    ),
-    path.resolve(
-      workspaceRoot,
-      "..",
-      "2026-developer-challenge-3-sherlock-keshav0479",
-      "fixtures",
-    ),
-  ];
+  const blocksCandidateDirs = [path.join(workspaceRoot, "fixtures", "blocks")];
 
   for (const dir of blocksCandidateDirs) {
     const blkPath = path.join(dir, fixture.blk);
@@ -74,7 +59,10 @@ async function resolveDemoFixturePaths(
   return null;
 }
 
-async function parseTxFixtureJson(fixture: unknown, tmpDir: string): Promise<NextResponse> {
+async function parseTxFixtureJson(
+  fixture: unknown,
+  tmpDir: string,
+): Promise<NextResponse> {
   const fixturePath = path.join(tmpDir, "fixture.json");
   await writeFile(fixturePath, JSON.stringify(fixture), "utf-8");
 
@@ -100,8 +88,13 @@ async function parseBlockFiles(
   blkPath: string,
   revPath: string,
   xorPath: string,
+  cwd?: string,
 ): Promise<NextResponse> {
-  const result = await runTxray(["parse", "block", blkPath, revPath, xorPath]);
+  // If cwd is provided, assume paths are relative filenames
+  // Otherwise, use absolute paths
+  const args = ["parse", "block", blkPath, revPath, xorPath];
+
+  const result = await runTxray(args, cwd);
   if (result.code !== 0) {
     return NextResponse.json(
       {
@@ -117,7 +110,10 @@ async function parseBlockFiles(
 
   const output = parseJsonFromCliOutput(result.stdout);
   if (typeof output === "object" && output !== null) {
-    return NextResponse.json({ ...(output as Record<string, unknown>), is_block: true });
+    return NextResponse.json({
+      ...(output as Record<string, unknown>),
+      is_block: true,
+    });
   }
 
   return NextResponse.json(output);
@@ -132,7 +128,8 @@ export async function POST(req: Request) {
     if (contentType.includes("application/json")) {
       const body = (await req.json()) as Record<string, unknown>;
 
-      const demoFixture = typeof body.demoFixture === "string" ? body.demoFixture : null;
+      const demoFixture =
+        typeof body.demoFixture === "string" ? body.demoFixture : null;
       if (demoFixture) {
         const fixturePaths = await resolveDemoFixturePaths(demoFixture);
         if (!fixturePaths) {
@@ -182,9 +179,13 @@ export async function POST(req: Request) {
         );
       }
 
-      const blkPath = path.join(tmpDir, path.basename(blkFile.name));
-      const revPath = path.join(tmpDir, path.basename(revFile.name));
-      const xorPath = path.join(tmpDir, path.basename(xorFile.name));
+      const blkName = path.basename(blkFile.name);
+      const revName = path.basename(revFile.name);
+      const xorName = path.basename(xorFile.name);
+
+      const blkPath = path.join(tmpDir, blkName);
+      const revPath = path.join(tmpDir, revName);
+      const xorPath = path.join(tmpDir, xorName);
 
       await Promise.all([
         writeFile(blkPath, Buffer.from(await blkFile.arrayBuffer())),
@@ -192,7 +193,8 @@ export async function POST(req: Request) {
         writeFile(xorPath, Buffer.from(await xorFile.arrayBuffer())),
       ]);
 
-      return parseBlockFiles(blkPath, revPath, xorPath);
+      // Pass basenames and tmpDir so CLI runs from correct directory
+      return parseBlockFiles(blkName, revName, xorName, tmpDir);
     }
 
     return NextResponse.json(

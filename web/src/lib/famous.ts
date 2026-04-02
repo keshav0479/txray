@@ -25,7 +25,7 @@ export const FAMOUS_ENTRIES: FamousEntry[] = [
     date: "Jan 3, 2009",
     tagline: "The block that started it all",
     story:
-      "Block 0 was hardcoded into Bitcoin's source code by Satoshi Nakamoto. Its coinbase contains the famous Times headline: \"Chancellor on brink of second bailout for banks.\"",
+      'Block 0 was hardcoded into Bitcoin\'s source code by Satoshi Nakamoto. Its coinbase contains the famous Times headline: "Chancellor on brink of second bailout for banks."',
     whyInteresting:
       "The coinbase script embeds a newspaper headline, proving no pre-mining before this date. The 50 BTC reward is unspendable.",
     category: "genesis",
@@ -131,7 +131,7 @@ export const FAMOUS_ENTRIES: FamousEntry[] = [
     date: "Jan 12, 2009",
     tagline: "The first person-to-person Bitcoin transfer",
     story:
-      "Satoshi Nakamoto sent 10 BTC to Hal Finney, a cryptographer and early Bitcoin contributor. Finney famously tweeted \"Running bitcoin\" just days before.",
+      'Satoshi Nakamoto sent 10 BTC to Hal Finney, a cryptographer and early Bitcoin contributor. Finney famously tweeted "Running bitcoin" just days before.',
     whyInteresting:
       "Uses P2PK (raw public key), not P2PKH (address). Zero fee. Only 2 outputs: 10 BTC to Finney, 40 BTC change back to Satoshi.",
     category: "genesis",
@@ -177,8 +177,6 @@ export function famousTxs(): FamousEntry[] {
   return FAMOUS_ENTRIES.filter((e) => e.type === "tx");
 }
 
-export function famousByCategory(
-  cat: FamousEntry["category"],
-): FamousEntry[] {
+export function famousByCategory(cat: FamousEntry["category"]): FamousEntry[] {
   return FAMOUS_ENTRIES.filter((e) => e.category === cat);
 }

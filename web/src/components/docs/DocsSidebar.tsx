@@ -9,28 +9,39 @@ import { DOCS_NAV_SECTIONS } from "@/components/docs/docs-config";
 export function DocsSidebar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
 
-  // Sync with global collapse state
+  // Initialize collapsed from localStorage
+  const getInitialCollapsed = () => {
+    if (typeof window === "undefined") return false;
+    return (
+      window.localStorage.getItem("txray-docs-sidebar-collapsed") === "true"
+    );
+  };
+  const [collapsed, setCollapsed] = useState(getInitialCollapsed);
+
+  // Sync body class and listen for external changes
   useEffect(() => {
-    const savedCollapsed = window.localStorage.getItem("txray-docs-sidebar-collapsed") === "true";
-    if (savedCollapsed) {
-      setCollapsed(true);
+    if (collapsed) {
       document.body.classList.add("docs-sidebar-collapsed");
+    } else {
+      document.body.classList.remove("docs-sidebar-collapsed");
     }
 
     // Listen for class changes on body
     const observer = new MutationObserver(() => {
       setCollapsed(document.body.classList.contains("docs-sidebar-collapsed"));
     });
-    observer.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
     return () => observer.disconnect();
-  }, []);
+  }, [collapsed]);
 
   function toggleCollapse() {
     const next = !collapsed;
     setCollapsed(next);
-    
+
     if (next) {
       document.body.classList.add("docs-sidebar-collapsed");
       window.localStorage.setItem("txray-docs-sidebar-collapsed", "true");
@@ -79,7 +90,7 @@ export function DocsSidebar() {
         >
           <PanelLeftClose className="w-3.5 h-3.5" />
         </button>
-        
+
         {/* Scrollable nav - full height */}
         <div className="overflow-y-auto overflow-x-hidden h-full py-5 px-5">
           <nav className="space-y-7">
@@ -97,9 +108,10 @@ export function DocsSidebar() {
                           href={item.href}
                           className={`
                             group flex items-center gap-2 px-3 py-2 rounded-lg text-[14px] transition-all duration-200
-                            ${isActive
-                              ? "bg-[var(--docs-accent)]/10 text-[var(--docs-accent)] font-medium"
-                              : "text-[var(--docs-muted)] hover:text-[var(--docs-text)] hover:bg-[var(--docs-panel-hover)]"
+                            ${
+                              isActive
+                                ? "bg-[var(--docs-accent)]/10 text-[var(--docs-accent)] font-medium"
+                                : "text-[var(--docs-muted)] hover:text-[var(--docs-text)] hover:bg-[var(--docs-panel-hover)]"
                             }
                           `}
                         >
@@ -107,12 +119,12 @@ export function DocsSidebar() {
                             <span className="w-1 h-4 rounded-full bg-[var(--docs-accent)] -ml-1.5 mr-1" />
                           )}
                           <span className="flex-1">{item.label}</span>
-                          <ChevronRight 
+                          <ChevronRight
                             className={`w-3.5 h-3.5 transition-all duration-200 ${
-                              isActive 
-                                ? "opacity-60" 
+                              isActive
+                                ? "opacity-60"
                                 : "opacity-0 -translate-x-1 group-hover:opacity-40 group-hover:translate-x-0"
-                            }`} 
+                            }`}
                           />
                         </Link>
                       </li>
@@ -151,9 +163,10 @@ export function DocsSidebar() {
                           href={item.href}
                           className={`
                             group flex items-center gap-2 px-3 py-2 rounded-lg text-[14px] transition-all duration-200
-                            ${isActive
-                              ? "bg-[var(--docs-accent)]/10 text-[var(--docs-accent)] font-medium"
-                              : "text-[var(--docs-muted)] hover:text-[var(--docs-text)] hover:bg-[var(--docs-panel-hover)]"
+                            ${
+                              isActive
+                                ? "bg-[var(--docs-accent)]/10 text-[var(--docs-accent)] font-medium"
+                                : "text-[var(--docs-muted)] hover:text-[var(--docs-text)] hover:bg-[var(--docs-panel-hover)]"
                             }
                           `}
                           onClick={() => setIsOpen(false)}
@@ -162,12 +175,12 @@ export function DocsSidebar() {
                             <span className="w-1 h-4 rounded-full bg-[var(--docs-accent)] -ml-1.5 mr-1" />
                           )}
                           <span className="flex-1">{item.label}</span>
-                          <ChevronRight 
+                          <ChevronRight
                             className={`w-3.5 h-3.5 transition-all duration-200 ${
-                              isActive 
-                                ? "opacity-60" 
+                              isActive
+                                ? "opacity-60"
                                 : "opacity-0 -translate-x-1 group-hover:opacity-40 group-hover:translate-x-0"
-                            }`} 
+                            }`}
                           />
                         </Link>
                       </li>
@@ -182,7 +195,7 @@ export function DocsSidebar() {
 
       {/* Mobile Overlay */}
       {isOpen && (
-        <div 
+        <div
           className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-30 animate-in fade-in duration-200"
           onClick={() => setIsOpen(false)}
         />

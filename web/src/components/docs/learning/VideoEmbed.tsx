@@ -49,8 +49,12 @@ export function VideoEmbed({
   const [isLoaded, setIsLoaded] = useState(false);
 
   const videoId = extractYouTubeId(src);
-  const thumbnailUrl = poster || (videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : null);
-  
+  const thumbnailUrl =
+    poster ||
+    (videoId
+      ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
+      : null);
+
   const aspectRatioClass = {
     "16/9": "aspect-video",
     "4/3": "aspect-[4/3]",
@@ -72,9 +76,13 @@ export function VideoEmbed({
             <Video className="w-4 h-4 text-red-400" />
           </div>
           <div>
-            <h4 className="text-base font-semibold text-[var(--docs-text)]">{title}</h4>
+            <h4 className="text-base font-semibold text-[var(--docs-text)]">
+              {title}
+            </h4>
             {description && (
-              <p className="text-sm text-[var(--docs-muted)] mt-0.5">{description}</p>
+              <p className="text-sm text-[var(--docs-muted)] mt-0.5">
+                {description}
+              </p>
             )}
           </div>
         </div>
@@ -109,7 +117,7 @@ export function VideoEmbed({
               />
             )}
             <div className="absolute inset-0 bg-black/30" />
-            
+
             {/* Play button */}
             <motion.button
               onClick={() => setIsPlaying(true)}

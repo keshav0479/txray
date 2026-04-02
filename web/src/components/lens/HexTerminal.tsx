@@ -2,7 +2,18 @@
 
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Terminal, X, ChevronRight, FileCode, Copy, Check, Download, Search, ChevronUp, ChevronDown } from "lucide-react";
+import {
+  Terminal,
+  X,
+  ChevronRight,
+  FileCode,
+  Copy,
+  Check,
+  Download,
+  Search,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react";
 
 interface HexTerminalProps {
   rawJsonData: object;
@@ -12,14 +23,17 @@ interface HexTerminalProps {
 
 interface Section {
   key: string;
-  headerLine: string;       // e.g.  "vin": [
-  contentLines: string[];   // lines inside the array/object
-  closingLine: string;      // e.g. ],
+  headerLine: string; // e.g.  "vin": [
+  contentLines: string[]; // lines inside the array/object
+  closingLine: string; // e.g. ],
   itemCount: number;
 }
 
-function parseTopLevelSections(json: string): { plainLines: string[]; sections: Section[] } {
-  const lines = json.split('\n');
+function parseTopLevelSections(json: string): {
+  plainLines: string[];
+  sections: Section[];
+} {
+  const lines = json.split("\n");
   const plainLines: string[] = [];
   const sections: Section[] = [];
 
@@ -31,7 +45,7 @@ function parseTopLevelSections(json: string): { plainLines: string[]; sections: 
     if (match) {
       const key = match[1];
       const opener = match[2];
-      const closer = opener === '[' ? ']' : '}';
+      const closer = opener === "[" ? "]" : "}";
       const headerLine = line;
       const contentLines: string[] = [];
       let depth = 1;
@@ -40,8 +54,8 @@ function parseTopLevelSections(json: string): { plainLines: string[]; sections: 
         const l = lines[i];
         // Count depth changes
         for (const ch of l) {
-          if (ch === opener.charAt(0) || ch === '[' || ch === '{') depth++;
-          if (ch === closer.charAt(0) || ch === ']' || ch === '}') depth--;
+          if (ch === opener.charAt(0) || ch === "[" || ch === "{") depth++;
+          if (ch === closer.charAt(0) || ch === "]" || ch === "}") depth--;
         }
         if (depth > 0) {
           contentLines.push(l);
@@ -56,15 +70,23 @@ function parseTopLevelSections(json: string): { plainLines: string[]; sections: 
       // Only make it collapsible if it has significant content
       if (contentLines.length > 5) {
         // Count items (rough: count lines that start with 4 spaces + {)
-        const itemCount = contentLines.filter(l => /^\s{4}\{/.test(l) || /^\s{4}\d/.test(l) || /^\s{4}"/.test(l)).length;
-        sections.push({ key, headerLine, contentLines, closingLine, itemCount: itemCount || contentLines.length });
+        const itemCount = contentLines.filter(
+          (l) => /^\s{4}\{/.test(l) || /^\s{4}\d/.test(l) || /^\s{4}"/.test(l),
+        ).length;
+        sections.push({
+          key,
+          headerLine,
+          contentLines,
+          closingLine,
+          itemCount: itemCount || contentLines.length,
+        });
         plainLines.push(`__SECTION__${key}`);
         i++;
         continue;
       }
       // Small section, treat as plain lines
       plainLines.push(headerLine);
-      contentLines.forEach(l => plainLines.push(l));
+      contentLines.forEach((l) => plainLines.push(l));
       plainLines.push(closingLine);
       i++;
       continue;
@@ -77,22 +99,32 @@ function parseTopLevelSections(json: string): { plainLines: string[]; sections: 
 
 function highlightLine(line: string): string {
   return line
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
     .replace(/"([^"]+)":/g, '<span class="text-[#7dd3fc]">"$1"</span>:')
     .replace(/: "([^"]*?)"/g, ': <span class="text-[#86efac]">"$1"</span>')
     .replace(/: (\d+\.?\d*)/g, ': <span class="text-[#fdba74]">$1</span>')
-    .replace(/: (true|false|null)/g, ': <span class="text-[#c084fc]">$1</span>');
+    .replace(
+      /: (true|false|null)/g,
+      ': <span class="text-[#c084fc]">$1</span>',
+    );
 }
 
 /* --- Collapsible Section Component --- */
 
-function CollapsibleSection({ section, searchQuery }: { section: Section; searchQuery: string }) {
+function CollapsibleSection({
+  section,
+  searchQuery,
+}: {
+  section: Section;
+  searchQuery: string;
+}) {
   const [collapsed, setCollapsed] = useState(() => {
     if (searchQuery) {
-      const content = section.contentLines.join('\n');
-      if (content.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+      const content = section.contentLines.join("\n");
+      if (content.toLowerCase().includes(searchQuery.toLowerCase()))
+        return false;
     }
     return section.contentLines.length > 30;
   });
@@ -106,10 +138,13 @@ function CollapsibleSection({ section, searchQuery }: { section: Section; search
           className="cursor-pointer hover:bg-white/5 rounded inline-block transition-colors"
           onClick={() => setCollapsed(false)}
         >
-          <span className="text-zinc-600 group-hover:text-zinc-400 transition-colors select-none">▶ </span>
+          <span className="text-zinc-600 group-hover:text-zinc-400 transition-colors select-none">
+            ▶{" "}
+          </span>
           <span dangerouslySetInnerHTML={{ __html: headerHtml }} />
           <span className="text-zinc-600 group-hover:text-zinc-400 transition-colors text-xs">
-            {" "}{section.itemCount} items...{" "}
+            {" "}
+            {section.itemCount} items...{" "}
           </span>
           <span className="text-[#a8a8a8]">{section.closingLine.trim()}</span>
         </span>
@@ -119,7 +154,7 @@ function CollapsibleSection({ section, searchQuery }: { section: Section; search
 
   // Build content HTML all at once (fast string concat)
   const contentHtml = section.contentLines
-    .map(line => {
+    .map((line) => {
       const hl = highlightLine(line);
       if (searchQuery) {
         const raw = line.toLowerCase();
@@ -129,7 +164,7 @@ function CollapsibleSection({ section, searchQuery }: { section: Section; search
       }
       return hl;
     })
-    .join('\n');
+    .join("\n");
 
   return (
     <div>
@@ -137,17 +172,20 @@ function CollapsibleSection({ section, searchQuery }: { section: Section; search
         className="cursor-pointer hover:bg-white/5 rounded inline-block transition-colors"
         onClick={() => setCollapsed(true)}
       >
-        <span className="text-zinc-500 hover:text-zinc-300 transition-colors select-none">▼ </span>
+        <span className="text-zinc-500 hover:text-zinc-300 transition-colors select-none">
+          ▼{" "}
+        </span>
         <span dangerouslySetInnerHTML={{ __html: headerHtml }} />
       </span>
       {"\n"}
       <span dangerouslySetInnerHTML={{ __html: contentHtml }} />
       {"\n"}
-      <span dangerouslySetInnerHTML={{ __html: highlightLine(section.closingLine) }} />
+      <span
+        dangerouslySetInnerHTML={{ __html: highlightLine(section.closingLine) }}
+      />
     </div>
   );
 }
-
 
 /* --- Main Component --- */
 
@@ -160,11 +198,17 @@ export function HexTerminal({ rawJsonData }: HexTerminalProps) {
   const searchRef = useRef<HTMLInputElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
 
-  const rawJson = useMemo(() => JSON.stringify(rawJsonData, null, 2), [rawJsonData]);
-  const lineCount = useMemo(() => rawJson.split('\n').length, [rawJson]);
+  const rawJson = useMemo(
+    () => JSON.stringify(rawJsonData, null, 2),
+    [rawJsonData],
+  );
+  const lineCount = useMemo(() => rawJson.split("\n").length, [rawJson]);
 
   // Parse top-level sections for collapsibility
-  const { plainLines, sections } = useMemo(() => parseTopLevelSections(rawJson), [rawJson]);
+  const { plainLines, sections } = useMemo(
+    () => parseTopLevelSections(rawJson),
+    [rawJson],
+  );
   const sectionMap = useMemo(() => {
     const map: Record<string, Section> = {};
     for (const s of sections) map[s.key] = s;
@@ -174,27 +218,30 @@ export function HexTerminal({ rawJsonData }: HexTerminalProps) {
   // Count matches
   const matchCount = useMemo(() => {
     if (!searchQuery.trim()) return 0;
-    const escaped = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    return (rawJson.match(new RegExp(escaped, 'gi')) || []).length;
+    const escaped = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return (rawJson.match(new RegExp(escaped, "gi")) || []).length;
   }, [rawJson, searchQuery]);
 
   // Navigate matches
-  const scrollToMatch = useCallback((direction: 'next' | 'prev') => {
-    if (!bodyRef.current || matchCount === 0) return;
-    const marks = bodyRef.current.querySelectorAll('[data-search-match]');
-    if (marks.length === 0) return;
+  const scrollToMatch = useCallback(
+    (direction: "next" | "prev") => {
+      if (!bodyRef.current || matchCount === 0) return;
+      const marks = bodyRef.current.querySelectorAll("[data-search-match]");
+      if (marks.length === 0) return;
 
-    marks.forEach(m => m.classList.remove('ring-1', 'ring-amber-400'));
+      marks.forEach((m) => m.classList.remove("ring-1", "ring-amber-400"));
 
-    let newIdx = activeMatchIdx;
-    if (direction === 'next') newIdx = (activeMatchIdx + 1) % marks.length;
-    else newIdx = (activeMatchIdx - 1 + marks.length) % marks.length;
-    setActiveMatchIdx(newIdx);
+      let newIdx = activeMatchIdx;
+      if (direction === "next") newIdx = (activeMatchIdx + 1) % marks.length;
+      else newIdx = (activeMatchIdx - 1 + marks.length) % marks.length;
+      setActiveMatchIdx(newIdx);
 
-    const target = marks[newIdx];
-    target.classList.add('ring-1', 'ring-amber-400');
-    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, [activeMatchIdx, matchCount]);
+      const target = marks[newIdx];
+      target.classList.add("ring-1", "ring-amber-400");
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+    },
+    [activeMatchIdx, matchCount],
+  );
 
   // Reset match index when search query changes
   // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -217,7 +264,7 @@ export function HexTerminal({ rawJsonData }: HexTerminalProps) {
   }, [rawJson]);
 
   const toggleSearch = useCallback(() => {
-    setSearchVisible(prev => {
+    setSearchVisible((prev) => {
       if (!prev) setTimeout(() => searchRef.current?.focus(), 100);
       return !prev;
     });
@@ -227,28 +274,30 @@ export function HexTerminal({ rawJsonData }: HexTerminalProps) {
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+      if ((e.ctrlKey || e.metaKey) && e.key === "f") {
         e.preventDefault();
         setSearchVisible(true);
         setTimeout(() => searchRef.current?.focus(), 100);
       }
-      if (e.key === 'Escape') {
-        if (searchVisible) { setSearchVisible(false); setSearchQuery(""); }
-        else setIsOpen(false);
+      if (e.key === "Escape") {
+        if (searchVisible) {
+          setSearchVisible(false);
+          setSearchQuery("");
+        } else setIsOpen(false);
       }
-      if (e.key === 'Enter' && searchVisible && matchCount > 0) {
+      if (e.key === "Enter" && searchVisible && matchCount > 0) {
         e.preventDefault();
-        scrollToMatch(e.shiftKey ? 'prev' : 'next');
+        scrollToMatch(e.shiftKey ? "prev" : "next");
       }
     };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
   }, [isOpen, searchVisible, matchCount, scrollToMatch]);
 
   // Build plain lines HTML
   const plainHtml = useMemo(() => {
-    return plainLines.map(line => {
-      if (line.startsWith('__SECTION__')) return line; // placeholder
+    return plainLines.map((line) => {
+      if (line.startsWith("__SECTION__")) return line; // placeholder
       const hl = highlightLine(line);
       if (searchQuery) {
         const raw = line.toLowerCase();
@@ -279,7 +328,10 @@ export function HexTerminal({ rawJsonData }: HexTerminalProps) {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-12 bg-black/60 backdrop-blur-sm"
           >
-            <div className="absolute inset-0" onClick={() => setIsOpen(false)} />
+            <div
+              className="absolute inset-0"
+              onClick={() => setIsOpen(false)}
+            />
 
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -294,19 +346,40 @@ export function HexTerminal({ rawJsonData }: HexTerminalProps) {
                   <FileCode className="w-3.5 h-3.5 text-lens-500" />
                   <span>txray lens output</span>
                   <span className="text-text-muted/50">&#x2022;</span>
-                  <span className="text-text-muted/50">{(rawJson.length / 1024).toFixed(1)} KB</span>
+                  <span className="text-text-muted/50">
+                    {(rawJson.length / 1024).toFixed(1)} KB
+                  </span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <button onClick={toggleSearch} className={`p-1.5 rounded-md transition-colors ${searchVisible ? 'bg-lens-500/20 text-lens-400' : 'hover:bg-white/10 text-text-muted hover:text-white'}`} title="Search (Ctrl+F)">
+                  <button
+                    onClick={toggleSearch}
+                    className={`p-1.5 rounded-md transition-colors ${searchVisible ? "bg-lens-500/20 text-lens-400" : "hover:bg-white/10 text-text-muted hover:text-white"}`}
+                    title="Search (Ctrl+F)"
+                  >
                     <Search className="w-4 h-4" />
                   </button>
-                  <button onClick={handleCopy} className="p-1.5 rounded-md hover:bg-white/10 text-text-muted hover:text-white transition-colors" title="Copy to clipboard">
-                    {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                  <button
+                    onClick={handleCopy}
+                    className="p-1.5 rounded-md hover:bg-white/10 text-text-muted hover:text-white transition-colors"
+                    title="Copy to clipboard"
+                  >
+                    {copied ? (
+                      <Check className="w-4 h-4 text-emerald-400" />
+                    ) : (
+                      <Copy className="w-4 h-4" />
+                    )}
                   </button>
-                  <button onClick={handleDownload} className="p-1.5 rounded-md hover:bg-white/10 text-text-muted hover:text-white transition-colors" title="Download JSON">
+                  <button
+                    onClick={handleDownload}
+                    className="p-1.5 rounded-md hover:bg-white/10 text-text-muted hover:text-white transition-colors"
+                    title="Download JSON"
+                  >
                     <Download className="w-4 h-4" />
                   </button>
-                  <button onClick={() => setIsOpen(false)} className="p-1.5 rounded-md hover:bg-white/10 text-text-muted hover:text-white transition-colors ml-1">
+                  <button
+                    onClick={() => setIsOpen(false)}
+                    className="p-1.5 rounded-md hover:bg-white/10 text-text-muted hover:text-white transition-colors ml-1"
+                  >
                     <X className="w-4 h-4" />
                   </button>
                 </div>
@@ -315,16 +388,51 @@ export function HexTerminal({ rawJsonData }: HexTerminalProps) {
               {/* Search Bar */}
               <AnimatePresence>
                 {searchVisible && (
-                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden border-b border-white/10 bg-[#141414]">
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden border-b border-white/10 bg-[#141414]"
+                  >
                     <div className="px-4 py-2 flex items-center gap-2">
                       <Search className="w-3.5 h-3.5 text-text-muted shrink-0" />
-                      <input ref={searchRef} type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search in raw data..." className="flex-1 bg-transparent text-sm font-mono text-white placeholder:text-text-muted/50 outline-none" />
+                      <input
+                        ref={searchRef}
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search in raw data..."
+                        className="flex-1 bg-transparent text-sm font-mono text-white placeholder:text-text-muted/50 outline-none"
+                      />
                       {searchQuery && (
                         <div className="flex items-center gap-1 shrink-0">
-                          <span className="text-xs font-mono text-text-muted/70 mr-1">{matchCount > 0 ? `${Math.min(activeMatchIdx + 1, matchCount)}/${matchCount}` : 'No matches'}</span>
-                          <button onClick={() => scrollToMatch('prev')} disabled={matchCount === 0} className="p-1 rounded hover:bg-white/10 text-text-muted hover:text-white disabled:opacity-30 transition-colors" title="Previous (Shift+Enter)"><ChevronUp className="w-3.5 h-3.5" /></button>
-                          <button onClick={() => scrollToMatch('next')} disabled={matchCount === 0} className="p-1 rounded hover:bg-white/10 text-text-muted hover:text-white disabled:opacity-30 transition-colors" title="Next (Enter)"><ChevronDown className="w-3.5 h-3.5" /></button>
-                          <button onClick={() => setSearchQuery("")} className="p-1 rounded hover:bg-white/10 text-text-muted hover:text-white transition-colors"><X className="w-3.5 h-3.5" /></button>
+                          <span className="text-xs font-mono text-text-muted/70 mr-1">
+                            {matchCount > 0
+                              ? `${Math.min(activeMatchIdx + 1, matchCount)}/${matchCount}`
+                              : "No matches"}
+                          </span>
+                          <button
+                            onClick={() => scrollToMatch("prev")}
+                            disabled={matchCount === 0}
+                            className="p-1 rounded hover:bg-white/10 text-text-muted hover:text-white disabled:opacity-30 transition-colors"
+                            title="Previous (Shift+Enter)"
+                          >
+                            <ChevronUp className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => scrollToMatch("next")}
+                            disabled={matchCount === 0}
+                            className="p-1 rounded hover:bg-white/10 text-text-muted hover:text-white disabled:opacity-30 transition-colors"
+                            title="Next (Enter)"
+                          >
+                            <ChevronDown className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => setSearchQuery("")}
+                            className="p-1 rounded hover:bg-white/10 text-text-muted hover:text-white transition-colors"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       )}
                     </div>
@@ -333,23 +441,41 @@ export function HexTerminal({ rawJsonData }: HexTerminalProps) {
               </AnimatePresence>
 
               {/* Body */}
-              <div ref={bodyRef} className="flex-1 overflow-auto p-4 sm:p-6 bg-surface-bg">
+              <div
+                ref={bodyRef}
+                className="flex-1 overflow-auto p-4 sm:p-6 bg-surface-bg"
+              >
                 <pre className="font-mono text-xs sm:text-sm leading-relaxed text-[#a8a8a8] whitespace-pre-wrap">
                   {plainHtml.map((line, i) => {
-                    if (line.startsWith('__SECTION__')) {
-                      const key = line.replace('__SECTION__', '');
+                    if (line.startsWith("__SECTION__")) {
+                      const key = line.replace("__SECTION__", "");
                       const section = sectionMap[key];
-                      if (section) return <CollapsibleSection key={key} section={section} searchQuery={searchQuery} />;
+                      if (section)
+                        return (
+                          <CollapsibleSection
+                            key={key}
+                            section={section}
+                            searchQuery={searchQuery}
+                          />
+                        );
                       return null;
                     }
-                    return <span key={i} dangerouslySetInnerHTML={{ __html: line + '\n' }} />;
+                    return (
+                      <span
+                        key={i}
+                        dangerouslySetInnerHTML={{ __html: line + "\n" }}
+                      />
+                    );
                   })}
                 </pre>
               </div>
 
               {/* Footer */}
               <div className="px-4 py-2 border-t border-white/10 bg-[#141414] flex items-center justify-between text-xs font-mono text-text-muted/50">
-                <span>JSON &#x2022; {lineCount} lines &#x2022; Click ▶ to expand sections</span>
+                <span>
+                  JSON &#x2022; {lineCount} lines &#x2022; Click ▶ to expand
+                  sections
+                </span>
                 <span>txray lens v1.0</span>
               </div>
             </motion.div>

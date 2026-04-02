@@ -27,9 +27,14 @@ export function DocSearch() {
       <span className="sr-only">Press Ctrl+K or Command+K to focus search</span>
       <div className="pointer-events-none absolute right-2 top-1.5 flex items-center gap-1">
         <kbd className="rounded border border-[var(--docs-panel-border)] px-1.5 py-0.5 text-[11px] text-[var(--docs-muted)]">
-          {typeof navigator !== "undefined" && navigator.platform.toLowerCase().includes("mac") ? "⌘" : "Ctrl"}
+          {typeof navigator !== "undefined" &&
+          navigator.platform.toLowerCase().includes("mac")
+            ? "⌘"
+            : "Ctrl"}
         </kbd>
-        <kbd className="rounded border border-[var(--docs-panel-border)] px-1.5 py-0.5 text-[11px] text-[var(--docs-muted)]">K</kbd>
+        <kbd className="rounded border border-[var(--docs-panel-border)] px-1.5 py-0.5 text-[11px] text-[var(--docs-muted)]">
+          K
+        </kbd>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React from "react";
 
 export function SherlockBackground() {
   const tileSize = "120px 140px";
@@ -9,8 +9,9 @@ export function SherlockBackground() {
 
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-surface-bg">
-
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         /*
           mask-size: 24vw × 56vh  →  center at (12vw, 28vh) from box origin
           mask-position = (cx - 12vw,  cy - 28vh)
@@ -75,7 +76,9 @@ export function SherlockBackground() {
           animation: torchSweep2 23s ease-in-out infinite alternate;
           animation-delay: -11s;
         }
-      `}} />
+      `,
+        }}
+      />
 
       {/* LAYER 0: Dim base — always-visible ghost of the full pattern */}
       <div
@@ -113,7 +116,8 @@ export function SherlockBackground() {
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: "radial-gradient(ellipse 60% 52% at 50% 42%, rgba(3,4,6,0.22) 0%, rgba(3,4,6,0.08) 55%, transparent 78%)",
+          background:
+            "radial-gradient(ellipse 60% 52% at 50% 42%, rgba(3,4,6,0.22) 0%, rgba(3,4,6,0.08) 55%, transparent 78%)",
         }}
       />
 
