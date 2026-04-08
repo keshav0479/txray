@@ -1,16 +1,67 @@
-# Sherlock Tool Guide
+# Sherlock
 
-Sherlock helps you investigate ownership and clustering patterns.
+Sherlock is your on-chain investigator. It applies heuristics, entropy analysis, and wallet fingerprinting to answer one question: *what can we actually infer about who owns what?*
 
-## Best For
+## What it does
 
-- Forensic-style transaction flow analysis.
-- Address cluster exploration.
-- Privacy signal interpretation.
+Sherlock combines four analysis engines:
 
-## Typical Workflow
+**Heuristic analysis.** Common input ownership, change detection, address type matching, round number analysis, and script uniformity checks. These are the building blocks of transaction behavior classification.
 
-1. Start from transaction or cluster seed.
-2. Inspect heuristic evidence and confidence.
-3. Validate with multiple linked transactions.
-4. Mark ambiguous cases as uncertain.
+**Wallet fingerprinting.** Detects signals like BIP69 ordering, low-R signature grinding, anti-fee-sniping locktime, RBF signaling, and known wallet patterns (Bitcoin Core, Electrum, Sparrow, Ledger). If a wallet left its fingerprints on a transaction, Sherlock spots them.
+
+**Boltzmann entropy.** Uses subset-sum decomposition to count how many possible interpretations exist for a transaction's input-output mapping. More interpretations means more ambiguity, which means better privacy. You get interpretation count, entropy density, a link probability matrix, and a letter grade (A through F).
+
+**Privacy advisor.** Pulls all of the above together into a single privacy score (1 to 10) with specific, actionable recommendations. Flags issues like address reuse, change output leaks, round number payments, wallet identification, mixed input types, and low entropy.
+
+## Best for
+
+- Forensic-style investigation of individual transactions
+- Understanding how much privacy a transaction actually provides
+- Detecting CoinJoin, peel chains, and consolidation patterns
+- Auditing your own transactions before or after broadcast
+- Learning how blockchain analysis really works in practice
+
+## What you see
+
+For a transaction analysis, Sherlock returns:
+
+- **Heuristic flags** showing which patterns were detected, with confidence levels
+- **Change output identification** pointing to which output is likely change and why
+- **Wallet fingerprint** naming the detected wallet software and the signals that matched
+- **Entropy result** with interpretation count, entropy bits, density score, and privacy grade
+- **Privacy score** from 1 to 10, including grade, issue list, and recommendations
+- **Fee rate statistics** when analyzing blocks, with median/mean/spread across all transactions
+
+<Warning>
+Heuristics are probabilistic, not definitive. A "likely Bitcoin Core" fingerprint means the signals match, not that it's proven. Always treat results as hypotheses, not verdicts.
+</Warning>
+
+## Typical workflow
+
+1. Start from a transaction ID or paste raw hex
+2. Review the heuristic flags. What patterns were detected?
+3. Check the wallet fingerprint. Does it narrow things down?
+4. Look at the entropy grade. A means high ambiguity (good privacy), F means trivially traceable
+5. Read the privacy advisor summary for actionable takeaways
+6. When analyzing a block, scan for outlier transactions with unusual heuristic combinations
+
+## CLI usage
+
+```bash
+# full block analysis with heuristics
+txray analyze block.blk block.rev xor.dat
+
+# wallet fingerprinting
+txray fingerprint fixtures/segwit_v0.json
+
+# Boltzmann entropy analysis
+txray entropy fixtures/segwit_v0.json
+
+# privacy advisor score
+txray advise fixtures/segwit_v0.json
+```
+
+## How Sherlock differs from Lens
+
+Lens tells you *what* a transaction contains (structure). Sherlock tells you *what it reveals* (inference). Lens is objective parsing. Sherlock is probabilistic analysis. Use Lens first to understand the data, then Sherlock to interpret it.

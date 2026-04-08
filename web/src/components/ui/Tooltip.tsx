@@ -41,7 +41,7 @@ export function Tooltip({
 
   return (
     <span
-      className="relative inline-block cursor-help group z-30"
+      className="relative inline-block cursor-help group"
       onMouseEnter={() => setIsVisible(true)}
       onMouseLeave={() => setIsVisible(false)}
       onFocus={() => setIsVisible(true)}
@@ -67,7 +67,7 @@ export function Tooltip({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 5, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className={`absolute z-[90] bottom-full left-1/2 -translate-x-1/2 mb-3 rounded-xl shadow-2xl bg-zinc-900/95 border border-white/15 text-left pointer-events-none block backdrop-blur-sm ${
+            className={`absolute z-[5] sm:z-[90] top-full sm:top-auto sm:bottom-full left-1/2 -translate-x-1/2 mt-3 sm:mt-0 sm:mb-3 rounded-xl shadow-2xl bg-zinc-900/95 border border-white/15 text-left pointer-events-none block backdrop-blur-sm ${
               isCompact ? "w-52 p-3" : "w-64 p-4"
             }`}
           >

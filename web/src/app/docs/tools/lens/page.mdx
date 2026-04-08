@@ -1,16 +1,67 @@
-# Lens Tool Guide
+# Lens
 
-Lens helps you decode Bitcoin transactions from bytes to meaning.
+Lens is your transaction microscope. Hand it raw Bitcoin data and it breaks everything down into a structured, readable analysis. From individual bytes to high-level summaries, nothing stays hidden.
 
-## Best For
+## What it does
 
-- Learning transaction structure.
-- Debugging script and fee behavior.
-- Verifying raw transaction interpretation.
+Lens has two main modes:
 
-## Typical Workflow
+**Transaction analysis.** Give it a transaction fixture (JSON with raw hex, prevouts, metadata) and you get a full structural breakdown: inputs, outputs, script types, addresses, fees, weight, SegWit savings, timelocks, and any warnings worth paying attention to.
 
-1. Paste tx hex or transaction ID.
-2. Review parsed inputs/outputs.
-3. Check fee, weight, and script types.
-4. Follow warnings before deeper inference.
+**Block analysis.** Give it a `.blk` file, `.rev` undo file, and XOR key file, and it parses the whole block: header fields, coinbase data, merkle tree validation, and summaries for every transaction inside.
+
+## Best for
+
+- Learning how Bitcoin transactions are actually structured at the byte level
+- Debugging script types and fee/weight behavior
+- Verifying that a raw transaction decodes correctly before you broadcast it
+- Understanding what SegWit actually saves and how witness data works
+- Exploring historic blocks straight from the Bitcoin data directory
+
+## What you see
+
+When you analyze a transaction, the output includes:
+
+- **Transaction ID** (txid and wtxid)
+- **Inputs** with previous outpoint references, script types (P2PKH, P2SH, P2WPKH, P2WSH, P2TR, etc.), addresses, and BTC values
+- **Outputs** with script classification, addresses, and amounts
+- **Fee breakdown** in sats, sat/vB, and BTC
+- **Weight and size** showing raw bytes, virtual bytes, witness discount, and SegWit savings percentage
+- **Timelock info** covering nLockTime, nSequence, BIP65/BIP68 analysis
+- **Warnings** for unusual patterns like dust outputs, high fees, non-standard scripts, or address reuse
+
+For blocks, you also get header fields (version, prev hash, merkle root, timestamp, difficulty), coinbase analysis, BIP34 height extraction, and merkle validation.
+
+## Plain English mode
+
+Lens has an `explain` feature that translates the JSON analysis into plain English. It classifies the transaction type (simple payment, consolidation, batch, coinbase), describes each input and output in human terms, puts the fee rate in context, and surfaces privacy tips for beginners.
+
+<Tip>
+New to Bitcoin internals? Start with Lens explain mode. It builds intuition before you move on to Sherlock's heuristic analysis.
+</Tip>
+
+## Typical workflow
+
+1. Paste a transaction hex or upload a fixture JSON on the web UI
+2. Read the structural breakdown, inputs, outputs, script types
+3. Check the fee rate and weight to understand the transaction's priority
+4. Review any warnings Lens flags
+5. Use "Explain" for a narrative summary
+6. Move to Sherlock when you want ownership and privacy analysis
+
+## CLI usage
+
+```bash
+# analyze a transaction fixture
+txray parse tx fixtures/segwit_v0.json
+
+# analyze a block from data files
+txray parse block block.blk block.rev xor.dat
+
+# get a plain English explanation
+txray explain fixtures/segwit_v0.json
+```
+
+## What Lens does NOT do
+
+Lens is purely structural. It tells you *what* a transaction contains, not *who* owns what or *why* it was built that way. For ownership inference, change detection, and privacy analysis, hand it off to Sherlock. For building transactions, that's Smith's job.

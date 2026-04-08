@@ -10,7 +10,6 @@ import {
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  AnimatePresence,
   motion,
   useMotionValue,
   useSpring,
@@ -32,12 +31,8 @@ import {
 } from "lucide-react";
 import { FAMOUS_ENTRIES, type FamousEntry } from "@/lib/famous";
 import { detectSearchType } from "@/lib/mempool";
-import dynamic from "next/dynamic";
 import { Footer } from "@/components/shared/Footer";
-const SmithBackground = dynamic(
-  () => import("@/components/smith/SmithBackground").then(mod => mod.SmithBackground),
-  { ssr: false }
-);
+import { SmithBackground } from "@/components/smith/SmithBackground";
 import {
   LensMini,
   SherlockMini,
@@ -253,6 +248,7 @@ export default function HomePage() {
 
       // Instantly max out the hold glow
       holdProgressRef.current = 1;
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setHoldProgress(1);
 
       // Hold at full brightness for 1s, then fade slowly over ~3s
@@ -338,17 +334,17 @@ export default function HomePage() {
         />
 
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
           className="flex flex-col items-center text-center z-10 max-w-3xl pt-8"
         >
           {/* Logo - hold to charge, click/release to pulse */}
           <motion.button
             ref={logoRef}
-            initial={{ scale: 0.5, opacity: 0, y: 10 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
             whileTap={{ scale: 0.92 }}
             whileHover={{ scale: 1.1 }}
             onClick={handleClick}
@@ -414,7 +410,7 @@ export default function HomePage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Enter a txid, block height, or block hash..."
-                className="w-full bg-stone-800/40 hover:bg-stone-800/60 backdrop-blur-3xl border border-white/20 hover:border-white/30 rounded-2xl pl-12 pr-28 py-4 text-white placeholder:text-stone-400 focus:outline-none focus:border-amber-500/60 focus:ring-4 focus:ring-amber-500/20 focus:bg-stone-900/90 search-input transition-all shadow-[0_8px_30px_rgb(0,0,0,0.5)]"
+                className="w-full bg-stone-800/40 hover:bg-stone-800/60 backdrop-blur-3xl border border-white/20 hover:border-white/30 rounded-2xl pl-12 pr-4 sm:pr-28 py-4 text-white placeholder:text-stone-400 focus:outline-none focus:border-amber-500/60 focus:ring-4 focus:ring-amber-500/20 focus:bg-stone-900/90 search-input transition-all shadow-[0_8px_30px_rgb(0,0,0,0.5)]"
               />
 
               {!searchQuery.trim() && (
@@ -452,14 +448,12 @@ export default function HomePage() {
       </section>
 
       {/* ─── LIVE PULSE (Floating Pill) ─── */}
-      <AnimatePresence>
-        {pulseVisible && (
-          <motion.section
-            initial={{ opacity: 0, y: 16, filter: "blur(6px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-            className="relative z-10 pt-4 pb-12"
-          >
+      <section className="relative z-10 pt-4 pb-12">
+        <motion.div
+          initial={{ opacity: 0, filter: "blur(6px)" }}
+          animate={pulseVisible ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(6px)" }}
+          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+        >
             <div
               className={`max-w-6xl w-[calc(100%-2rem)] mx-auto rounded-2xl bg-stone-950/40 backdrop-blur-xl border border-white/5 shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] font-mono transition-all duration-500 overflow-visible ${
                 isConnected ? "opacity-100" : "opacity-60 animate-pulse"
@@ -652,9 +646,8 @@ export default function HomePage() {
                 </PulseMetric>
               </div>
             </div>
-          </motion.section>
-        )}
-      </AnimatePresence>
+        </motion.div>
+      </section>
 
       {/* ─── CAPABILITIES ─── */}
       <section className="relative z-10 bg-transparent px-6 py-20">

@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useEffect } from "react";
+
 /**
  * InteractiveBackground — "Coin Smith" Edition
  *
@@ -114,9 +116,34 @@ export function SmithBackground({
   const spacingX = 150;
   const spacingY = 140;
   const tileSize = 65;
+  const DEFAULT_VW = 2560;
+  const DEFAULT_VH = 1440;
 
-  const cols = Array.from({ length: 14 }, (_, i) => -70 + i * spacingX);
-  const rows = Array.from({ length: 9 }, (_, i) => -50 + i * spacingY);
+  const [vpW, setVpW] = useState(DEFAULT_VW);
+  const [vpH, setVpH] = useState(DEFAULT_VH);
+
+  useEffect(() => {
+    let raf = 0;
+    const update = () => {
+      if (raf !== 0) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        setVpW(window.innerWidth);
+        setVpH(window.innerHeight);
+      });
+    };
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("resize", update);
+      if (raf !== 0) cancelAnimationFrame(raf);
+    };
+  }, []);
+
+  // add 2 extra cols/rows so tiles bleed past edge at any zoom level
+  const numCols = Math.ceil((vpW + 70) / spacingX) + 2;
+  const numRows = Math.ceil((vpH + 50) / spacingY) + 2;
+
+  const cols = Array.from({ length: numCols }, (_, i) => -70 + i * spacingX);
+  const rows = Array.from({ length: numRows }, (_, i) => -50 + i * spacingY);
   const half = tileSize / 2;
 
   // scan origin in px (from the logo button's position)

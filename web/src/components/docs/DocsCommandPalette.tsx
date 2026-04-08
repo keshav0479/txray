@@ -30,8 +30,8 @@ export function DocsCommandPalette() {
   }, [query]);
 
   // Reset selection when results change
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedIndex(0);
   }, [results]);
 

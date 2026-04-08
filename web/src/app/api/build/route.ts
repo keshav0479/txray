@@ -11,16 +11,33 @@ export async function POST(req: Request) {
   const fixturePath = path.join(tmpDir, "fixture.json");
 
   try {
+    const MAX_BODY = 1 * 1024 * 1024; // 1 MB
+    const contentLength = Number(req.headers.get("content-length") ?? 0);
+    if (contentLength > MAX_BODY) {
+      return NextResponse.json(
+        { ok: false, error: { code: "PAYLOAD_TOO_LARGE", message: "Request body exceeds 1 MB limit" } },
+        { status: 413 },
+      );
+    }
     const body = await req.text();
+    if (body.length > MAX_BODY) {
+      return NextResponse.json(
+        { ok: false, error: { code: "PAYLOAD_TOO_LARGE", message: "Request body exceeds 1 MB limit" } },
+        { status: 413 },
+      );
+    }
+
     const parsed = JSON.parse(body) as Record<string, unknown>;
 
-    if (!parsed.fee_rate_sat_vb || !parsed.utxos) {
+    const feeRate = parsed.fee_rate_sat_vb;
+    const utxos = parsed.utxos;
+    if (typeof feeRate !== "number" || feeRate <= 0 || !Array.isArray(utxos) || utxos.length === 0) {
       return NextResponse.json(
         {
           ok: false,
           error: {
             code: "INVALID_INPUT",
-            message: "Missing fee_rate_sat_vb or utxos",
+            message: "fee_rate_sat_vb must be a positive number and utxos must be a non-empty array",
           },
         },
         { status: 400 },

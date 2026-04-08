@@ -1,6 +1,7 @@
 export type DocsNavItem = {
   label: string;
   href: string;
+  comingSoon?: boolean;
 };
 
 export type DocsNavSection = {
@@ -43,17 +44,6 @@ export const DOCS_NAV_SECTIONS: DocsNavSection[] = [
     ],
   },
   {
-    title: "Methodology",
-    items: [
-      { label: "Lens Parsing", href: "/docs/methodology/lens-parsing" },
-      {
-        label: "Sherlock Clustering",
-        href: "/docs/methodology/sherlock-clustering",
-      },
-      { label: "Smith Algorithms", href: "/docs/methodology/smith-algorithms" },
-    ],
-  },
-  {
     title: "Tools",
     items: [
       { label: "Lens", href: "/docs/tools/lens" },
@@ -62,10 +52,22 @@ export const DOCS_NAV_SECTIONS: DocsNavSection[] = [
     ],
   },
   {
+    title: "Methodology",
+    items: [
+      { label: "Lens Parsing", href: "/docs/methodology/lens-parsing", comingSoon: true },
+      {
+        label: "Sherlock Clustering",
+        href: "/docs/methodology/sherlock-clustering",
+        comingSoon: true,
+      },
+      { label: "Smith Algorithms", href: "/docs/methodology/smith-algorithms", comingSoon: true },
+    ],
+  },
+  {
     title: "Resources",
     items: [
-      { label: "Research Papers", href: "/docs/research" },
-      { label: "Tutorials", href: "/docs/tutorials" },
+      { label: "Research Papers", href: "/docs/research", comingSoon: true },
+      { label: "Tutorials", href: "/docs/tutorials", comingSoon: true },
     ],
   },
 ];

@@ -14,7 +14,7 @@ import {
   Loader2,
   Grid3x3,
   FileJson,
-  Download,
+  Upload,
   Code2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -143,8 +143,8 @@ export default function BuildPage() {
     setErrorMsg(null);
     try {
       const parsed = JSON.parse(pasteContent);
-      if (!parsed.fee_rate_sat_vb || !parsed.utxos) {
-        throw new Error("Invalid fixture: missing fee_rate_sat_vb or utxos");
+      if (typeof parsed.fee_rate_sat_vb !== "number" || parsed.fee_rate_sat_vb <= 0 || !Array.isArray(parsed.utxos) || parsed.utxos.length === 0) {
+        throw new Error("Invalid fixture: fee_rate_sat_vb must be a positive number and utxos must be a non-empty array");
       }
       sessionStorage.setItem("coinsmith_fixture", pasteContent);
       navigateTo("/build/result");
@@ -165,8 +165,8 @@ export default function BuildPage() {
       setErrorMsg(null);
       try {
         const parsed = JSON.parse(text);
-        if (!parsed.fee_rate_sat_vb || !parsed.utxos)
-          throw new Error("Invalid fixture");
+        if (typeof parsed.fee_rate_sat_vb !== "number" || parsed.fee_rate_sat_vb <= 0 || !Array.isArray(parsed.utxos) || parsed.utxos.length === 0)
+          throw new Error("Invalid fixture: fee_rate_sat_vb must be a positive number and utxos must be a non-empty array");
         sessionStorage.setItem("coinsmith_fixture", text);
         navigateTo("/build/result");
       } catch (err) {
@@ -222,7 +222,7 @@ export default function BuildPage() {
                 label: "Use Template",
               },
               { id: "paste" as const, icon: Code2, label: "Paste JSON" },
-              { id: "import" as const, icon: Download, label: "Import File" },
+              { id: "import" as const, icon: Upload, label: "Upload Files" },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -402,9 +402,9 @@ export default function BuildPage() {
             >
               <div className="rounded-3xl border border-white/8 bg-stone-950/50 backdrop-blur-xl p-8">
                 <div className="text-center mb-6">
-                  <Download className="w-10 h-10 text-smith-500 mx-auto mb-3 opacity-80" />
+                  <Upload className="w-10 h-10 text-smith-500 mx-auto mb-3 opacity-80" />
                   <h3 className="text-xl font-bold text-white mb-2">
-                    Import JSON File
+                    Upload JSON File
                   </h3>
                   <p className="text-sm text-stone-400">
                     Upload a .json file containing transaction fixture data.

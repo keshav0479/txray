@@ -1,20 +1,16 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import dynamic from "next/dynamic";
-
-const SmithBackground = dynamic(
-  () => import("@/components/smith/SmithBackground").then(mod => mod.SmithBackground),
-  { ssr: false }
-);
+import { SmithBackground } from "@/components/smith/SmithBackground";
 
 export function AppChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isDocs = pathname.startsWith("/docs");
+  const isHome = pathname === "/";
 
   return (
     <>
-      {!isDocs && <SmithBackground />}
+      {!isDocs && !isHome && <SmithBackground />}
       {children}
     </>
   );

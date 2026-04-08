@@ -2,19 +2,18 @@
 
 Welcome to txray, a professional Bitcoin transaction analysis toolkit.
 
+{/* audience blocks commented out — will add proper per-audience content later
 <AudienceIntro />
-
 <AudienceBlock for="beginner" title="Beginner focus">
 Start with Lens. Think of it like learning the labels on a map before solving routes.
 </AudienceBlock>
-
 <AudienceBlock for="analyst" title="Analyst focus">
 Prioritize confidence scoring and contradiction checks between heuristics.
 </AudienceBlock>
-
 <AudienceBlock for="builder" title="Builder focus">
 Use this section to map UI outputs back to CLI commands and pipeline assumptions.
 </AudienceBlock>
+*/}
 
 ## What is txray?
 
@@ -37,22 +36,22 @@ txray provides three integrated tools for Bitcoin analysis:
 
 ```bash
 # Parse a transaction
-cargo run --release -- parse tx <hex-or-file>
+txray parse tx fixtures/segwit_v0.json
 
 # Analyze a block
-cargo run --release -- analyze <block-height>
+txray analyze block.blk block.rev xor.dat
 
 # Build a PSBT
-cargo run --release -- build <fixture.json>
+txray build fixtures/simple_payment.json
 
 # List famous blocks
-cargo run --release -- famous
+txray famous
 ```
 
 ## Installation
 
 ```bash
-git clone https://github.com/yourusername/txray.git
+git clone https://github.com/keshav0479/txray.git
 cd txray
 cargo build --release
 ```

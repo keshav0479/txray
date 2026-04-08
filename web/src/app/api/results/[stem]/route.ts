@@ -10,6 +10,15 @@ export async function GET(
   { params }: { params: Promise<{ stem: string }> },
 ) {
   const { stem } = await params;
+
+  // Reject anything that isn't a plain alphanumeric/dash/underscore stem
+  if (!/^[a-zA-Z0-9_-]+$/.test(stem)) {
+    return NextResponse.json(
+      { ok: false, error: "Invalid stem" },
+      { status: 400 },
+    );
+  }
+
   const workspaceRoot = getWorkspaceRoot();
   const outPath = path.join(workspaceRoot, "out", `${stem}.json`);
 

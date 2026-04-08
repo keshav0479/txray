@@ -6,8 +6,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Eye,
   Upload,
-  FileDigit,
-  Activity,
   Loader2,
   AlertTriangle,
   Code2,
@@ -29,6 +27,7 @@ import { ContentScanLoader } from "@/components/lens/ContentScanLoader";
 import { BlockOverview } from "@/components/lens/BlockOverview";
 import { AnalysisView } from "@/components/lens/AnalysisView";
 import type { AnalyzedTx, BlockAnalysis } from "@/lib/layout";
+import { detectSearchType } from "@/lib/mempool";
 
 type TabId = "search" | "upload" | "rawhex" | "json";
 type ViewState = "input" | "loading" | "results";
@@ -77,7 +76,7 @@ export default function LensPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // search state
-  const [blockHeight, setBlockHeight] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [searching, setSearching] = useState(false);
 
   // file upload state
@@ -219,26 +218,22 @@ export default function LensPage() {
   };
 
   const handleSearch = async () => {
-    const height = blockHeight.trim();
-    if (!height) {
-      setErrorMsg("Please enter a block height");
-      return;
-    }
-    const heightNum = parseInt(height, 10);
-    if (isNaN(heightNum) || heightNum < 0) {
-      setErrorMsg("Block height must be a positive number");
+    const query = searchQuery.trim();
+    if (!query) {
+      setErrorMsg("Enter a transaction ID or block height");
       return;
     }
 
     setSearching(true);
     setErrorMsg(null);
 
-    try {
-      // For block height search, we redirect to the dedicated explore route
-      // so it can be deep-linked. That route will also get the scanner loader.
-      router.push(`/explore/block/${heightNum}`);
-    } catch (error) {
-      setErrorMsg(error instanceof Error ? error.message : "Search failed");
+    const type = detectSearchType(query);
+    if (type === "block_height") {
+      router.push(`/explore/block/${query}`);
+    } else if (type === "txid" || type === "block_hash") {
+      router.push(`/tx/${query}`);
+    } else {
+      setErrorMsg("Enter a valid transaction ID (64 hex) or block height.");
       setSearching(false);
     }
   };
@@ -292,16 +287,16 @@ export default function LensPage() {
                       icon: Search,
                       label: "Search Online",
                     },
+                    { id: "rawhex" as const, icon: Code2, label: "Paste Hex" },
+                    {
+                      id: "json" as const,
+                      icon: FileJson,
+                      label: "Paste JSON",
+                    },
                     {
                       id: "upload" as const,
                       icon: Upload,
                       label: "Upload Files",
-                    },
-                    { id: "rawhex" as const, icon: Code2, label: "Raw Hex" },
-                    {
-                      id: "json" as const,
-                      icon: FileJson,
-                      label: "JSON Fixture",
                     },
                   ].map((tab) => (
                     <button
@@ -337,26 +332,26 @@ export default function LensPage() {
                       <div className="text-center mb-6">
                         <Search className="w-10 h-10 text-lens-500 mx-auto mb-3 opacity-80" />
                         <h3 className="text-xl font-bold text-white mb-2">
-                          Search Block
+                          Search Online
                         </h3>
                         <p className="text-sm text-stone-400">
-                          Enter a block height to fetch and analyze from
-                          mempool.space
+                          Enter a transaction ID or block height to fetch and
+                          analyze from mempool.space
                         </p>
                       </div>
                       <div className="space-y-4 mb-6">
                         <div className="space-y-2">
                           <label className="text-[10px] font-mono text-stone-500 uppercase tracking-widest ml-1">
-                            Block Height
+                            Transaction ID or Block Height
                           </label>
                           <input
                             type="text"
-                            value={blockHeight}
-                            onChange={(e) => setBlockHeight(e.target.value)}
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
                             onKeyDown={(e) =>
                               e.key === "Enter" && handleSearch()
                             }
-                            placeholder="e.g., 170"
+                            placeholder="txid or block height..."
                             className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-stone-600 focus:outline-none focus:border-lens-500/30 transition-colors font-mono"
                           />
                           <div className="flex flex-wrap items-center gap-2 mt-2 ml-1">
@@ -371,7 +366,7 @@ export default function LensPage() {
                               <button
                                 key={b.value}
                                 type="button"
-                                onClick={() => setBlockHeight(b.value)}
+                                onClick={() => setSearchQuery(b.value)}
                                 className="text-xs px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-stone-400 hover:text-white hover:border-lens-500/50 hover:bg-lens-500/10 transition-all flex items-center gap-1.5"
                               >
                                 <span className="font-mono text-lens-400 opacity-80">
@@ -397,7 +392,7 @@ export default function LensPage() {
                       )}
                       <button
                         onClick={handleSearch}
-                        disabled={searching || !blockHeight.trim()}
+                        disabled={searching || !searchQuery.trim()}
                         className="group w-full flex items-center justify-center gap-2 font-bold px-6 py-4 rounded-xl transition-all duration-300 border bg-transparent border-lens-500/50 text-lens-400 hover:bg-lens-500/10 hover:border-lens-400 hover:text-lens-300 hover:shadow-[0_0_20px_rgba(59,130,246,0.3),inset_0_0_10px_rgba(59,130,246,0.1)] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-none disabled:hover:bg-transparent disabled:hover:border-lens-500/50 disabled:hover:text-lens-400 text-sm"
                       >
                         {searching ? (
@@ -407,8 +402,8 @@ export default function LensPage() {
                           </>
                         ) : (
                           <>
-                            <Activity className="w-4 h-4 opacity-80 group-hover:opacity-100 transition-opacity" />{" "}
-                            Analyze Block
+                            <Eye className="w-4 h-4 opacity-80 group-hover:opacity-100 transition-opacity" />{" "}
+                            Analyze
                           </>
                         )}
                       </button>
@@ -424,7 +419,7 @@ export default function LensPage() {
                       className="rounded-3xl border border-white/8 bg-stone-950/50 backdrop-blur-xl p-8"
                     >
                       <div className="text-center mb-6">
-                        <FileDigit className="w-10 h-10 text-lens-500 mx-auto mb-3 opacity-80" />
+                        <Upload className="w-10 h-10 text-lens-500 mx-auto mb-3 opacity-80" />
                         <h3 className="text-xl font-bold text-white mb-2">
                           Upload Block Data
                         </h3>
@@ -497,8 +492,8 @@ export default function LensPage() {
                           </>
                         ) : (
                           <>
-                            <Activity className="w-4 h-4 opacity-80 group-hover:opacity-100 transition-opacity" />{" "}
-                            Analyze Block
+                            <Eye className="w-4 h-4 opacity-80 group-hover:opacity-100 transition-opacity" />{" "}
+                            Analyze
                           </>
                         )}
                       </button>
@@ -558,8 +553,8 @@ export default function LensPage() {
                           </>
                         ) : (
                           <>
-                            <Activity className="w-4 h-4 opacity-80 group-hover:opacity-100 transition-opacity" />{" "}
-                            Analyze Transaction
+                            <Eye className="w-4 h-4 opacity-80 group-hover:opacity-100 transition-opacity" />{" "}
+                            Analyze
                           </>
                         )}
                       </button>
@@ -620,8 +615,8 @@ export default function LensPage() {
                           </>
                         ) : (
                           <>
-                            <Activity className="w-4 h-4 opacity-80 group-hover:opacity-100 transition-opacity" />{" "}
-                            Analyze Fixture
+                            <Eye className="w-4 h-4 opacity-80 group-hover:opacity-100 transition-opacity" />{" "}
+                            Analyze
                           </>
                         )}
                       </button>

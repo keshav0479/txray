@@ -5,6 +5,7 @@ import {
   Lightbulb,
   AlertTriangle,
   Code2,
+  Construction,
 } from "lucide-react";
 import {
   AudienceBlock,
@@ -99,6 +100,61 @@ function Example({ children }: { children: ReactNode }) {
   );
 }
 
+function ComingSoon({
+  title,
+  description,
+  children,
+}: {
+  title?: string;
+  description?: string;
+  children?: ReactNode;
+}) {
+  return (
+    <div className="my-8 relative overflow-hidden rounded-2xl border border-[var(--docs-panel-border)] bg-[var(--docs-panel)]">
+      {/* subtle grid pattern */}
+      <div
+        className="absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage:
+            "linear-gradient(var(--docs-accent) 1px, transparent 1px), linear-gradient(90deg, var(--docs-accent) 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
+        }}
+      />
+
+      <div className="relative px-8 py-12 flex flex-col items-center text-center">
+        {/* icon */}
+        <div className="w-14 h-14 rounded-2xl bg-[var(--docs-accent)]/10 border border-[var(--docs-accent)]/20 flex items-center justify-center mb-5">
+          <Construction className="w-7 h-7 text-[var(--docs-accent)] opacity-80" />
+        </div>
+
+        {/* badge */}
+        <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-[var(--docs-accent)] mb-4">
+          <span className="w-1.5 h-1.5 rounded-full bg-[var(--docs-accent)] animate-pulse" />
+          Coming Soon
+        </span>
+
+        {title && (
+          <h2 className="text-xl font-bold text-[var(--docs-text-heading)] mb-2">
+            {title}
+          </h2>
+        )}
+
+        {description && (
+          <p className="text-[var(--docs-muted)] text-[15px] leading-relaxed max-w-md mb-0">
+            {description}
+          </p>
+        )}
+
+        {children && (
+          <div className="mt-4 text-[var(--docs-muted)] text-sm leading-relaxed max-w-md [&>p]:mb-0">
+            {children}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function H2(props: React.HTMLAttributes<HTMLHeadingElement>) {
   const id =
     props.id ||
@@ -150,6 +206,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     Tip,
     Warning,
     Example,
+    ComingSoon,
     AudienceIntro: AudienceHelpInline,
     AudienceBlock,
     AudienceSelector,

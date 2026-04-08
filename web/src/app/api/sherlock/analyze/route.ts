@@ -67,13 +67,13 @@ async function analyzeFixtureJson(
     );
   }
 
-  if (!/^[0-9a-fA-F]+$/.test(rawTx)) {
+  if (!/^[0-9a-fA-F]+$/.test(rawTx) || rawTx.length % 2 !== 0) {
     return NextResponse.json(
       {
         ok: false,
         error: {
           code: "INVALID_RAW_TX",
-          message: "raw_tx must be valid hexadecimal",
+          message: "raw_tx must be valid hexadecimal with even length",
         },
       },
       { status: 400 },
@@ -214,6 +214,16 @@ export async function POST(req: Request) {
         },
         { status: 400 },
       );
+    }
+
+    const MAX_FILE_SIZE = 256 * 1024 * 1024; // 256 MB per file
+    for (const [name, file] of [["blk", blkFile], ["rev", revFile], ["xor", xorFile]] as const) {
+      if (file.size > MAX_FILE_SIZE) {
+        return NextResponse.json(
+          { ok: false, error: { code: "FILE_TOO_LARGE", message: `${name} file exceeds 256 MB limit` } },
+          { status: 413 },
+        );
+      }
     }
 
     const blkPath = path.join(tmpDir, path.basename(blkFile.name));

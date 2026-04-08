@@ -44,8 +44,9 @@ export function DocsControls() {
 
   return (
     <div className="docs-top-controls mb-8 flex items-center justify-between gap-4">
-      {/* Left: Level selector */}
-      <AudienceSelector />
+      {/* audience selector hidden — will wire up when per-audience content is written */}
+      {/* <AudienceSelector /> */}
+      <div />
 
       {/* Right: Theme + Zen hint */}
       <div className="flex items-center gap-3">

@@ -4,12 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Shield,
   Search,
   Loader2,
   AlertTriangle,
   Fingerprint,
-  ScanEye,
   Upload,
   Code2,
   FileJson,
@@ -192,7 +190,7 @@ export default function SherlockPage() {
           className="text-center mb-12"
         >
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sherlock-500/10 border border-sherlock-500/20 text-sherlock-400 text-xs font-mono uppercase tracking-widest mb-4">
-            <Shield className="w-3.5 h-3.5" />
+            <Fingerprint className="w-3.5 h-3.5" />
             Sherlock
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold text-white tracking-tight mb-4">
@@ -213,7 +211,7 @@ export default function SherlockPage() {
         >
           <div className="inline-flex rounded-2xl bg-stone-950/60 backdrop-blur-xl border border-white/8 p-1 max-w-full overflow-x-auto scrollbar-hide">
             {[
-              { id: "search" as const, icon: ScanEye, label: "Search Online" },
+              { id: "search" as const, icon: Search, label: "Search Online" },
               { id: "rawhex" as const, icon: Code2, label: "Paste Hex" },
               { id: "json" as const, icon: FileJson, label: "Paste JSON" },
               { id: "upload" as const, icon: Upload, label: "Upload Files" },
@@ -364,8 +362,8 @@ export default function SherlockPage() {
                     </>
                   ) : (
                     <>
-                      <ScanEye className="w-4 h-4 opacity-80 group-hover:opacity-100 transition-opacity" />{" "}
-                      Analyze Transaction
+                      <Fingerprint className="w-4 h-4 opacity-80 group-hover:opacity-100 transition-opacity" />{" "}
+                      Analyze
                     </>
                   )}
                 </button>
@@ -442,8 +440,8 @@ export default function SherlockPage() {
                     </>
                   ) : (
                     <>
-                      <ScanEye className="w-4 h-4 opacity-80 group-hover:opacity-100 transition-opacity" />{" "}
-                      Analyze Fixture
+                      <Fingerprint className="w-4 h-4 opacity-80 group-hover:opacity-100 transition-opacity" />{" "}
+                      Analyze
                     </>
                   )}
                 </button>
@@ -479,7 +477,7 @@ export default function SherlockPage() {
         title="Ready to investigate?"
         description="Enter any transaction ID or paste raw hex to reveal the privacy fingerprint hidden in the blockchain."
         buttonLabel="Start Analysis"
-        buttonIcon={<ScanEye className="w-5 h-5" />}
+        buttonIcon={<Fingerprint className="w-5 h-5" />}
         onAction={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       />
 

@@ -68,8 +68,10 @@ pub async fn fetch_raw_block(source: &ApiSource, id: &BlockId) -> Result<Vec<u8>
         )));
     }
 
-    // cache for next time
-    cache::write_cache(&hash, &data)?;
+    // cache for next time — non-fatal, fetch succeeded regardless
+    if let Err(e) = cache::write_cache(&hash, &data) {
+        eprintln!("txray-net: cache write skipped: {}", e);
+    }
 
     Ok(data)
 }

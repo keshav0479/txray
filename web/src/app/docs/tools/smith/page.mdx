@@ -1,16 +1,82 @@
-# Smith Tool Guide
+# Smith
 
-Smith helps you build PSBTs with smarter coin selection.
+Smith is your transaction builder. Give it a set of UTXOs and payment targets, and it picks the optimal coins, calculates fees, and produces a ready-to-sign PSBT.
 
-## Best For
+## What it does
 
-- Fee-aware transaction construction.
-- Reducing privacy leaks from poor input selection.
-- Preparing transactions for signing workflows.
+Smith handles two operations:
 
-## Typical Workflow
+**PSBT construction.** Given a fixture describing available UTXOs, target addresses, amounts, and fee rate, Smith runs coin selection to pick the best inputs, calculates the exact fee, handles change output creation, and produces a valid PSBT in base64 format.
 
-1. Provide UTXO set and target outputs.
-2. Compare selection strategies.
-3. Review fee and privacy implications.
-4. Export PSBT for signing.
+**PSBT inspection.** Given an existing PSBT (base64), Smith parses it and reports signing status (unsigned, partially signed, fully signed), missing fields, input/output details, fee analysis, script types involved, and what to do next.
+
+## Best for
+
+- Building transactions with smart coin selection
+- Understanding how fee estimation and change output creation work
+- Comparing different UTXO selection strategies and their tradeoffs
+- Inspecting PSBTs before you sign them
+- Learning the PSBT format (BIP 174) hands-on
+
+## What you see
+
+When building a PSBT, Smith returns:
+
+- **Selected inputs** showing which UTXOs were chosen and why
+- **Outputs** with payment outputs and change (if any)
+- **Fee calculation** with total fee in sats and effective fee rate in sat/vB
+- **PSBT base64** ready for a signing device
+- **Scrollytelling breakdown** on the web UI, an animated step-by-step walkthrough of the whole construction process
+
+When inspecting an existing PSBT:
+
+- **Signing status** (unsigned, partially signed, or fully signed)
+- **Input details** including script types, UTXO data, partial signatures present
+- **Output details** with addresses, amounts, and script types
+- **Fee analysis** showing the extracted fee and rate
+- **Missing fields** listing what's still needed to complete signing
+- **Next steps** with recommendations for what to do next
+
+## Fixture format
+
+Smith takes a JSON fixture describing the transaction to build:
+
+```json
+{
+  "inputs": [
+    {
+      "txid": "abc123...",
+      "vout": 0,
+      "value": 100000,
+      "script_pubkey": "0014..."
+    }
+  ],
+  "outputs": [
+    {
+      "address": "bc1q...",
+      "value": 50000
+    }
+  ],
+  "fee_rate": 5.0
+}
+```
+
+The web UI includes 6 preset fixtures covering common scenarios (simple payment, consolidation, multi-output batch, etc.) plus a custom JSON editor.
+
+<Tip>
+Start with the preset fixtures to see how different transaction shapes affect coin selection and fees. Then try modifying the custom fixture to test edge cases.
+</Tip>
+
+## CLI usage
+
+```bash
+# build a PSBT from a fixture
+txray build fixtures/simple_payment.json
+
+# inspect an existing PSBT
+txray inspect "cHNidP8BAH0CAAAAA..."
+```
+
+## How Smith connects to the other tools
+
+After building a PSBT with Smith, you can analyze the resulting transaction with Lens to verify the structure, or run it through Sherlock to check the privacy implications of your coin selection. This is the full txray loop: **build with Smith, verify with Lens, audit with Sherlock**.

@@ -8,6 +8,11 @@ export function DocsZenPill() {
   const [isVisible, setIsVisible] = useState(false);
   const [hideTimeout, setHideTimeout] = useState<NodeJS.Timeout | null>(null);
 
+  function exitZen() {
+    document.body.classList.remove("docs-zen-mode");
+    window.localStorage.setItem("txray-docs-zen", "false");
+  }
+
   // Check zen mode on mount and listen for changes
   useEffect(() => {
     function checkZen() {
@@ -41,11 +46,14 @@ export function DocsZenPill() {
   // Auto-show on zen mode enter, then auto-hide after delay
   useEffect(() => {
     if (isZen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsVisible(true);
       const timeout = setTimeout(() => setIsVisible(false), 3000);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setHideTimeout(timeout);
       return () => clearTimeout(timeout);
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsVisible(false);
     }
   }, [isZen]);
@@ -69,11 +77,6 @@ export function DocsZenPill() {
     window.addEventListener("mousemove", handleMouseMove, { passive: true });
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, [handleMouseMove]);
-
-  function exitZen() {
-    document.body.classList.remove("docs-zen-mode");
-    window.localStorage.setItem("txray-docs-zen", "false");
-  }
 
   if (!isZen) return null;
 

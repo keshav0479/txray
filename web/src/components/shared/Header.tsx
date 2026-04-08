@@ -16,6 +16,7 @@ import {
   Hammer,
   ScanSearch,
   FingerprintPattern,
+  Zap,
 } from "lucide-react";
 import { detectSearchType } from "@/lib/mempool";
 
@@ -75,6 +76,12 @@ export function Header() {
     }, 0);
     return () => clearTimeout(id);
   }, [pathname]);
+
+  // lock body scroll when mobile menu is open
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileOpen]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -369,15 +376,29 @@ export function Header() {
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 bg-black/95 backdrop-blur-xl pt-16"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="fixed inset-0 z-40 pt-16 overflow-hidden"
+            style={{
+              background: "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(245,158,11,0.06) 0%, transparent 60%), rgba(0,0,0,0.97)",
+              backdropFilter: "blur(24px)",
+            }}
           >
-            <div className="flex flex-col p-6 gap-1">
+            {/* Subtle amber top-edge glow */}
+            <div className="absolute top-16 inset-x-0 h-px bg-linear-to-r from-transparent via-amber-500/20 to-transparent" />
+
+            <div className="flex flex-col px-4 pt-4 pb-8 gap-1 h-full overflow-y-auto">
               {/* Mobile search */}
               {!isHome && (
-                <form onSubmit={handleSearch} className="mb-4">
+                <motion.form
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.05 }}
+                  onSubmit={handleSearch}
+                  className="mb-5"
+                >
                   <div className="flex items-center bg-white/5 border border-white/10 rounded-xl overflow-hidden">
                     <Search className="w-4 h-4 text-zinc-500 ml-4 shrink-0" />
                     <input
@@ -387,54 +408,122 @@ export function Header() {
                       className="w-full bg-transparent px-3 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none"
                     />
                   </div>
-                </form>
+                </motion.form>
               )}
 
-              {/* Explore link */}
-              <Link
-                href="/explore/famous"
-                className="flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-300 hover:bg-white/5 transition-colors"
+              {/* Explore */}
+              <motion.div
+                initial={{ opacity: 0, x: -12 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.07 }}
               >
-                <History className="w-5 h-5 text-zinc-500" />
-                <div>
-                  <div className="font-medium">Explore</div>
-                  <div className="text-xs text-zinc-500">Bitcoin history and famous blocks</div>
-                </div>
-              </Link>
+                <Link
+                  href="/explore/famous"
+                  className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all group ${
+                    isExplore
+                      ? "bg-amber-500/10 border border-amber-500/20 text-white"
+                      : "text-zinc-400 hover:bg-white/5 hover:text-white"
+                  }`}
+                >
+                  <History className={`w-5 h-5 shrink-0 transition-colors ${isExplore ? "text-amber-400" : "text-zinc-600 group-hover:text-zinc-400"}`} />
+                  <div>
+                    <div className="font-medium text-sm">Explore</div>
+                    <div className="text-xs text-zinc-600">Bitcoin history and famous blocks</div>
+                  </div>
+                </Link>
+              </motion.div>
 
               {/* Tools group */}
-              <p className="text-[10px] uppercase tracking-widest text-zinc-600 px-4 mb-1 mt-4">
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.1 }}
+                className="text-[10px] uppercase tracking-widest text-zinc-700 px-4 mb-1 mt-5"
+              >
                 Tools
-              </p>
-              {TOOLS_ITEMS.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-300 hover:bg-white/5 transition-colors group"
-                >
-                  <item.icon className="w-5 h-5 text-amber-500/60 group-hover:text-amber-400 transition-colors" />
-                  <div>
-                    <div className="font-medium">{item.label}</div>
-                    <div className="text-xs text-zinc-500">{item.desc}</div>
-                  </div>
-                </Link>
-              ))}
+              </motion.p>
+
+              {TOOLS_ITEMS.map((item, i) => {
+                const isActive = pathname.startsWith(item.href);
+                return (
+                  <motion.div
+                    key={item.href}
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.12 + i * 0.04 }}
+                  >
+                    <Link
+                      href={item.href}
+                      className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all group ${
+                        isActive
+                          ? "bg-amber-500/10 border border-amber-500/20 text-white"
+                          : "text-zinc-400 hover:bg-white/5 hover:text-white"
+                      }`}
+                    >
+                      <item.icon className={`w-5 h-5 shrink-0 transition-colors ${isActive ? "text-amber-400" : "text-amber-500/40 group-hover:text-amber-400"}`} />
+                      <div>
+                        <div className="font-medium text-sm">{item.label}</div>
+                        <div className="text-xs text-zinc-600">{item.desc}</div>
+                      </div>
+                      {isActive && (
+                        <div className="ml-auto w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                      )}
+                    </Link>
+                  </motion.div>
+                );
+              })}
 
               {/* Docs */}
-              <div className="mt-6 pt-6 border-t border-white/5 flex flex-col gap-1">
+              <motion.div
+                initial={{ opacity: 0, x: -12 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.24 }}
+                className="mt-4 pt-4 border-t border-white/5"
+              >
                 <Link
                   href="/docs"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-300 hover:bg-white/5 transition-colors"
+                  className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all group ${
+                    isDocs
+                      ? "bg-amber-500/10 border border-amber-500/20 text-white"
+                      : "text-zinc-400 hover:bg-white/5 hover:text-white"
+                  }`}
                 >
-                  <BookOpen className="w-5 h-5 text-zinc-500" />
+                  <BookOpen className={`w-5 h-5 shrink-0 transition-colors ${isDocs ? "text-amber-400" : "text-zinc-600 group-hover:text-zinc-400"}`} />
                   <div>
-                    <div className="font-medium">Docs</div>
-                    <div className="text-xs text-zinc-500">
-                      Learn with guided documentation
-                    </div>
+                    <div className="font-medium text-sm">Docs</div>
+                    <div className="text-xs text-zinc-600">Learn with guided documentation</div>
                   </div>
                 </Link>
-              </div>
+              </motion.div>
+
+              {/* Bottom utility row */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="mt-auto pt-8 pb-2 border-t border-white/5 flex items-center justify-end px-2"
+              >
+                <div className="flex items-center gap-4">
+                  <a
+                    href="https://github.com/keshav0479/txray"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-zinc-700 hover:text-white transition-colors"
+                    aria-label="GitHub"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
+                    </svg>
+                  </a>
+                  <a
+                    href="lightning:abruptalibi13@walletofsatoshi.com"
+                    className="text-zinc-700 hover:text-amber-400 transition-colors"
+                    aria-label="Support via Lightning"
+                  >
+                    <Zap className="w-4 h-4" />
+                  </a>
+                </div>
+              </motion.div>
             </div>
           </motion.div>
         )}

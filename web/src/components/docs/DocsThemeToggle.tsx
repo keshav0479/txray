@@ -38,6 +38,7 @@ export function DocsThemeToggle({ compact = false }: DocsThemeToggleProps) {
     const body = document.body;
     body.classList.remove(...Object.values(THEME_CLASS));
     body.classList.add(THEME_CLASS[initial]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTheme(initial);
   }, []);
 

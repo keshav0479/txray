@@ -294,6 +294,25 @@ export function HexTerminal({ rawJsonData }: HexTerminalProps) {
     return () => window.removeEventListener("keydown", handler);
   }, [isOpen, searchVisible, matchCount, scrollToMatch]);
 
+  // Prevent page scroll behind the modal on desktop and mobile.
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const prevBodyOverflow = document.body.style.overflow;
+    const prevHtmlOverflow = document.documentElement.style.overflow;
+    const prevBodyTouchAction = document.body.style.touchAction;
+
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.touchAction = "none";
+
+    return () => {
+      document.body.style.overflow = prevBodyOverflow;
+      document.documentElement.style.overflow = prevHtmlOverflow;
+      document.body.style.touchAction = prevBodyTouchAction;
+    };
+  }, [isOpen]);
+
   // Build plain lines HTML
   const plainHtml = useMemo(() => {
     return plainLines.map((line) => {
@@ -313,12 +332,23 @@ export function HexTerminal({ rawJsonData }: HexTerminalProps) {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-5 py-3 rounded-full bg-surface-card border border-surface-border shadow-2xl hover:border-lens-500/50 hover:bg-surface-hover transition-all text-sm font-medium group"
+        className="fixed bottom-6 right-6 z-40 hidden sm:flex items-center gap-2 px-5 py-3 rounded-full bg-surface-card border border-surface-border shadow-2xl hover:border-lens-500/50 hover:bg-surface-hover transition-all text-sm font-medium group"
       >
         <Terminal className="w-4 h-4 text-lens-500" />
         <span className="text-text-primary">View Raw Data</span>
         <ChevronRight className="w-4 h-4 text-text-muted transition-transform group-hover:translate-x-1" />
       </button>
+
+      <div className="sm:hidden px-4 pb-6">
+        <button
+          onClick={() => setIsOpen(true)}
+          className="w-full max-w-xs mx-auto flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-surface-card border border-surface-border shadow-xl hover:border-lens-500/50 hover:bg-surface-hover transition-all text-sm font-medium group"
+        >
+          <Terminal className="w-4 h-4 text-lens-500" />
+          <span className="text-text-primary">View Raw Data</span>
+          <ChevronRight className="w-4 h-4 text-text-muted transition-transform group-hover:translate-x-1" />
+        </button>
+      </div>
 
       <AnimatePresence>
         {isOpen && (

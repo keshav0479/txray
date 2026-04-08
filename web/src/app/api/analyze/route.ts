@@ -179,6 +179,16 @@ export async function POST(req: Request) {
         );
       }
 
+      const MAX_FILE_SIZE = 256 * 1024 * 1024; // 256 MB per file
+      for (const [name, file] of [["blk", blkFile], ["rev", revFile], ["xor", xorFile]] as const) {
+        if (file.size > MAX_FILE_SIZE) {
+          return NextResponse.json(
+            { ok: false, error: { code: "FILE_TOO_LARGE", message: `${name} file exceeds 256 MB limit` } },
+            { status: 413 },
+          );
+        }
+      }
+
       const blkName = path.basename(blkFile.name);
       const revName = path.basename(revFile.name);
       const xorName = path.basename(xorFile.name);

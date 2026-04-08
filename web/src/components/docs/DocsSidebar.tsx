@@ -119,13 +119,19 @@ export function DocsSidebar() {
                             <span className="w-1 h-4 rounded-full bg-[var(--docs-accent)] -ml-1.5 mr-1" />
                           )}
                           <span className="flex-1">{item.label}</span>
-                          <ChevronRight
-                            className={`w-3.5 h-3.5 transition-all duration-200 ${
-                              isActive
-                                ? "opacity-60"
-                                : "opacity-0 -translate-x-1 group-hover:opacity-40 group-hover:translate-x-0"
-                            }`}
-                          />
+                          {item.comingSoon ? (
+                            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-[var(--docs-accent)]/10 text-[var(--docs-accent)] opacity-70">
+                              soon
+                            </span>
+                          ) : (
+                            <ChevronRight
+                              className={`w-3.5 h-3.5 transition-all duration-200 ${
+                                isActive
+                                  ? "opacity-60"
+                                  : "opacity-0 -translate-x-1 group-hover:opacity-40 group-hover:translate-x-0"
+                              }`}
+                            />
+                          )}
                         </Link>
                       </li>
                     );
@@ -175,13 +181,19 @@ export function DocsSidebar() {
                             <span className="w-1 h-4 rounded-full bg-[var(--docs-accent)] -ml-1.5 mr-1" />
                           )}
                           <span className="flex-1">{item.label}</span>
-                          <ChevronRight
-                            className={`w-3.5 h-3.5 transition-all duration-200 ${
-                              isActive
-                                ? "opacity-60"
-                                : "opacity-0 -translate-x-1 group-hover:opacity-40 group-hover:translate-x-0"
-                            }`}
-                          />
+                          {item.comingSoon ? (
+                            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-[var(--docs-accent)]/10 text-[var(--docs-accent)] opacity-70">
+                              soon
+                            </span>
+                          ) : (
+                            <ChevronRight
+                              className={`w-3.5 h-3.5 transition-all duration-200 ${
+                                isActive
+                                  ? "opacity-60"
+                                  : "opacity-0 -translate-x-1 group-hover:opacity-40 group-hover:translate-x-0"
+                              }`}
+                            />
+                          )}
                         </Link>
                       </li>
                     );

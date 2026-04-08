@@ -8,10 +8,10 @@ import { motion } from "framer-motion";
 export function Footer() {
   return (
     <motion.footer
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
       viewport={{ once: true }}
-      transition={{ duration: 0.6 }}
+      transition={{ duration: 0.5 }}
       className="relative z-10 w-full border-t border-white/5"
     >
       <div className="w-full px-6 sm:px-10 py-10">
@@ -34,32 +34,26 @@ export function Footer() {
           </div>
 
           {/* Links */}
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
             <Link
               href="/lens"
-              className="text-xs text-zinc-600 hover:text-white transition-colors"
+              className="hidden sm:block text-xs text-zinc-600 hover:text-white transition-colors"
             >
               Lens
             </Link>
             <Link
               href="/sherlock"
-              className="text-xs text-zinc-600 hover:text-white transition-colors"
+              className="hidden sm:block text-xs text-zinc-600 hover:text-white transition-colors"
             >
               Sherlock
             </Link>
             <Link
               href="/build"
-              className="text-xs text-zinc-600 hover:text-white transition-colors"
+              className="hidden sm:block text-xs text-zinc-600 hover:text-white transition-colors"
             >
               Smith
             </Link>
-            <Link
-              href="/docs"
-              className="text-xs text-zinc-600 hover:text-white transition-colors"
-            >
-              Docs
-            </Link>
-            <span className="text-zinc-800">•</span>
+            <span className="hidden sm:block text-zinc-800">•</span>
             <a
               href="https://github.com/keshav0479/txray"
               target="_blank"
@@ -82,6 +76,12 @@ export function Footer() {
               <Zap className="w-3.5 h-3.5" />
               Support
             </a>
+            <Link
+              href="/docs"
+              className="text-xs text-zinc-600 hover:text-white transition-colors"
+            >
+              Docs
+            </Link>
           </div>
         </div>
       </div>
