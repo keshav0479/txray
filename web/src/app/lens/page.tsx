@@ -256,10 +256,9 @@ export default function LensPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex-1"
+            className="flex-1 max-w-4xl mx-auto px-6 pt-24 pb-16 w-full relative z-10"
           >
             {/* Hero section */}
-            <div className="max-w-4xl mx-auto px-6 pt-24 pb-16 w-full relative z-10">
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -279,24 +278,27 @@ export default function LensPage() {
               </motion.div>
 
               {/* Tab Bar */}
-              <div className="flex justify-center mb-10">
-                <div className="inline-flex rounded-2xl bg-stone-950/60 backdrop-blur-xl border border-white/8 p-1 max-w-full overflow-x-auto scrollbar-hide">
+              <div className="mb-10">
+                <div className="flex rounded-2xl bg-stone-950/60 backdrop-blur-xl border border-white/8 p-1">
                   {[
                     {
                       id: "search" as const,
                       icon: Search,
                       label: "Search Online",
+                      shortLabel: "Search",
                     },
-                    { id: "rawhex" as const, icon: Code2, label: "Paste Hex" },
+                    { id: "rawhex" as const, icon: Code2, label: "Paste Hex", shortLabel: "Hex" },
                     {
                       id: "json" as const,
                       icon: FileJson,
                       label: "Paste JSON",
+                      shortLabel: "JSON",
                     },
                     {
                       id: "upload" as const,
                       icon: Upload,
                       label: "Upload Files",
+                      shortLabel: "Upload",
                     },
                   ].map((tab) => (
                     <button
@@ -305,14 +307,15 @@ export default function LensPage() {
                         setActiveTab(tab.id);
                         setErrorMsg(null);
                       }}
-                      className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
+                      className={`flex flex-1 items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
                         activeTab === tab.id
                           ? "bg-lens-500/15 text-lens-400 border border-lens-500/20"
                           : "text-stone-500 hover:text-stone-300"
                       }`}
                     >
                       <tab.icon className="w-4 h-4 shrink-0" />
-                      {tab.label}
+                      <span className="sm:hidden">{tab.shortLabel}</span>
+                      <span className="hidden sm:inline">{tab.label}</span>
                     </button>
                   ))}
                 </div>
@@ -624,20 +627,7 @@ export default function LensPage() {
                   )}
                 </AnimatePresence>
               </div>
-            </div>
 
-            <ScrollIndicator theme="lens" />
-            <TimelineSection theme="lens" cards={STORY_CARDS} />
-            <div className="max-w-4xl mx-auto w-full px-6">
-              <BottomCTA
-                theme="lens"
-                title="Ready to see what's inside a real block?"
-                description="Upload your own Bitcoin Core files or paste raw transaction data."
-                buttonLabel="Open Analyzer"
-                buttonIcon={<Eye className="w-5 h-5" />}
-                onAction={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              />
-            </div>
           </motion.div>
         )}
 
@@ -679,6 +669,24 @@ export default function LensPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {viewState === "input" && (
+        <>
+          <ScrollIndicator theme="lens" />
+          <TimelineSection theme="lens" cards={STORY_CARDS} />
+          <div className="max-w-4xl mx-auto w-full px-6">
+            <BottomCTA
+              theme="lens"
+              title="Ready to see what's inside a real block?"
+              description="Upload your own Bitcoin Core files or paste raw transaction data."
+              buttonLabel="Open Analyzer"
+              buttonIcon={<Eye className="w-5 h-5" />}
+              onAction={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            />
+          </div>
+        </>
+      )}
+
       <Footer />
     </div>
   );

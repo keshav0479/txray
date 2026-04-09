@@ -34,7 +34,7 @@ export function ScrollytellingLayout({
         </div>
 
         {/* Scrolling story cards */}
-        <div className="flex flex-col gap-8 pb-24">
+        <div className="flex flex-col gap-32 pb-24">
           {children}
         </div>
       </div>

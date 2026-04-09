@@ -9,6 +9,8 @@ import {
   Filter,
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
+  ChevronRight,
   Activity,
   AlertTriangle,
   Zap,
@@ -21,6 +23,9 @@ import {
   ArrowLeftRight,
   FileCode,
   Target,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 import Link from "next/link";
 import type { BlockFileData, Transaction } from "@/lib/sherlockTypes";
@@ -284,7 +289,7 @@ function TxRow({
     <div className="border-b border-white/5 last:border-b-0">
       <button
         onClick={onToggle}
-        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/2 transition-colors text-left"
+        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/3 transition-colors text-left"
       >
         <div className="flex-1 min-w-0">
           <span className="text-sm font-mono text-zinc-300 truncate block">
@@ -292,11 +297,11 @@ function TxRow({
           </span>
         </div>
         <span
-          className={`text-xs px-2.5 py-1 rounded-full border font-medium shrink-0 ${cfg.bg} ${cfg.color}`}
+          className={`text-xs px-2.5 py-1 rounded-full border font-medium shrink-0 w-24 text-center ${cfg.bg} ${cfg.color}`}
         >
           {cfg.label}
         </span>
-        <span className="text-xs text-zinc-600 w-6 shrink-0 flex items-center justify-center">
+        <span className="text-xs text-zinc-600 w-10 shrink-0 flex items-center justify-center">
           {detectedHeuristics.length > 0 ? (
             <span
               className={`px-1.5 py-0.5 rounded font-mono font-bold text-[10px] ${detectedHeuristics.length >= 3 ? "bg-red-500/20 text-red-400 border border-red-500/30 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]" : detectedHeuristics.length === 2 ? "bg-amber-500/20 text-amber-400 border border-amber-500/30" : "bg-blue-500/20 text-blue-400 border border-blue-500/30"}`}
@@ -306,6 +311,9 @@ function TxRow({
           ) : (
             <span className="opacity-30">0</span>
           )}
+        </span>
+        <span className="w-16 text-right font-mono text-xs text-zinc-500 hidden md:block shrink-0">
+          {tx.fee_sats != null ? tx.fee_sats.toLocaleString() : "—"}
         </span>
         {isExpanded ? (
           <ChevronUp className="w-4 h-4 text-zinc-600 shrink-0" />
@@ -356,6 +364,12 @@ function TxRow({
 
 const PAGE_SIZE = 30;
 
+type SortKey = "heuristics" | "classification" | "fee" | null;
+
+function getDetectedCount(tx: Transaction): number {
+  return Object.values(tx.heuristics).filter((h) => h.detected).length;
+}
+
 export default function BlockDetailClient({ stem }: { stem: string }) {
   const [data, setData] = useState<BlockFileData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -364,6 +378,9 @@ export default function BlockDetailClient({ stem }: { stem: string }) {
   const [classFilter, setClassFilter] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(0);
+  const [pageInputValue, setPageInputValue] = useState("1");
+  const [sortKey, setSortKey] = useState<SortKey>(null);
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
   // Always start true; hide once the loading experience completes
   const [showLoader, setShowLoader] = useState(true);
@@ -395,21 +412,72 @@ export default function BlockDetailClient({ stem }: { stem: string }) {
     return counts;
   }, [txs]);
 
-  // Filtered + searchable transactions
+  // Filtered + searchable transactions (supports #index search)
   const filteredTxs = useMemo(() => {
     let list = txs;
     if (classFilter)
       list = list.filter((tx) => tx.classification === classFilter);
-    if (searchQuery)
-      list = list.filter((tx) => tx.txid.includes(searchQuery.toLowerCase()));
+    if (searchQuery) {
+      const q = searchQuery.trim();
+      if (q.startsWith("#")) {
+        const idx = parseInt(q.slice(1));
+        if (!isNaN(idx) && idx >= 0 && idx < list.length) {
+          list = [list[idx]];
+        } else {
+          list = [];
+        }
+      } else {
+        list = list.filter((tx) => tx.txid.includes(q.toLowerCase()));
+      }
+    }
     return list;
   }, [txs, classFilter, searchQuery]);
 
-  const paginatedTxs = filteredTxs.slice(
-    page * PAGE_SIZE,
-    (page + 1) * PAGE_SIZE,
+  // Sorted transactions
+  const sortedTxs = useMemo(() => {
+    if (!sortKey) return filteredTxs;
+    const sorted = [...filteredTxs].sort((a, b) => {
+      let va = 0, vb = 0;
+      if (sortKey === "heuristics") {
+        va = getDetectedCount(a);
+        vb = getDetectedCount(b);
+      } else if (sortKey === "classification") {
+        va = a.classification.localeCompare(b.classification);
+        return sortDir === "asc" ? va : -va;
+      } else if (sortKey === "fee") {
+        va = a.fee_sats ?? 0;
+        vb = b.fee_sats ?? 0;
+      }
+      return sortDir === "asc" ? va - vb : vb - va;
+    });
+    return sorted;
+  }, [filteredTxs, sortKey, sortDir]);
+
+  const totalPages = Math.max(1, Math.ceil(sortedTxs.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages - 1);
+  const paginatedTxs = sortedTxs.slice(
+    safePage * PAGE_SIZE,
+    (safePage + 1) * PAGE_SIZE,
   );
-  const totalPages = Math.ceil(filteredTxs.length / PAGE_SIZE);
+
+  const toggleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      if (sortDir === "desc") setSortDir("asc");
+      else { setSortKey(null); setSortDir("desc"); }
+    } else {
+      setSortKey(key);
+      setSortDir("desc");
+    }
+    setPage(0);
+    setPageInputValue("1");
+  };
+
+  const getSortIcon = (col: SortKey) => {
+    if (sortKey !== col) return <ArrowUpDown className="w-3 h-3 opacity-40" />;
+    return sortDir === "desc"
+      ? <ArrowDown className="w-3 h-3 text-brand-400" />
+      : <ArrowUp className="w-3 h-3 text-brand-400" />;
+  };
 
   if (showLoader) {
     return (
@@ -531,95 +599,154 @@ export default function BlockDetailClient({ stem }: { stem: string }) {
       {/* Transaction List */}
       <div className="rounded-2xl border border-white/5 bg-black/40 backdrop-blur-md overflow-hidden">
         {/* Toolbar */}
-        <div className="flex items-center gap-3 p-4 border-b border-white/5">
-          <div className="flex-1 relative">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 border-b border-white/5">
+          <div className="flex-1 relative w-full sm:w-auto">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" />
             <input
               type="text"
-              placeholder="Search by txid..."
+              placeholder="Search by txid or #index..."
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
                 setPage(0);
+                setPageInputValue("1");
               }}
-              className="w-full bg-white/5 border border-white/5 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-brand-500/30"
+              className="w-full bg-white/5 border border-white/5 rounded-lg pl-9 pr-4 py-2 text-sm font-mono text-white placeholder:text-zinc-600 focus:outline-none focus:border-brand-500/30 focus:ring-1 focus:ring-brand-500/20 transition-all"
             />
           </div>
-          <div className="flex items-center gap-1">
-            <Filter className="w-4 h-4 text-zinc-600" />
-            <select
-              value={classFilter || ""}
-              onChange={(e) => {
-                setClassFilter(e.target.value || null);
-                setPage(0);
-              }}
-              className="bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm text-zinc-400 focus:outline-none focus:border-brand-500/30 appearance-none cursor-pointer"
-            >
-              <option value="">All ({txs.length})</option>
-              {Object.entries(classificationCounts)
-                .sort((a, b) => b[1] - a[1])
-                .map(([cls, count]) => (
-                  <option key={cls} value={cls}>
-                    {CLASSIFICATION_CONFIG[cls]?.label || cls} ({count})
-                  </option>
-                ))}
-            </select>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1">
+              <Filter className="w-4 h-4 text-zinc-600" />
+              <select
+                value={classFilter || ""}
+                onChange={(e) => {
+                  setClassFilter(e.target.value || null);
+                  setPage(0);
+                  setPageInputValue("1");
+                }}
+                className="bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm text-zinc-400 focus:outline-none focus:border-brand-500/30 appearance-none cursor-pointer"
+              >
+                <option value="">All ({txs.length})</option>
+                {Object.entries(classificationCounts)
+                  .sort((a, b) => b[1] - a[1])
+                  .map(([cls, count]) => (
+                    <option key={cls} value={cls}>
+                      {CLASSIFICATION_CONFIG[cls]?.label || cls} ({count})
+                    </option>
+                  ))}
+              </select>
+            </div>
+
+            {/* Pagination controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => {
+                    const np = Math.max(0, safePage - 1);
+                    setPage(np);
+                    setPageInputValue(String(np + 1));
+                  }}
+                  disabled={safePage === 0}
+                  className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-white/5 transition-colors border border-white/10"
+                >
+                  <ChevronLeft className="w-4 h-4 text-zinc-400" />
+                </button>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={pageInputValue}
+                  onChange={(e) => setPageInputValue(e.target.value)}
+                  onBlur={() => {
+                    const val = parseInt(pageInputValue);
+                    if (!isNaN(val) && val >= 1 && val <= totalPages) {
+                      setPage(val - 1);
+                      setPageInputValue(String(val));
+                    } else {
+                      setPageInputValue(String(safePage + 1));
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                  }}
+                  className="w-10 text-center text-xs font-mono bg-black/40 border border-white/10 rounded-lg py-1.5 text-white focus:outline-none focus:border-brand-500/50"
+                />
+                <span className="text-xs text-zinc-500 font-mono">/ {totalPages}</span>
+                <button
+                  onClick={() => {
+                    const np = Math.min(totalPages - 1, safePage + 1);
+                    setPage(np);
+                    setPageInputValue(String(np + 1));
+                  }}
+                  disabled={safePage >= totalPages - 1}
+                  className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-white/5 transition-colors border border-white/10"
+                >
+                  <ChevronRight className="w-4 h-4 text-zinc-400" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Table Header */}
-        <div className="flex items-center gap-3 px-4 py-2 text-xs text-zinc-600 uppercase tracking-widest border-b border-white/5">
+        {/* Table Header — sortable columns */}
+        <div className="flex items-center gap-3 px-4 py-2 text-xs text-zinc-600 uppercase tracking-widest border-b border-white/5 bg-black/30">
           <div className="flex-1">Transaction ID</div>
-          <div className="w-24 text-center">Class</div>
-          <div className="w-6 text-center">H</div>
+          <button
+            onClick={() => toggleSort("classification")}
+            className="w-24 text-center flex items-center justify-center gap-1 hover:text-white transition-colors cursor-pointer"
+          >
+            Class {getSortIcon("classification")}
+          </button>
+          <button
+            onClick={() => toggleSort("heuristics")}
+            className="w-10 text-center flex items-center justify-center gap-1 hover:text-white transition-colors cursor-pointer"
+            title="Sort by heuristic trigger count"
+          >
+            H {getSortIcon("heuristics")}
+          </button>
+          <button
+            onClick={() => toggleSort("fee")}
+            className="w-16 text-center hidden md:flex items-center justify-center gap-1 hover:text-white transition-colors cursor-pointer"
+            title="Sort by fee"
+          >
+            Fee {getSortIcon("fee")}
+          </button>
           <div className="w-4" />
         </div>
 
-        {/* Transaction Rows */}
-        {paginatedTxs.map((tx) => (
-          <TxRow
-            key={tx.txid}
-            tx={tx}
-            stem={stem}
-            isExpanded={expandedTx === tx.txid}
-            onToggle={() =>
-              setExpandedTx(expandedTx === tx.txid ? null : tx.txid)
-            }
-          />
-        ))}
+        {/* Transaction Rows — scrollable body */}
+        <div className="max-h-[55vh] overflow-y-auto">
+          {paginatedTxs.map((tx) => (
+            <TxRow
+              key={tx.txid}
+              tx={tx}
+              stem={stem}
+              isExpanded={expandedTx === tx.txid}
+              onToggle={() =>
+                setExpandedTx(expandedTx === tx.txid ? null : tx.txid)
+              }
+            />
+          ))}
+        </div>
 
-        {filteredTxs.length === 0 && (
+        {sortedTxs.length === 0 && (
           <div className="px-4 py-12 text-center text-zinc-600 text-sm">
             No transactions match your filter.
           </div>
         )}
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-white/5">
-            <span className="text-xs text-zinc-600">
-              Showing {page * PAGE_SIZE + 1}–
-              {Math.min((page + 1) * PAGE_SIZE, filteredTxs.length)} of{" "}
-              {filteredTxs.length.toLocaleString()}
+        {/* Bottom status bar */}
+        <div className="flex items-center justify-between px-4 py-2.5 border-t border-white/5 text-xs text-zinc-600">
+          <span>
+            {searchQuery
+              ? `${sortedTxs.length} match${sortedTxs.length !== 1 ? "es" : ""}`
+              : `Showing ${safePage * PAGE_SIZE + 1}–${Math.min((safePage + 1) * PAGE_SIZE, sortedTxs.length)} of ${sortedTxs.length.toLocaleString()}`}
+          </span>
+          {sortKey && (
+            <span className="text-zinc-500">
+              Sorted by {sortKey === "heuristics" ? "triggers" : sortKey} {sortDir === "desc" ? "↓" : "↑"}
             </span>
-            <div className="flex gap-1">
-              <button
-                disabled={page === 0}
-                onClick={() => setPage(page - 1)}
-                className="px-3 py-1 text-xs rounded-lg border border-white/5 text-zinc-400 hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-              >
-                Prev
-              </button>
-              <button
-                disabled={page >= totalPages - 1}
-                onClick={() => setPage(page + 1)}
-                className="px-3 py-1 text-xs rounded-lg border border-white/5 text-zinc-400 hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

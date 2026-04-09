@@ -212,17 +212,13 @@ export default function BuildPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="flex justify-center mb-10"
+          className="mb-10"
         >
-          <div className="inline-flex rounded-2xl bg-stone-950/60 backdrop-blur-xl border border-white/8 p-1 max-w-full overflow-x-auto scrollbar-hide">
+          <div className="flex rounded-2xl bg-stone-950/60 backdrop-blur-xl border border-white/8 p-1">
             {[
-              {
-                id: "templates" as const,
-                icon: Grid3x3,
-                label: "Use Template",
-              },
-              { id: "paste" as const, icon: Code2, label: "Paste JSON" },
-              { id: "import" as const, icon: Upload, label: "Upload Files" },
+              { id: "templates" as const, icon: Grid3x3, label: "Use Template", shortLabel: "Template" },
+              { id: "paste" as const, icon: Code2, label: "Paste JSON", shortLabel: "JSON" },
+              { id: "import" as const, icon: Upload, label: "Upload Files", shortLabel: "Upload" },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -230,14 +226,15 @@ export default function BuildPage() {
                   setActiveTab(tab.id);
                   setErrorMsg(null);
                 }}
-                className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
+                className={`flex flex-1 items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
                   activeTab === tab.id
                     ? "bg-smith-500/15 text-smith-400 border border-smith-500/20"
                     : "text-stone-500 hover:text-stone-300"
                 }`}
               >
                 <tab.icon className="w-4 h-4 shrink-0" />
-                {tab.label}
+                <span className="sm:hidden">{tab.shortLabel}</span>
+                <span className="hidden sm:inline">{tab.label}</span>
               </button>
             ))}
           </div>

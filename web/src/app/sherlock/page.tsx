@@ -207,14 +207,14 @@ export default function SherlockPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="flex justify-center mb-10"
+          className="mb-10"
         >
-          <div className="inline-flex rounded-2xl bg-stone-950/60 backdrop-blur-xl border border-white/8 p-1 max-w-full overflow-x-auto scrollbar-hide">
+          <div className="flex rounded-2xl bg-stone-950/60 backdrop-blur-xl border border-white/8 p-1">
             {[
-              { id: "search" as const, icon: Search, label: "Search Online" },
-              { id: "rawhex" as const, icon: Code2, label: "Paste Hex" },
-              { id: "json" as const, icon: FileJson, label: "Paste JSON" },
-              { id: "upload" as const, icon: Upload, label: "Upload Files" },
+              { id: "search" as const, icon: Search, label: "Search Online", shortLabel: "Search" },
+              { id: "rawhex" as const, icon: Code2, label: "Paste Hex", shortLabel: "Hex" },
+              { id: "json" as const, icon: FileJson, label: "Paste JSON", shortLabel: "JSON" },
+              { id: "upload" as const, icon: Upload, label: "Upload Files", shortLabel: "Upload" },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -222,14 +222,15 @@ export default function SherlockPage() {
                   setActiveTab(tab.id);
                   setErrorMsg(null);
                 }}
-                className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
+                className={`flex flex-1 items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
                   activeTab === tab.id
                     ? "bg-sherlock-500/15 text-sherlock-400 border border-sherlock-500/20"
                     : "text-stone-500 hover:text-stone-300"
                 }`}
               >
                 <tab.icon className="w-4 h-4 shrink-0" />
-                {tab.label}
+                <span className="sm:hidden">{tab.shortLabel}</span>
+                <span className="hidden sm:inline">{tab.label}</span>
               </button>
             ))}
           </div>

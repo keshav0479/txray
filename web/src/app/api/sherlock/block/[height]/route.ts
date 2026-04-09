@@ -1,25 +1,29 @@
 import { NextResponse } from "next/server";
-import { mkdtemp, rm, writeFile } from "fs/promises";
+import { access, mkdir, mkdtemp, readFile, rm, writeFile } from "fs/promises";
 import os from "os";
 import path from "path";
-import { parseJsonFromCliOutput, runTxray } from "@/lib/server/txrayCli";
+import {
+  getWorkspaceRoot,
+  parseJsonFromCliOutput,
+  runTxray,
+} from "@/lib/server/txrayCli";
 
 export const runtime = "nodejs";
-export const maxDuration = 60; // Blocks can have many transactions
+export const maxDuration = 120;
 
 const MEMPOOL_BASE = "https://mempool.space/api";
+const MAX_TXS = 100;
+const BATCH_SIZE = 8;
+
+// ---------------------------------------------------------------------------
+// Mempool types (minimal, only what we need)
+// ---------------------------------------------------------------------------
 
 interface MempoolVin {
   txid: string;
   vout: number;
-  prevout?: {
-    scriptpubkey: string;
-    value: number;
-  };
-  scriptsig: string;
-  witness?: string[];
+  prevout?: { scriptpubkey: string; scriptpubkey_type: string; scriptpubkey_address?: string; value: number };
   is_coinbase: boolean;
-  sequence: number;
 }
 
 interface MempoolVout {
@@ -35,37 +39,282 @@ interface MempoolTx {
   locktime: number;
   vin: MempoolVin[];
   vout: MempoolVout[];
-  status: {
-    confirmed: boolean;
-    block_height?: number;
-  };
+  fee: number;
+  weight: number;
 }
 
-interface BlockPrivacyResult {
+// ---------------------------------------------------------------------------
+// BlockFileData types (must match sherlockTypes.ts)
+// ---------------------------------------------------------------------------
+
+interface TxIO { value_sats: number; script_type: string; address: string | null }
+
+interface HeuristicResult { detected: boolean; [key: string]: unknown }
+
+interface Transaction {
+  txid: string;
+  classification: string;
+  heuristics: Record<string, HeuristicResult>;
+  inputs: TxIO[];
+  outputs: TxIO[];
+  fee_sats: number;
+  weight: number;
+  is_coinbase: boolean;
+}
+
+interface FeeRateStats { min_sat_vb: number; max_sat_vb: number; mean_sat_vb: number; median_sat_vb: number }
+
+interface AnalysisSummary {
+  fee_rate_stats: FeeRateStats;
+  flagged_transactions: number;
+  heuristics_applied: string[];
+  script_type_distribution: Record<string, number>;
+  total_transactions_analyzed: number;
+}
+
+interface BlockFileData {
   ok: boolean;
-  height: number;
-  hash: string;
-  txCount: number;
-  transactions: Array<{
-    txid: string;
-    isCoinbase: boolean;
-    fingerprint: unknown | null;
-    advice: unknown | null;
-    error?: string;
+  file: string;
+  mode: string;
+  block_count: number;
+  blocks: Array<{
+    block_hash: string;
+    block_height: number;
+    tx_count: number;
+    transactions: Transaction[];
+    analysis_summary: AnalysisSummary;
   }>;
-  summary: {
-    analyzedCount: number;
-    coinbaseCount: number;
-    failedCount: number;
+  analysis_summary: AnalysisSummary;
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+const ALL_HEURISTIC_IDS = [
+  "address_reuse", "change_detection", "cioh", "coinjoin",
+  "consolidation", "op_return", "round_number_payment", "self_transfer",
+];
+
+const EMPTY_HEURISTICS: Record<string, HeuristicResult> = Object.fromEntries(
+  ALL_HEURISTIC_IDS.map((id) => [id, { detected: false }]),
+);
+
+/** Map mempool scriptpubkey_type to our canonical short names */
+function normalizeScriptType(t: string): string {
+  const map: Record<string, string> = {
+    v0_p2wpkh: "p2wpkh",
+    v0_p2wsh: "p2wsh",
+    v1_p2tr: "p2tr",
+    p2pkh: "p2pkh",
+    p2sh: "p2sh",
+    op_return: "op_return",
+    "p2sh-p2wpkh": "p2sh",
+    "p2sh-p2wsh": "p2sh",
+  };
+  return map[t] ?? "unknown";
+}
+
+function computeFeeRateStats(txs: Transaction[]): FeeRateStats {
+  const rates = txs
+    .filter((tx) => !tx.is_coinbase && tx.weight > 0)
+    .map((tx) => (tx.fee_sats * 4) / tx.weight);
+
+  if (rates.length === 0) {
+    return { min_sat_vb: 0, max_sat_vb: 0, mean_sat_vb: 0, median_sat_vb: 0 };
+  }
+
+  rates.sort((a, b) => a - b);
+  const min = rates[0];
+  const max = rates[rates.length - 1];
+  const mean = rates.reduce((s, r) => s + r, 0) / rates.length;
+  const mid = Math.floor(rates.length / 2);
+  const median = rates.length % 2 === 0 ? (rates[mid - 1] + rates[mid]) / 2 : rates[mid];
+
+  return {
+    min_sat_vb: Math.round(min * 10) / 10,
+    max_sat_vb: Math.round(max * 10) / 10,
+    mean_sat_vb: Math.round(mean * 10) / 10,
+    median_sat_vb: Math.round(median * 10) / 10,
   };
 }
 
-/**
- * GET /api/sherlock/block/[height]
- *
- * Runs privacy analysis (fingerprint + advise) on all transactions in a block.
- * Fetches block from mempool.space and analyzes each transaction.
- */
+function computeScriptTypeDistribution(txs: Transaction[]): Record<string, number> {
+  const dist: Record<string, number> = {};
+  for (const tx of txs) {
+    for (const out of tx.outputs) {
+      dist[out.script_type] = (dist[out.script_type] || 0) + 1;
+    }
+  }
+  // Sort alphabetically for determinism
+  return Object.fromEntries(Object.entries(dist).sort(([a], [b]) => a.localeCompare(b)));
+}
+
+function buildSummary(txs: Transaction[]): AnalysisSummary {
+  const flagged = txs.filter((tx) =>
+    Object.values(tx.heuristics).some((h) => h.detected),
+  ).length;
+
+  return {
+    fee_rate_stats: computeFeeRateStats(txs),
+    flagged_transactions: flagged,
+    heuristics_applied: [...ALL_HEURISTIC_IDS],
+    script_type_distribution: computeScriptTypeDistribution(txs),
+    total_transactions_analyzed: txs.length,
+  };
+}
+
+/** Fetch paginated transactions from mempool.space (up to MAX_TXS) */
+async function fetchAllBlockTxs(blockHash: string): Promise<MempoolTx[]> {
+  const all: MempoolTx[] = [];
+  let startIndex = 0;
+
+  while (all.length < MAX_TXS) {
+    const res = await fetch(`${MEMPOOL_BASE}/block/${blockHash}/txs/${startIndex}`);
+    if (!res.ok) break;
+    const page = (await res.json()) as MempoolTx[];
+    if (page.length === 0) break;
+    all.push(...page);
+    startIndex += page.length;
+    // mempool.space pages at 25
+    if (page.length < 25) break;
+  }
+
+  return all.slice(0, MAX_TXS);
+}
+
+/** Run txray advise on a single fixture and parse the result */
+async function analyzeTx(
+  tx: MempoolTx,
+  tmpDir: string,
+): Promise<Transaction> {
+  const isCoinbase = tx.vin.every((v) => v.is_coinbase);
+
+  const inputs: TxIO[] = isCoinbase
+    ? []
+    : tx.vin.map((v) => ({
+        value_sats: v.prevout?.value ?? 0,
+        script_type: normalizeScriptType(v.prevout?.scriptpubkey_type ?? "unknown"),
+        address: v.prevout?.scriptpubkey_address ?? null,
+      }));
+
+  const outputs: TxIO[] = tx.vout.map((v) => ({
+    value_sats: v.value,
+    script_type: normalizeScriptType(v.scriptpubkey_type),
+    address: v.scriptpubkey_address ?? null,
+  }));
+
+  if (isCoinbase) {
+    return {
+      txid: tx.txid,
+      classification: "unknown",
+      heuristics: { ...EMPTY_HEURISTICS },
+      inputs,
+      outputs,
+      fee_sats: 0,
+      weight: tx.weight,
+      is_coinbase: true,
+    };
+  }
+
+  // Fetch raw hex
+  const hexRes = await fetch(`${MEMPOOL_BASE}/tx/${tx.txid}/hex`);
+  if (!hexRes.ok) {
+    // If we can't get hex, return with empty heuristics
+    return {
+      txid: tx.txid,
+      classification: "unknown",
+      heuristics: { ...EMPTY_HEURISTICS },
+      inputs,
+      outputs,
+      fee_sats: tx.fee,
+      weight: tx.weight,
+      is_coinbase: false,
+    };
+  }
+
+  const txHex = await hexRes.text();
+
+  // Build fixture
+  const fixture = {
+    network: "mainnet",
+    raw_tx: txHex,
+    prevouts: tx.vin
+      .filter((v) => !v.is_coinbase && v.prevout)
+      .map((v) => ({
+        txid: v.txid,
+        vout: v.vout,
+        value_sats: v.prevout!.value,
+        script_pubkey_hex: v.prevout!.scriptpubkey,
+      })),
+  };
+
+  const fixturePath = path.join(tmpDir, `${tx.txid}.json`);
+  await writeFile(fixturePath, JSON.stringify(fixture), "utf-8");
+
+  // Run full analysis
+  const result = await runTxray(["advise", fixturePath, "--json"]);
+
+  if (result.code !== 0) {
+    return {
+      txid: tx.txid,
+      classification: "unknown",
+      heuristics: { ...EMPTY_HEURISTICS },
+      inputs,
+      outputs,
+      fee_sats: tx.fee,
+      weight: tx.weight,
+      is_coinbase: false,
+    };
+  }
+
+  const parsed = parseJsonFromCliOutput(result.stdout) as {
+    heuristics?: Record<string, HeuristicResult>;
+    classification?: string;
+  };
+
+  // Ensure all 8 heuristics are present
+  const heuristics: Record<string, HeuristicResult> = { ...EMPTY_HEURISTICS };
+  if (parsed.heuristics) {
+    for (const [key, val] of Object.entries(parsed.heuristics)) {
+      heuristics[key] = val;
+    }
+  }
+
+  return {
+    txid: tx.txid,
+    classification: parsed.classification ?? "unknown",
+    heuristics,
+    inputs,
+    outputs,
+    fee_sats: tx.fee,
+    weight: tx.weight,
+    is_coinbase: false,
+  };
+}
+
+/** Process transactions in batches to avoid overwhelming the system */
+async function analyzeInBatches(
+  txs: MempoolTx[],
+  tmpDir: string,
+): Promise<Transaction[]> {
+  const results: Transaction[] = [];
+
+  for (let i = 0; i < txs.length; i += BATCH_SIZE) {
+    const batch = txs.slice(i, i + BATCH_SIZE);
+    const batchResults = await Promise.all(
+      batch.map((tx) => analyzeTx(tx, tmpDir)),
+    );
+    results.push(...batchResults);
+  }
+
+  return results;
+}
+
+// ---------------------------------------------------------------------------
+// Route handler
+// ---------------------------------------------------------------------------
+
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ height: string }> },
@@ -75,194 +324,103 @@ export async function GET(
 
   if (isNaN(blockHeight) || blockHeight < 0) {
     return NextResponse.json(
-      {
-        ok: false,
-        error: {
-          code: "INVALID_HEIGHT",
-          message: "Block height must be a positive number",
-        },
-      },
+      { ok: false, error: { code: "INVALID_HEIGHT", message: "Block height must be a non-negative number" } },
       { status: 400 },
     );
+  }
+
+  const workspaceRoot = getWorkspaceRoot();
+  const outDir = path.join(workspaceRoot, "out");
+  const stem = `online-blk${blockHeight}`;
+  const outPath = path.join(outDir, `${stem}.json`);
+
+  // Check if we already have this analysis cached
+  try {
+    await access(outPath);
+    const cached = await readFile(outPath, "utf-8");
+    const data = JSON.parse(cached);
+    if (data.ok) {
+      return NextResponse.json({ ok: true, stem });
+    }
+  } catch {
+    // Not cached, proceed with analysis
   }
 
   let tmpDir: string | null = null;
 
   try {
-    // Fetch block hash and transactions
-    const [hashRes, txsRes] = await Promise.all([
-      fetch(`${MEMPOOL_BASE}/block-height/${blockHeight}`),
-      fetch(`${MEMPOOL_BASE}/block-height/${blockHeight}`).then(async (res) => {
-        if (!res.ok) return null;
-        const hash = await res.text();
-        return fetch(`${MEMPOOL_BASE}/block/${hash}/txs`);
-      }),
-    ]);
-
+    // Fetch block hash
+    const hashRes = await fetch(`${MEMPOOL_BASE}/block-height/${blockHeight}`);
     if (!hashRes.ok) {
       return NextResponse.json(
         {
           ok: false,
           error: {
             code: "BLOCK_NOT_FOUND",
-            message:
-              hashRes.status === 404
-                ? "Block not found at this height"
-                : `Mempool API returned ${hashRes.status}`,
+            message: hashRes.status === 404
+              ? "Block not found at this height"
+              : `Mempool API returned ${hashRes.status}`,
           },
         },
         { status: hashRes.status === 404 ? 404 : 502 },
       );
     }
-
     const blockHash = await hashRes.text();
 
-    if (!txsRes || !txsRes.ok) {
+    // Fetch block metadata for tx_count
+    const blockRes = await fetch(`${MEMPOOL_BASE}/block/${blockHash}`);
+    if (!blockRes.ok) {
       return NextResponse.json(
-        {
-          ok: false,
-          error: {
-            code: "BLOCK_TXS_FAILED",
-            message: "Failed to fetch block transactions",
-          },
-        },
+        { ok: false, error: { code: "BLOCK_META_FAILED", message: "Failed to fetch block metadata" } },
+        { status: 502 },
+      );
+    }
+    const blockMeta = await blockRes.json();
+    const totalTxCount: number = blockMeta.tx_count;
+
+    // Fetch transactions (paginated, up to MAX_TXS)
+    const mempoolTxs = await fetchAllBlockTxs(blockHash);
+
+    if (mempoolTxs.length === 0) {
+      return NextResponse.json(
+        { ok: false, error: { code: "NO_TXS", message: "No transactions found in block" } },
         { status: 502 },
       );
     }
 
-    const transactions = (await txsRes.json()) as MempoolTx[];
-
-    // Create temp directory for fixtures
+    // Create temp directory and analyze
     tmpDir = await mkdtemp(path.join(os.tmpdir(), "txray-block-"));
+    const transactions = await analyzeInBatches(mempoolTxs, tmpDir);
 
-    const result: BlockPrivacyResult = {
+    // Build BlockFileData
+    const blockSummary = buildSummary(transactions);
+
+    const blockFileData: BlockFileData = {
       ok: true,
-      height: blockHeight,
-      hash: blockHash,
-      txCount: transactions.length,
-      transactions: [],
-      summary: {
-        analyzedCount: 0,
-        coinbaseCount: 0,
-        failedCount: 0,
-      },
+      file: `block-${blockHeight}`,
+      mode: "chain_analysis",
+      block_count: 1,
+      blocks: [
+        {
+          block_hash: blockHash,
+          block_height: blockHeight,
+          tx_count: totalTxCount,
+          transactions,
+          analysis_summary: blockSummary,
+        },
+      ],
+      analysis_summary: blockSummary,
     };
 
-    // Analyze each transaction (limit to first 50 for performance)
-    const txsToAnalyze = transactions.slice(0, 50);
+    // Save to out/
+    await mkdir(outDir, { recursive: true });
+    await writeFile(outPath, JSON.stringify(blockFileData), "utf-8");
 
-    for (const tx of txsToAnalyze) {
-      const isCoinbase = tx.vin.every((vin) => vin.is_coinbase);
-
-      if (isCoinbase) {
-        result.transactions.push({
-          txid: tx.txid,
-          isCoinbase: true,
-          fingerprint: null,
-          advice: null,
-        });
-        result.summary.coinbaseCount++;
-        continue;
-      }
-
-      try {
-        // Fetch transaction hex
-        const hexRes = await fetch(`${MEMPOOL_BASE}/tx/${tx.txid}/hex`);
-        if (!hexRes.ok) {
-          result.transactions.push({
-            txid: tx.txid,
-            isCoinbase: false,
-            fingerprint: null,
-            advice: null,
-            error: "Failed to fetch transaction hex",
-          });
-          result.summary.failedCount++;
-          continue;
-        }
-
-        const txHex = await hexRes.text();
-
-        // Create fixture
-        const fixture = {
-          network: "mainnet",
-          raw_tx: txHex,
-          prevouts: tx.vin
-            .filter((input) => !input.is_coinbase && input.prevout)
-            .map((input) => ({
-              txid: input.txid,
-              vout: input.vout,
-              value_sats: input.prevout!.value,
-              script_pubkey_hex: input.prevout!.scriptpubkey,
-            })),
-        };
-
-        const fixturePath = path.join(tmpDir, `${tx.txid}.json`);
-        await writeFile(fixturePath, JSON.stringify(fixture), "utf-8");
-
-        // Run privacy analysis
-        const [fingerprintResult, adviseResult] = await Promise.all([
-          runTxray(["fingerprint", fixturePath, "--json"]),
-          runTxray(["advise", fixturePath, "--json"]),
-        ]);
-
-        let fingerprint = null;
-        let advice = null;
-        let error: string | undefined;
-
-        if (fingerprintResult.code === 0) {
-          try {
-            fingerprint = parseJsonFromCliOutput(fingerprintResult.stdout);
-          } catch (e) {
-            error = `Fingerprint parse error: ${e instanceof Error ? e.message : "unknown"}`;
-          }
-        } else {
-          error = `Fingerprint failed: ${fingerprintResult.stderr}`;
-        }
-
-        if (adviseResult.code === 0) {
-          try {
-            advice = parseJsonFromCliOutput(adviseResult.stdout);
-          } catch (e) {
-            if (!error)
-              error = `Advice parse error: ${e instanceof Error ? e.message : "unknown"}`;
-          }
-        } else {
-          if (!error) error = `Advice failed: ${adviseResult.stderr}`;
-        }
-
-        result.transactions.push({
-          txid: tx.txid,
-          isCoinbase: false,
-          fingerprint,
-          advice,
-          error,
-        });
-
-        if (fingerprint || advice) {
-          result.summary.analyzedCount++;
-        } else {
-          result.summary.failedCount++;
-        }
-      } catch (e) {
-        result.transactions.push({
-          txid: tx.txid,
-          isCoinbase: false,
-          fingerprint: null,
-          advice: null,
-          error: e instanceof Error ? e.message : "Unknown error",
-        });
-        result.summary.failedCount++;
-      }
-    }
-
-    return NextResponse.json(result);
+    return NextResponse.json({ ok: true, stem });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      {
-        ok: false,
-        error: { code: "INTERNAL_ERROR", message },
-      },
+      { ok: false, error: { code: "INTERNAL_ERROR", message } },
       { status: 500 },
     );
   } finally {

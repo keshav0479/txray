@@ -56,7 +56,7 @@ export default function BuildPage() {
   const [summaryModal, setSummaryModal] = useState<"inputs" | "outputs" | null>(
     null,
   );
-  const activeCardId = useScrollSpy(CARD_IDS);
+  const activeCardId = useScrollSpy(CARD_IDS, "-40% 0px -40% 0px", state);
 
   // Lock body scroll when modal is open
   useEffect(() => {
