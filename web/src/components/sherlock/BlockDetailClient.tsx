@@ -297,7 +297,7 @@ function TxRow({
           </span>
         </div>
         <span
-          className={`text-xs px-2.5 py-1 rounded-full border font-medium shrink-0 w-24 text-center ${cfg.bg} ${cfg.color}`}
+          className={`text-xs px-3 py-1 rounded-full border font-medium shrink-0 min-w-28 text-center whitespace-nowrap ${cfg.bg} ${cfg.color}`}
         >
           {cfg.label}
         </span>
@@ -692,7 +692,7 @@ export default function BlockDetailClient({ stem }: { stem: string }) {
           <div className="flex-1">Transaction ID</div>
           <button
             onClick={() => toggleSort("classification")}
-            className="w-24 text-center flex items-center justify-center gap-1 hover:text-white transition-colors cursor-pointer"
+            className="min-w-28 text-center flex items-center justify-center gap-1 hover:text-white transition-colors cursor-pointer"
           >
             Class {getSortIcon("classification")}
           </button>

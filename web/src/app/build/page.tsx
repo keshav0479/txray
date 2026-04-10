@@ -16,7 +16,9 @@ import {
   FileJson,
   Upload,
   Code2,
+  Wallet,
 } from "lucide-react";
+import { AddressBuilder } from "@/components/smith/AddressBuilder";
 import { cn } from "@/lib/utils";
 import { TimelineSection } from "@/components/shared/TimelineCard";
 import { ScrollIndicator } from "@/components/shared/ScrollIndicator";
@@ -30,7 +32,7 @@ import {
 } from "@/components/smith/StoryGraphics";
 import { Footer } from "@/components/shared/Footer";
 
-type TabId = "templates" | "paste" | "import";
+type TabId = "templates" | "paste" | "import" | "address";
 
 const STORY_CARDS = [
   {
@@ -219,6 +221,7 @@ export default function BuildPage() {
               { id: "templates" as const, icon: Grid3x3, label: "Use Template", shortLabel: "Template" },
               { id: "paste" as const, icon: Code2, label: "Paste JSON", shortLabel: "JSON" },
               { id: "import" as const, icon: Upload, label: "Upload Files", shortLabel: "Upload" },
+              { id: "address" as const, icon: Wallet, label: "Build from Address", shortLabel: "Address" },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -387,6 +390,19 @@ export default function BuildPage() {
             </motion.div>
           )}
 
+          {/* Build from Address Tab */}
+          {activeTab === "address" && (
+            <motion.div
+              key="address"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3 }}
+            >
+              <AddressBuilder onError={setErrorMsg} />
+            </motion.div>
+          )}
+
           {/* Import File Tab */}
           {activeTab === "import" && (
             <motion.div
@@ -410,7 +426,7 @@ export default function BuildPage() {
 
                 <div
                   className={cn(
-                    "border-2 border-dashed rounded-xl transition-all relative min-h-[200px] flex items-center justify-center",
+                    "border-2 border-dashed rounded-xl transition-all relative min-h-50 flex items-center justify-center",
                     dragActive
                       ? "border-smith-500 bg-smith-500/5"
                       : "border-white/10 hover:border-smith-500/30",

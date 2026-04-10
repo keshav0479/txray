@@ -154,6 +154,7 @@ async function fetchText(path: string): Promise<string> {
 function ttlForPath(path: string): number {
   if (path === "/blocks/tip/height") return TIP_TTL_MS;
   if (path === "/v1/fees/recommended") return HOT_TTL_MS;
+  if (path.startsWith("/address/")) return HOT_TTL_MS;
   return IMMUTABLE_TTL_MS;
 }
 
@@ -226,6 +227,18 @@ export function fetchFees(): Promise<MempoolFees> {
 export async function fetchTipHeight(): Promise<number> {
   const text = await fetchText("/blocks/tip/height");
   return parseInt(text, 10);
+}
+
+export interface MempoolUtxo {
+  txid: string;
+  vout: number;
+  status: { confirmed: boolean; block_height?: number };
+  value: number;
+}
+
+// fetch unspent outputs for an address
+export function fetchAddressUtxos(address: string): Promise<MempoolUtxo[]> {
+  return fetchJSON<MempoolUtxo[]>(`/address/${address}/utxo`);
 }
 
 // detect whether a search query is a txid, block height, or block hash
