@@ -8,6 +8,10 @@ import {
   parseJsonFromCliOutput,
   runTxray,
 } from "@/lib/server/txrayCli";
+import {
+  extractInputRefs,
+  fetchPrevouts,
+} from "@/lib/server/prevoutFetcher";
 
 export const runtime = "nodejs";
 
@@ -80,10 +84,35 @@ async function analyzeFixtureJson(
     );
   }
 
+  // Auto-fetch prevouts from mempool.space if missing/empty
+  let prevouts = Array.isArray(payload.prevouts) ? payload.prevouts : [];
+  if (prevouts.length === 0) {
+    try {
+      const inputs = extractInputRefs(rawTx);
+      if (inputs.length > 0) {
+        prevouts = await fetchPrevouts(inputs);
+      }
+    } catch (e) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: {
+            code: "PREVOUT_FETCH_FAILED",
+            message:
+              e instanceof Error
+                ? e.message
+                : "Failed to fetch prevout data from mempool.space",
+          },
+        },
+        { status: 422 },
+      );
+    }
+  }
+
   const fixture = {
     network: typeof payload.network === "string" ? payload.network : "mainnet",
     raw_tx: rawTx,
-    prevouts: Array.isArray(payload.prevouts) ? payload.prevouts : [],
+    prevouts,
   };
 
   const derivedTxid = computeTxid(rawTx);
@@ -177,7 +206,7 @@ export async function POST(req: Request) {
 
     if (contentType.includes("application/json")) {
       const body = await req.json();
-      return analyzeFixtureJson(body, tmpDir);
+      return await analyzeFixtureJson(body, tmpDir);
     }
 
     if (!contentType.includes("multipart/form-data")) {

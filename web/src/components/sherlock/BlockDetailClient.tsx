@@ -382,8 +382,12 @@ export default function BlockDetailClient({ stem }: { stem: string }) {
   const [sortKey, setSortKey] = useState<SortKey>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
-  // Always start true; hide once the loading experience completes
-  const [showLoader, setShowLoader] = useState(true);
+  // Skip the scanner on return visits (e.g. back from tx detail)
+  const [showLoader, setShowLoader] = useState(() => {
+    if (typeof window === "undefined") return true;
+    const key = `sherlock_seen_${stem}`;
+    return !sessionStorage.getItem(key);
+  });
 
   useEffect(() => {
     fetch(`/api/results/${stem}`)
@@ -484,6 +488,7 @@ export default function BlockDetailClient({ stem }: { stem: string }) {
       <ContentScanLoader
         dataReady={!loading}
         onComplete={() => {
+          sessionStorage.setItem(`sherlock_seen_${stem}`, "1");
           setShowLoader(false);
         }}
       />

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { Header } from "@/components/shared/Header";
 import { AppChrome } from "@/components/shared/AppChrome";
+import { ScrollToTop } from "@/components/shared/ScrollToTop";
 import { MempoolProvider } from "@/context/MempoolContext";
 import "./globals.css";
 
@@ -45,6 +46,7 @@ export default function RootLayout({
       >
         <MempoolProvider>
           <AppChrome>
+            <ScrollToTop />
             <Header />
             <main className="pt-16 min-h-screen">{children}</main>
           </AppChrome>

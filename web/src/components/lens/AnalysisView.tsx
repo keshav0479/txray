@@ -7,7 +7,7 @@ import { StoryCard } from "@/components/shared/StoryCard";
 import { HexTerminal } from "@/components/lens/HexTerminal";
 import { Tooltip } from "@/components/ui/Tooltip";
 import {
-  Activity,
+  Eye,
   ArrowRightLeft,
   ShieldCheck,
   AlertTriangle,
@@ -96,7 +96,7 @@ export function AnalysisView({ data, onReset, onBack, hideTerminal }: AnalysisVi
           <div id="card-0">
             <StoryCard
               title={isCoinbase ? "The Block Reward" : "What happened?"}
-              icon={<Activity />}
+              icon={<Eye />}
               isActive={activeCardId === "card-0"}
             >
               {isCoinbase ? (

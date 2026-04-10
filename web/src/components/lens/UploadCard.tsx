@@ -7,7 +7,7 @@ import {
   Database,
   FileDigit,
   ChevronRight,
-  Activity,
+  Eye,
   Loader2,
   AlertTriangle,
   Code,
@@ -141,7 +141,7 @@ export function UploadCard({
                 onClick={() => onAnalyzeDemo(selectedFixture)}
                 className="mt-6 w-full group relative inline-flex items-center justify-center gap-2 bg-lens-500 text-white font-bold px-6 py-4 rounded-xl overflow-hidden shadow-[0_0_30px_rgba(59,130,246,0.2)] hover:bg-lens-400 transition-colors"
               >
-                <Activity className="w-5 h-5" />
+                <Eye className="w-5 h-5" />
                 Run Demo Analysis
                 <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform absolute right-6" />
               </button>
@@ -314,7 +314,7 @@ export function UploadCard({
                   </>
                 ) : (
                   <>
-                    <Activity className="w-5 h-5" /> Analyze Transaction
+                    <Eye className="w-5 h-5" /> Analyze Transaction
                     <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform absolute right-6" />
                   </>
                 )}

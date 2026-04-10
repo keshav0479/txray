@@ -7,6 +7,10 @@ import {
   parseJsonFromCliOutput,
   runTxray,
 } from "@/lib/server/txrayCli";
+import {
+  extractInputRefs,
+  fetchPrevouts,
+} from "@/lib/server/prevoutFetcher";
 
 export const runtime = "nodejs";
 
@@ -144,14 +148,45 @@ export async function POST(req: Request) {
             { status: 404 },
           );
         }
-        return parseBlockFiles(
+        return await parseBlockFiles(
           fixturePaths.blkPath,
           fixturePaths.revPath,
           fixturePaths.xorPath,
         );
       }
 
-      return parseTxFixtureJson(body, tmpDir);
+      // Auto-fetch prevouts from mempool.space if missing/empty
+      const rawTx = body.raw_tx ?? body.raw_hex;
+      const prevouts = body.prevouts;
+      const needsPrevouts =
+        typeof rawTx === "string" &&
+        (!Array.isArray(prevouts) || prevouts.length === 0);
+
+      if (needsPrevouts) {
+        try {
+          const inputs = extractInputRefs(rawTx as string);
+          if (inputs.length > 0) {
+            const fetched = await fetchPrevouts(inputs);
+            body.prevouts = fetched;
+          }
+        } catch (e) {
+          return NextResponse.json(
+            {
+              ok: false,
+              error: {
+                code: "PREVOUT_FETCH_FAILED",
+                message:
+                  e instanceof Error
+                    ? e.message
+                    : "Failed to fetch prevout data from mempool.space",
+              },
+            },
+            { status: 422 },
+          );
+        }
+      }
+
+      return await parseTxFixtureJson(body, tmpDir);
     }
 
     if (contentType.includes("multipart/form-data")) {
@@ -204,7 +239,7 @@ export async function POST(req: Request) {
       ]);
 
       // Pass absolute paths so CLI doesn't depend on cwd
-      return parseBlockFiles(blkPath, revPath, xorPath);
+      return await parseBlockFiles(blkPath, revPath, xorPath);
     }
 
     return NextResponse.json(

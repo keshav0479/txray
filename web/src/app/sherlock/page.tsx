@@ -222,10 +222,10 @@ export default function SherlockPage() {
                   setActiveTab(tab.id);
                   setErrorMsg(null);
                 }}
-                className={`flex flex-1 items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                className={`flex flex-1 items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-5 py-2.5 rounded-xl text-sm font-medium transition-all outline-none focus:outline-none border ${
                   activeTab === tab.id
-                    ? "bg-sherlock-500/15 text-sherlock-400 border border-sherlock-500/20"
-                    : "text-stone-500 hover:text-stone-300"
+                    ? "bg-sherlock-500/15 text-sherlock-400 border-sherlock-500/20"
+                    : "border-transparent text-stone-500 hover:text-stone-300"
                 }`}
               >
                 <tab.icon className="w-4 h-4 shrink-0" />
@@ -250,7 +250,7 @@ export default function SherlockPage() {
             >
               <div className="rounded-3xl border border-white/8 bg-stone-950/50 backdrop-blur-xl p-8">
                 <div className="text-center mb-8">
-                  <Fingerprint className="w-10 h-10 text-sherlock-400 mx-auto mb-3 opacity-80" />
+                  <Search className="w-10 h-10 text-sherlock-400 mx-auto mb-3 opacity-80" />
                   <h3 className="text-xl font-bold text-white mb-2">
                     Search Online
                   </h3>

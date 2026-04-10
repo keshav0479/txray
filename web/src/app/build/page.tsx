@@ -108,7 +108,7 @@ const PRESETS = [
 
 export default function BuildPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<TabId>("templates");
+  const [activeTab, setActiveTab] = useState<TabId>("address");
   const [isBuilding, setIsBuilding] = useState(false);
   const [activePreset, setActivePreset] = useState<string | null>(null);
   const [pasteContent, setPasteContent] = useState("");
@@ -218,10 +218,10 @@ export default function BuildPage() {
         >
           <div className="flex rounded-2xl bg-stone-950/60 backdrop-blur-xl border border-white/8 p-1">
             {[
+              { id: "address" as const, icon: Wallet, label: "Build from Address", shortLabel: "Address" },
               { id: "templates" as const, icon: Grid3x3, label: "Use Template", shortLabel: "Template" },
               { id: "paste" as const, icon: Code2, label: "Paste JSON", shortLabel: "JSON" },
               { id: "import" as const, icon: Upload, label: "Upload Files", shortLabel: "Upload" },
-              { id: "address" as const, icon: Wallet, label: "Build from Address", shortLabel: "Address" },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -229,10 +229,10 @@ export default function BuildPage() {
                   setActiveTab(tab.id);
                   setErrorMsg(null);
                 }}
-                className={`flex flex-1 items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                className={`flex flex-1 items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-5 py-2.5 rounded-xl text-sm font-medium transition-all outline-none focus:outline-none border ${
                   activeTab === tab.id
-                    ? "bg-smith-500/15 text-smith-400 border border-smith-500/20"
-                    : "text-stone-500 hover:text-stone-300"
+                    ? "bg-smith-500/15 text-smith-400 border-smith-500/20"
+                    : "border-transparent text-stone-500 hover:text-stone-300"
                 }`}
               >
                 <tab.icon className="w-4 h-4 shrink-0" />

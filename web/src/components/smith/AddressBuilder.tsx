@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Search,
+  Wallet,
   RefreshCw,
   Loader2,
   AlertCircle,
@@ -326,7 +326,7 @@ export function AddressBuilder({ onError }: AddressBuilderProps) {
       <div className="rounded-3xl border border-white/8 bg-stone-950/50 backdrop-blur-xl p-8 space-y-6">
         {/* Header */}
         <div className="text-center">
-          <Search className="w-10 h-10 text-smith-500 mx-auto mb-3 opacity-80" />
+          <Wallet className="w-10 h-10 text-smith-500 mx-auto mb-3 opacity-80" />
           <h3 className="text-xl font-bold text-white mb-2">
             Build from Address
           </h3>

@@ -219,6 +219,14 @@ export function TransactionFlowGraph({
         className="w-full flex-1 min-h-0"
         preserveAspectRatio="xMidYMid meet"
       >
+        <style>{`
+          @keyframes dot-flow {
+            0% { offset-distance: 0%; opacity: 0; transform: scale(0.5); }
+            15% { opacity: 1; transform: scale(1); }
+            85% { opacity: 1; transform: scale(1); }
+            100% { offset-distance: 100%; opacity: 0; transform: scale(0.5); }
+          }
+        `}</style>
         <defs>
           <linearGradient id="glassN" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor="rgba(255,255,255,0.04)" />
@@ -246,14 +254,13 @@ export function TransactionFlowGraph({
               <circle
                 r="2.5"
                 fill="#10b981"
-                style={{ filter: "drop-shadow(0 0 3px #10b981)" }}
-              >
-                <animateMotion
-                  dur={`${2.5 + i * 0.15}s`}
-                  repeatCount="indefinite"
-                  path={pathD}
-                />
-              </circle>
+                style={{
+                  filter: "drop-shadow(0 0 6px #10b981)",
+                  offsetPath: `path('${pathD}')`,
+                  animation: `dot-flow ${2.5 + i * 0.15}s linear infinite`,
+                  animationDelay: `${-(i * 0.5)}s`,
+                }}
+              />
             </g>
           );
         })}
@@ -284,14 +291,13 @@ export function TransactionFlowGraph({
               <circle
                 r="2.5"
                 fill={col}
-                style={{ filter: `drop-shadow(0 0 3px ${col})` }}
-              >
-                <animateMotion
-                  dur={`${2.5 + i * 0.12}s`}
-                  repeatCount="indefinite"
-                  path={pathD}
-                />
-              </circle>
+                style={{
+                  filter: `drop-shadow(0 0 6px ${col})`,
+                  offsetPath: `path('${pathD}')`,
+                  animation: `dot-flow ${2.5 + i * 0.12}s linear infinite`,
+                  animationDelay: `${-(i * 0.4)}s`,
+                }}
+              />
             </g>
           );
         })}

@@ -102,6 +102,14 @@ export function AnimatedTransactionFlow({ activeCardId, txData }: Props) {
         className="w-full h-full drop-shadow-2xl"
         style={{ filter: "drop-shadow(0 20px 30px rgba(0,0,0,0.5))" }}
       >
+        <style>{`
+          @keyframes dot-flow {
+            0% { offset-distance: 0%; opacity: 0; transform: scale(0.5); }
+            15% { opacity: 1; transform: scale(1); }
+            85% { opacity: 1; transform: scale(1); }
+            100% { offset-distance: 100%; opacity: 0; transform: scale(0.5); }
+          }
+        `}</style>
         <defs>
           <filter id="glow-blue" x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="6" result="blur" />
@@ -141,14 +149,13 @@ export function AnimatedTransactionFlow({ activeCardId, txData }: Props) {
                 <circle
                   r="3"
                   fill={coreColor}
-                  style={{ filter: `drop-shadow(0 0 4px ${coreColor})` }}
-                >
-                  <animateMotion
-                    dur={`${2 + i * 0.2}s`}
-                    repeatCount="indefinite"
-                    path={pathD}
-                  />
-                </circle>
+                  style={{
+                    filter: `drop-shadow(0 0 6px ${coreColor})`,
+                    offsetPath: `path('${pathD}')`,
+                    animation: `dot-flow ${2 + i * 0.2}s linear infinite`,
+                    animationDelay: `${-(i * 0.6)}s`,
+                  }}
+                />
               )}
             </g>
           );
@@ -173,14 +180,13 @@ export function AnimatedTransactionFlow({ activeCardId, txData }: Props) {
                 <circle
                   r="3"
                   fill={coreColor}
-                  style={{ filter: `drop-shadow(0 0 4px ${coreColor})` }}
-                >
-                  <animateMotion
-                    dur={`${2 + i * 0.1}s`}
-                    repeatCount="indefinite"
-                    path={pathD}
-                  />
-                </circle>
+                  style={{
+                    filter: `drop-shadow(0 0 6px ${coreColor})`,
+                    offsetPath: `path('${pathD}')`,
+                    animation: `dot-flow ${2 + i * 0.1}s linear infinite`,
+                    animationDelay: `${-(i * 0.4)}s`,
+                  }}
+                />
               )}
             </g>
           );
@@ -194,7 +200,7 @@ export function AnimatedTransactionFlow({ activeCardId, txData }: Props) {
           const activePath = !isFeeDimmed && !isWarningCard;
           const strokeCol = isFeeHighlighted
             ? "#ef4444"
-            : "var(--color-surface-border)"; // red-500 or border
+            : "var(--color-surface-border)";
 
           return (
             <g key={`path-fee`}>
@@ -215,14 +221,12 @@ export function AnimatedTransactionFlow({ activeCardId, txData }: Props) {
                 <circle
                   r="3"
                   fill="#ef4444"
-                  style={{ filter: `drop-shadow(0 0 4px #ef4444)` }}
-                >
-                  <animateMotion
-                    dur="2.5s"
-                    repeatCount="indefinite"
-                    path={pathD}
-                  />
-                </circle>
+                  style={{
+                    filter: "drop-shadow(0 0 6px #ef4444)",
+                    offsetPath: `path('${pathD}')`,
+                    animation: "dot-flow 2.5s linear infinite",
+                  }}
+                />
               )}
             </g>
           );
@@ -377,7 +381,8 @@ export function AnimatedTransactionFlow({ activeCardId, txData }: Props) {
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
-                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                <circle cx="12" cy="12" r="3" />
               </svg>
             </g>
           )}

@@ -307,10 +307,10 @@ export default function LensPage() {
                         setActiveTab(tab.id);
                         setErrorMsg(null);
                       }}
-                      className={`flex flex-1 items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                      className={`flex flex-1 items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-5 py-2.5 rounded-xl text-sm font-medium transition-all outline-none focus:outline-none border ${
                         activeTab === tab.id
-                          ? "bg-lens-500/15 text-lens-400 border border-lens-500/20"
-                          : "text-stone-500 hover:text-stone-300"
+                          ? "bg-lens-500/15 text-lens-400 border-lens-500/20"
+                          : "border-transparent text-stone-500 hover:text-stone-300"
                       }`}
                     >
                       <tab.icon className="w-4 h-4 shrink-0" />
@@ -517,7 +517,8 @@ export default function LensPage() {
                           Raw Transaction Hex
                         </h3>
                         <p className="text-sm text-stone-400">
-                          Paste raw transaction hex from your node or testnet.
+                          Paste raw transaction hex — prevout data is fetched
+                          automatically from mempool.space.
                         </p>
                       </div>
                       <div className="mb-6">

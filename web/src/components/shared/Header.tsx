@@ -14,8 +14,8 @@ import {
   History,
   BookOpen,
   Hammer,
-  ScanSearch,
-  FingerprintPattern,
+  Eye,
+  Fingerprint,
   Zap,
 } from "lucide-react";
 import { detectSearchType } from "@/lib/mempool";
@@ -24,14 +24,14 @@ const TOOLS_ITEMS = [
   {
     href: "/lens",
     label: "Lens",
-    icon: ScanSearch,
+    icon: Eye,
     desc: "Decode transaction structure and scripts",
   },
   {
     href: "/sherlock",
     label: "Sherlock",
     desc: "Privacy scoring and fingerprint analysis",
-    icon: FingerprintPattern,
+    icon: Fingerprint,
   },
   {
     href: "/build",

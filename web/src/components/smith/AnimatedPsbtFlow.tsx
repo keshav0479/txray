@@ -169,6 +169,14 @@ export function AnimatedPsbtFlow({
         className="w-full h-full drop-shadow-2xl"
         style={{ filter: "drop-shadow(0 20px 30px rgba(0,0,0,0.5))" }}
       >
+        <style>{`
+          @keyframes dot-flow {
+            0% { offset-distance: 0%; opacity: 0; transform: scale(0.5); }
+            15% { opacity: 1; transform: scale(1); }
+            85% { opacity: 1; transform: scale(1); }
+            100% { offset-distance: 100%; opacity: 0; transform: scale(0.5); }
+          }
+        `}</style>
         <defs>
           <linearGradient id="glassNode" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor="rgba(255,255,255,0.05)" />
@@ -200,14 +208,13 @@ export function AnimatedPsbtFlow({
                 <circle
                   r="3"
                   fill={coreColor}
-                  style={{ filter: `drop-shadow(0 0 4px ${coreColor})` }}
-                >
-                  <animateMotion
-                    dur={`${2 + i * 0.2}s`}
-                    repeatCount="indefinite"
-                    path={pathD}
-                  />
-                </circle>
+                  style={{
+                    filter: `drop-shadow(0 0 6px ${coreColor})`,
+                    offsetPath: `path('${pathD}')`,
+                    animation: `dot-flow ${2 + i * 0.2}s linear infinite`,
+                    animationDelay: `${-(i * 0.6)}s`,
+                  }}
+                />
               )}
             </g>
           );
@@ -232,14 +239,13 @@ export function AnimatedPsbtFlow({
                 <circle
                   r="3"
                   fill={coreColor}
-                  style={{ filter: `drop-shadow(0 0 4px ${coreColor})` }}
-                >
-                  <animateMotion
-                    dur={`${2 + slotIdx * 0.1}s`}
-                    repeatCount="indefinite"
-                    path={pathD}
-                  />
-                </circle>
+                  style={{
+                    filter: `drop-shadow(0 0 6px ${coreColor})`,
+                    offsetPath: `path('${pathD}')`,
+                    animation: `dot-flow ${2 + slotIdx * 0.1}s linear infinite`,
+                    animationDelay: `${-(slotIdx * 0.4)}s`,
+                  }}
+                />
               )}
             </g>
           );
@@ -266,14 +272,12 @@ export function AnimatedPsbtFlow({
                   <circle
                     r="3"
                     fill={coreColor}
-                    style={{ filter: `drop-shadow(0 0 4px ${coreColor})` }}
-                  >
-                    <animateMotion
-                      dur="2.5s"
-                      repeatCount="indefinite"
-                      path={pathD}
-                    />
-                  </circle>
+                    style={{
+                      filter: `drop-shadow(0 0 6px ${coreColor})`,
+                      offsetPath: `path('${pathD}')`,
+                      animation: "dot-flow 2.5s linear infinite",
+                    }}
+                  />
                 )}
               </g>
             );
@@ -309,14 +313,12 @@ export function AnimatedPsbtFlow({
                 <circle
                   r="3"
                   fill="#ef4444"
-                  style={{ filter: "drop-shadow(0 0 4px #ef4444)" }}
-                >
-                  <animateMotion
-                    dur="2.5s"
-                    repeatCount="indefinite"
-                    path={pathD}
-                  />
-                </circle>
+                  style={{
+                    filter: "drop-shadow(0 0 6px #ef4444)",
+                    offsetPath: `path('${pathD}')`,
+                    animation: "dot-flow 2.5s linear infinite",
+                  }}
+                />
               )}
             </g>
           );
@@ -473,7 +475,7 @@ export function AnimatedPsbtFlow({
           {!isWarningCard && !isSettingsCard && (
             <g
               transform={`translate(${centerX - 12}, ${centerY - 12})`}
-              className="text-brand-400"
+              className="text-smith-400"
             >
               <svg
                 width="24"
@@ -485,9 +487,9 @@ export function AnimatedPsbtFlow({
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
-                <path d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9" />
-                <path d="m18 15 4-4" />
-                <path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5" />
+                <path d="m15 12-8.5 8.5c-.83.83-2.17.83-3 0 0 0 0 0 0 0a2.12 2.12 0 0 1 0-3L12 9" />
+                <path d="M17.64 15 22 10.64" />
+                <path d="m20.91 11.7-1.25-1.25c-.6-.6-.93-1.4-.93-2.25v-.86L16.01 4.6a5.56 5.56 0 0 0-3.94-1.64H9l.92.82A6.18 6.18 0 0 1 12 8.4v1.56l2 2h2.47l2.26 1.91" />
               </svg>
             </g>
           )}
