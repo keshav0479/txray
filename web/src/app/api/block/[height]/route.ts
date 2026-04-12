@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { checkLightLimit } from "@/lib/server/rateLimit";
 
 const MEMPOOL_BASE = "https://mempool.space/api";
 
@@ -24,8 +25,27 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ height: string }> },
 ) {
+  const limited = checkLightLimit(request);
+  if (limited) return limited;
+
   try {
     const { height: heightOrHash } = await params;
+
+    // Validate: must be a numeric height or a 64-char hex block hash
+    if (/^\d+$/.test(heightOrHash)) {
+      const h = parseInt(heightOrHash, 10);
+      if (h < 0 || h > 1_000_000 || heightOrHash.length > 7) {
+        return NextResponse.json(
+          { error: { message: "Block height must be between 0 and 1000000" } },
+          { status: 400 },
+        );
+      }
+    } else if (!/^[0-9a-fA-F]{64}$/.test(heightOrHash)) {
+      return NextResponse.json(
+        { error: { message: "Invalid block identifier — must be a height (0–1000000) or 64-char hex hash" } },
+        { status: 400 },
+      );
+    }
 
     // Serve from cache if available
     if (blockCache.has(heightOrHash)) {

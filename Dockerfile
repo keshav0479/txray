@@ -47,8 +47,8 @@ COPY --from=web-builder /build/.next/standalone ./
 COPY --from=web-builder /build/.next/static ./.next/static
 COPY --from=web-builder /build/public ./public
 
-# Verify txray binary works
-RUN txray --version
+# Verify txray binary works and strip debug symbols
+RUN txray --version && strip /usr/local/bin/txray
 
 # Set environment variables
 ENV NODE_ENV=production
@@ -57,6 +57,9 @@ ENV HOSTNAME="0.0.0.0"
 
 # Expose port
 EXPOSE 3000
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD wget -qO- http://localhost:3000/api/health || exit 1
 
 # Start the application
 CMD ["node", "server.js"]

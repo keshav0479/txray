@@ -59,10 +59,8 @@ export function extractInputRefs(rawHex: string): InputRef[] {
 
   let pos = 4; // skip version (4 bytes)
 
-  // Check for segwit marker
-  let isSegwit = false;
+  // Check for segwit marker (0x00 0x01 after version)
   if (bytes[pos] === 0x00 && bytes[pos + 1] === 0x01) {
-    isSegwit = true;
     pos += 2; // skip marker + flag
   }
 

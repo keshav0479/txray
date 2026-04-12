@@ -123,15 +123,15 @@ export function SmithBackground({
   const [vpH, setVpH] = useState(DEFAULT_VH);
 
   useEffect(() => {
-    setVpW(window.innerWidth);
-    setVpH(window.innerHeight);
     let raf = 0;
+    const syncSize = () => {
+      setVpW(window.innerWidth);
+      setVpH(window.innerHeight);
+    };
+    raf = requestAnimationFrame(syncSize);
     const update = () => {
       if (raf !== 0) cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        setVpW(window.innerWidth);
-        setVpH(window.innerHeight);
-      });
+      raf = requestAnimationFrame(syncSize);
     };
     window.addEventListener("resize", update);
     return () => {

@@ -12,6 +12,7 @@ import {
   extractInputRefs,
   fetchPrevouts,
 } from "@/lib/server/prevoutFetcher";
+import { checkHeavyLimit } from "@/lib/server/rateLimit";
 
 export const runtime = "nodejs";
 
@@ -81,6 +82,21 @@ async function analyzeFixtureJson(
         },
       },
       { status: 400 },
+    );
+  }
+
+  // Sanity bounds: min 10 bytes (coinbase floor), max 200 KB
+  const byteLen = rawTx.length / 2;
+  if (byteLen < 10) {
+    return NextResponse.json(
+      { ok: false, error: { code: "INVALID_RAW_TX", message: "raw_tx is too short to be a valid transaction" } },
+      { status: 400 },
+    );
+  }
+  if (byteLen > 200 * 1024) {
+    return NextResponse.json(
+      { ok: false, error: { code: "TX_TOO_LARGE", message: "raw_tx exceeds 200 KB limit" } },
+      { status: 413 },
     );
   }
 
@@ -199,6 +215,9 @@ async function analyzeFixtureJson(
 }
 
 export async function POST(req: Request) {
+  const limited = checkHeavyLimit(req);
+  if (limited) return limited;
+
   const tmpDir = await mkdtemp(path.join(os.tmpdir(), "txray-sherlock-"));
 
   try {

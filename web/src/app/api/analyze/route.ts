@@ -11,6 +11,7 @@ import {
   extractInputRefs,
   fetchPrevouts,
 } from "@/lib/server/prevoutFetcher";
+import { checkHeavyLimit } from "@/lib/server/rateLimit";
 
 export const runtime = "nodejs";
 
@@ -124,6 +125,9 @@ async function parseBlockFiles(
 }
 
 export async function POST(req: Request) {
+  const limited = checkHeavyLimit(req);
+  if (limited) return limited;
+
   const tmpDir = await mkdtemp(path.join(os.tmpdir(), "txray-analyze-"));
 
   try {

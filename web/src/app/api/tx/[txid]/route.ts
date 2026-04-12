@@ -3,6 +3,7 @@ import { mkdtemp, rm, writeFile } from "fs/promises";
 import os from "os";
 import path from "path";
 import { parseJsonFromCliOutput, runTxray } from "@/lib/server/txrayCli";
+import { checkLightLimit } from "@/lib/server/rateLimit";
 
 export const runtime = "nodejs";
 
@@ -78,6 +79,9 @@ export async function GET(
   _req: Request,
   { params }: { params: Promise<{ txid: string }> },
 ) {
+  const limited = checkLightLimit(_req);
+  if (limited) return limited;
+
   const { txid } = await params;
 
   // Validate txid format (64 hex characters)
