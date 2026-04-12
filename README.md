@@ -1,33 +1,74 @@
-# txray
-
-Modular Bitcoin transaction analysis and construction toolkit in Rust.
-
-## Architecture
-
-```
-txray/
-├── txray-core      Shared primitives: tx/block parsing, script classification,
-│                   address derivation, weight estimation, script debugger
-├── txray-lens      Transaction and block analysis with warnings and
-│                   plain-English explanations
-├── txray-sherlock  Chain analysis heuristics, wallet fingerprinting,
-│                   Boltzmann entropy, privacy advisor
-├── txray-smith     PSBT building, coin selection, fee estimation,
-│                   PSBT inspector
-├── txray-net       Fetch blocks/txs from mempool.space and Esplora
-│                   with retry and disk cache
-├── txray-corpus    8 historically significant blocks with educational
-│                   annotations
-└── txray-cli      Unified CLI: parse, analyze, build, fetch, explain,
-                    fingerprint, entropy, debug-script, inspect, advise
-```
-
 <p align="center">
-  <img src="assets/architecture.svg" alt="txray architecture diagram">
+  <img src="assets/txray-logo.svg" alt="txray" width="120" />
 </p>
 
-> `txray-smith` is self-contained. It uses the `bitcoin` crate for PSBT construction and does not depend on `txray-core`.
-> `txray-net` is also independent: raw byte fetching only, no `txray-core` dependency.
+<h1 align="center">TXRAY</h1>
+
+<p align="center">
+  <strong>See the story behind every Bitcoin transaction.</strong><br/>
+  Privacy analysis, wallet fingerprinting, and transaction construction. Built right into your browser.
+</p>
+
+<p align="center">
+  <img src="assets/screenshots/hero.png" alt="txray hero" width="100%" />
+</p>
+
+---
+
+## Three perspectives, one transaction
+
+Every transaction gets X-rayed from structure, privacy, and construction angles.
+
+<p align="center">
+  <img src="assets/screenshots/perspectives.png" alt="three perspectives" width="100%" />
+</p>
+
+| | |
+|---|---|
+| **Lens** — Structure | See every input, output, script, and byte. Understand exactly how Bitcoin moves value. |
+| **Sherlock** — Privacy | Analyze coin privacy through fingerprints, heuristics, entropy scoring, and actionable advice. |
+| **Smith** — Construct | Build raw transactions with smart coin selection, fee estimation, and a clear walkthrough. |
+
+---
+
+## Money Flow
+
+<p align="center">
+  <img src="assets/screenshots/lens.png" alt="lens money flow" width="100%" />
+</p>
+
+Follow the flow from inputs (green) to outputs (purple). Script types, values, and warnings — all in one view.
+
+---
+
+## Privacy Analysis
+
+<p align="center">
+  <img src="assets/screenshots/sherlock.png" alt="sherlock privacy score" width="100%" />
+</p>
+
+Privacy scored 1–10 with heuristic breakdown, wallet fingerprinting (Bitcoin Core, Electrum, Sparrow, Ledger), Boltzmann entropy, and concrete recommendations.
+
+---
+
+## Built-in Docs
+
+<p align="center">
+  <img src="assets/screenshots/docs.png" alt="built-in docs" width="100%" />
+</p>
+
+UTXO model, transaction structure, privacy basics, heuristics — all explained in-app. No tab switching.
+
+---
+
+## Run it
+
+```bash
+docker compose up -d --build
+# http://localhost:3000
+```
+
+---
 
 ## CLI
 
@@ -37,83 +78,50 @@ txray famous
 txray famous genesis
 txray famous pizza
 
-# fetch a block from the network
-txray fetch --block 170                # by height
-txray fetch --block 000000000019d6...  # by hash
-txray fetch --tx <txid>                # fetch raw transaction
-txray fetch --block 0 --source esplora # use Esplora API
+# fetch a block or transaction
+txray fetch --block 170
+txray fetch --tx <txid>
 
 # parse transactions and blocks
 txray parse tx fixture.json
 txray parse block blk.dat rev.dat xor.dat
 
-# run chain analysis heuristics
+# chain analysis heuristics
 txray analyze blk.dat rev.dat xor.dat
 
-# build a PSBT from a fixture
+# build a PSBT
 txray build fixture.json
 
-# explain a transaction in plain English
+# plain-English explanation
 txray explain fixture.json
 
-# wallet fingerprinting (BIP69, low-R, anti-fee-sniping)
+# wallet fingerprinting
 txray fingerprint fixture.json
 
-# Boltzmann entropy analysis (input→output ambiguity)
+# Boltzmann entropy
 txray entropy fixture.json
 
 # step-through script debugger
 txray debug-script 76a914<hash>88ac --script-sig <hex>
 
-# inspect a PSBT (signing status, fee analysis)
+# inspect a PSBT
 txray inspect <base64-psbt>
 
-# privacy advisor (combined score + recommendations)
+# privacy advisor
 txray advise fixture.json
 ```
 
-## TUI (`txray-tui`)
-
-```bash
-# launch interactive TUI
-cargo run -p txray-tui
-
-# launch and preload a fixture
-cargo run -p txray-tui -- path/to/fixture.json
-```
-
-TUI includes:
-- 6-tab dashboard with keyboard navigation (`Tab`, `Shift+Tab`, `1-6`)
-- Famous blocks fetch + sidebar annotations
-- Script debugger step-through view (`n`, `p`, `Space`)
-- Learn mode with guided lessons, live fetch, quiz feedback (`a/b/c`, `1/2/3`)
-- Help overlay (`?`) and status breadcrumb
-
-Note: script debugger currently targets simplified script execution traces (best coverage on P2PKH/P2WPKH style flows). Some synthetic fixtures may intentionally end in a failed `VERIFY_RESULT`.
-
-## Crates
+<details>
+<summary>Crates</summary>
 
 ### `txray-core`
-Shared Bitcoin primitives. Parses transactions and blocks from raw bytes.
-
-- **Transaction parsing**: segwit + legacy, inputs/outputs, witness data
-- **Block parsing**: headers, merkle verification, multi-block files
-- **Script classification**: P2PKH, P2SH, P2WPKH, P2WSH, P2TR, OP_RETURN
-- **Address derivation**: Base58Check, Bech32, Bech32m
-- **Undo data**: Bitcoin Core `rev*.dat` parsing, compressed script decompression
-- **Weight estimation**: WU/vbyte with segwit discount
-- **Script debugger**: opcode-by-opcode execution with stack snapshots (P2PKH, P2WPKH)
+Shared Bitcoin primitives — tx/block parsing, script classification, address derivation, weight estimation, script debugger.
 
 ### `txray-lens`
-Transaction and block analysis engine.
-
-- Transaction breakdown: fees, timelocks, script types
-- Block-level analysis with merkle root verification
-- Warning system for anomalies
-- Plain-English transaction explanations
+Transaction and block analysis with warnings and plain-English explanations.
 
 ### `txray-sherlock`
-Chain analysis heuristic engine with advanced privacy analysis:
+Chain analysis heuristics, wallet fingerprinting, Boltzmann entropy, privacy advisor.
 
 | Heuristic | Description |
 |-----------|-------------|
@@ -126,48 +134,31 @@ Chain analysis heuristic engine with advanced privacy analysis:
 | OP_RETURN | Analyzes data carrier outputs |
 | Round Number | Flags round-number payment heuristic |
 
-**Advanced analysis modules:**
-
-- **Wallet fingerprinting** — BIP69, low-R grinding, anti-fee-sniping, RBF signaling, change position; identifies Bitcoin Core, Electrum, Sparrow/Specter, Ledger
-- **Boltzmann entropy** — subset-sum interpretation counting, link probability matrix, A–F privacy grading
-- **Privacy advisor** — combines heuristics + entropy + fingerprint into a 1–10 score with actionable recommendations
-
 ### `txray-smith`
-PSBT construction with coin selection.
-
-- Largest-first coin selection with fee-aware UTXO filtering
-- RBF/locktime interaction matrix (5 modes)
-- Weight-accurate fee estimation per script type
-- Dust threshold enforcement
-- Warnings for high fees, missing RBF, dust change
-- **PSBT inspector** — parsing, signing status, fee analysis, next-step recommendations
+PSBT construction with coin selection, fee estimation, RBF/locktime matrix, dust enforcement, PSBT inspector.
 
 ### `txray-net`
-Fetch raw blocks and transactions from public APIs.
-
-- **mempool.space** and **Blockstream Esplora** support
-- Custom base URL
-- Retry with exponential backoff (3 attempts)
-- Disk cache at `~/.txray/cache/`
+Fetch blocks/txs from mempool.space and Blockstream Esplora with retry and disk cache.
 
 ### `txray-corpus`
-8 historically significant Bitcoin blocks with educational annotations:
+8 historically significant blocks with educational annotations:
 
 Genesis Block · First Transaction · Pizza Transaction · First OP_RETURN · SegWit Activation · Largest Transaction · Wasabi CoinJoin · First Taproot Spends
 
-Each entry explains why it's interesting and what to look for when parsing.
+</details>
 
-## Build
+---
+
+## TUI
 
 ```bash
-cargo build --workspace
-cargo test --workspace     # 322 tests
-cargo clippy --workspace --all-targets -- -D warnings
+cargo run -p txray-tui
+cargo run -p txray-tui -- path/to/fixture.json
 ```
 
-## Demo Media
+5-tab dashboard — Famous Blocks, Script Debugger, Heuristics, and more. Keyboard-driven (`Tab`, `Shift+Tab`, `1-5`).
 
-Terminal demo recording/GIF is intentionally deferred until Phase 5 packaging so media reflects the final WASM + web experience.
+---
 
 ## License
 
