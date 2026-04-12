@@ -1,5 +1,5 @@
 # Stage 1: Build Rust CLI
-FROM rust:1.83-slim AS rust-builder
+FROM rust:1.90-slim AS rust-builder
 
 WORKDIR /build
 
@@ -13,8 +13,8 @@ RUN apt-get update && apt-get install -y \
 COPY Cargo.toml Cargo.lock ./
 COPY crates ./crates
 
-# Build the CLI in release mode
-RUN cargo build --release --bin txray
+# Build the CLI in release mode and strip debug symbols
+RUN cargo build --release --bin txray && strip target/release/txray
 
 # Stage 2: Build Next.js application
 FROM node:22-slim AS web-builder
@@ -47,19 +47,20 @@ COPY --from=web-builder /build/.next/standalone ./
 COPY --from=web-builder /build/.next/static ./.next/static
 COPY --from=web-builder /build/public ./public
 
-# Verify txray binary works and strip debug symbols
-RUN txray --version && strip /usr/local/bin/txray
+# Verify txray binary works
+RUN txray --version
 
 # Set environment variables
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
+ENV TXRAY_BIN=/usr/local/bin/txray
 
 # Expose port
 EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-  CMD wget -qO- http://localhost:3000/api/health || exit 1
+  CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"
 
 # Start the application
 CMD ["node", "server.js"]

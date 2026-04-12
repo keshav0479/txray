@@ -39,6 +39,19 @@ export function getWorkspaceRoot(): string {
 }
 
 export async function resolveTxrayBinary(): Promise<string> {
+  // Explicit override (used in Docker / production)
+  const envBin = process.env.TXRAY_BIN;
+  if (envBin) {
+    try {
+      await access(envBin, constants.X_OK);
+      return envBin;
+    } catch {
+      throw new Error(
+        `TXRAY_BIN is set to ${envBin} but that path is not executable`,
+      );
+    }
+  }
+
   const workspaceRoot = getWorkspaceRoot();
   const releaseBin = path.join(workspaceRoot, "target", "release", "txray");
   const debugBin = path.join(workspaceRoot, "target", "debug", "txray");
@@ -55,7 +68,7 @@ export async function resolveTxrayBinary(): Promise<string> {
     return debugBin;
   } catch {
     throw new Error(
-      "txray binary not found. Build it first with: cargo build -p txray-cli",
+      "txray binary not found. Build it first with: cargo build -p txray-cli, or set TXRAY_BIN to the binary path",
     );
   }
 }
