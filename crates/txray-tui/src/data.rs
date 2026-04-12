@@ -58,7 +58,6 @@ pub struct InputInfo {
 }
 
 pub struct OutputInfo {
-    pub n: u64,
     pub value_sats: u64,
     pub script_type: String,
     pub address: String,
@@ -261,7 +260,6 @@ pub fn parse_tx_json(json_str: &str) -> anyhow::Result<TxAnalysis> {
             *script_type_counts.entry(st.clone()).or_insert(0) += 1;
             output_script_types.push(st.clone());
             outputs.push(OutputInfo {
-                n: out["n"].as_u64().unwrap_or(0),
                 value_sats: out["value_sats"].as_u64().unwrap_or(0),
                 script_type: st,
                 address: out["address"].as_str().unwrap_or("").to_string(),

@@ -18,9 +18,6 @@ pub fn handle_events(app: &mut App) -> anyhow::Result<bool> {
         }
     }
 
-    // poll async/background work
-    app.poll_background_tasks();
-
     if event::poll(Duration::from_millis(100))? {
         if let Event::Key(key) = event::read()? {
             if key.kind != event::KeyEventKind::Press {
@@ -51,45 +48,6 @@ fn handle_key(app: &mut App, key: KeyEvent) -> bool {
             _ => {}
         }
         return true;
-    }
-
-    // learn mode controls
-    if app.active_tab == crate::app::Tab::Learn {
-        match key.code {
-            KeyCode::Enter => {
-                if app.learn_active {
-                    app.next_learn_step();
-                } else {
-                    app.start_selected_lesson();
-                }
-                return true;
-            }
-            KeyCode::Esc if app.learn_active => {
-                app.exit_learn_lesson();
-                return true;
-            }
-            KeyCode::Char('n') if app.learn_active => {
-                app.next_learn_step();
-                return true;
-            }
-            KeyCode::Char('p') if app.learn_active => {
-                app.prev_learn_step();
-                return true;
-            }
-            KeyCode::Char('a') | KeyCode::Char('A') | KeyCode::Char('1') if app.learn_active => {
-                app.answer_learn_quiz(0);
-                return true;
-            }
-            KeyCode::Char('b') | KeyCode::Char('B') | KeyCode::Char('2') if app.learn_active => {
-                app.answer_learn_quiz(1);
-                return true;
-            }
-            KeyCode::Char('c') | KeyCode::Char('C') | KeyCode::Char('3') if app.learn_active => {
-                app.answer_learn_quiz(2);
-                return true;
-            }
-            _ => {}
-        }
     }
 
     match key.code {
@@ -145,7 +103,6 @@ fn handle_key(app: &mut App, key: KeyEvent) -> bool {
         KeyCode::Char('3') => app.set_active_tab(crate::app::Tab::Heuristics),
         KeyCode::Char('4') => app.set_active_tab(crate::app::Tab::FamousBlocks),
         KeyCode::Char('5') => app.set_active_tab(crate::app::Tab::ScriptDebugger),
-        KeyCode::Char('6') => app.set_active_tab(crate::app::Tab::Learn),
 
         _ => {}
     }
@@ -194,13 +151,6 @@ fn handle_scroll_down(app: &mut App) {
                 app.famous_selected += 1;
             }
         }
-        crate::app::Tab::Learn => {
-            if app.learn_active {
-                app.next_learn_step();
-            } else if app.learn_selected < 6 {
-                app.learn_selected += 1;
-            }
-        }
         crate::app::Tab::Dashboard => {
             if let Some(tx) = app.tx_analysis() {
                 let max_items = tx.input_count + tx.output_count;
@@ -219,13 +169,6 @@ fn handle_scroll_up(app: &mut App) {
     match app.active_tab {
         crate::app::Tab::FamousBlocks => {
             app.famous_selected = app.famous_selected.saturating_sub(1);
-        }
-        crate::app::Tab::Learn => {
-            if app.learn_active {
-                app.prev_learn_step();
-            } else {
-                app.learn_selected = app.learn_selected.saturating_sub(1);
-            }
         }
         crate::app::Tab::Dashboard => {
             app.tx_list_selected = app.tx_list_selected.saturating_sub(1);
@@ -420,76 +363,4 @@ mod tests {
         // no panic = pass
     }
 
-    #[test]
-    fn learn_enter_starts_lesson() {
-        let mut app = App::new();
-        app.active_tab = Tab::Learn;
-        app.learn_selected = 0;
-
-        handle_key(&mut app, KeyEvent::new(KeyCode::Enter, KeyModifiers::NONE));
-        assert!(app.learn_active);
-    }
-
-    #[test]
-    fn learn_keys_advance_and_answer_quiz() {
-        let mut app = App::new();
-        app.active_tab = Tab::Learn;
-        app.learn_selected = 0;
-        app.start_selected_lesson();
-
-        let before = app.learn_step;
-        handle_key(
-            &mut app,
-            KeyEvent::new(KeyCode::Char('n'), KeyModifiers::NONE),
-        );
-        assert!(app.learn_step >= before);
-
-        let answer = app.current_lesson().quiz_answer;
-        let key = match answer {
-            0 => KeyCode::Char('a'),
-            1 => KeyCode::Char('b'),
-            _ => KeyCode::Char('c'),
-        };
-        handle_key(&mut app, KeyEvent::new(key, KeyModifiers::NONE));
-        assert!(app.learn_quiz_feedback.is_some());
-    }
-
-    #[test]
-    fn learn_quiz_accepts_uppercase_and_numeric_keys() {
-        let mut app = App::new();
-        app.active_tab = Tab::Learn;
-        app.learn_selected = 0;
-        app.start_selected_lesson();
-
-        handle_key(
-            &mut app,
-            KeyEvent::new(KeyCode::Char('A'), KeyModifiers::SHIFT),
-        );
-        assert_eq!(app.learn_quiz_choice, Some(0));
-
-        handle_key(
-            &mut app,
-            KeyEvent::new(KeyCode::Char('2'), KeyModifiers::NONE),
-        );
-        assert_eq!(app.learn_quiz_choice, Some(1));
-
-        handle_key(
-            &mut app,
-            KeyEvent::new(KeyCode::Char('3'), KeyModifiers::NONE),
-        );
-        assert_eq!(app.learn_quiz_choice, Some(2));
-    }
-
-    #[test]
-    fn esc_exits_learn_session_not_app() {
-        let mut app = App::new();
-        app.active_tab = Tab::Learn;
-        app.start_selected_lesson();
-        assert!(app.learn_active);
-
-        let keep_running = handle_key(&mut app, KeyEvent::new(KeyCode::Esc, KeyModifiers::NONE));
-        assert!(keep_running);
-        assert!(!app.learn_active);
-        assert!(!app.should_quit);
-    }
 }

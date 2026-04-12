@@ -1,5 +1,4 @@
 //! txray TUI — interactive Bitcoin analysis dashboard.
-#![allow(dead_code)]
 
 mod app;
 mod data;

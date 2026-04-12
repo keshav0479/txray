@@ -27,7 +27,6 @@ pub const TEXT_DIM: Color = Color::Rgb(160, 170, 191);
 pub const TEXT_MUTED: Color = Color::Rgb(100, 110, 130);
 
 // status colors
-pub const SUCCESS: Color = Color::Rgb(0, 255, 136);
 pub const WARNING: Color = Color::Rgb(255, 200, 0);
 pub const ERROR: Color = Color::Rgb(255, 80, 80);
 
