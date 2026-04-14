@@ -225,7 +225,7 @@ export function TransactionDiagram({
               <span className="text-[var(--docs-text)] font-medium">
                 {steps[step].label}
               </span>
-              {" — "}
+              {" - "}
               {steps[step].description}
             </span>
             <button

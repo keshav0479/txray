@@ -1,5 +1,7 @@
 # Sherlock
 
+**When to reach for Sherlock:** you already know what a transaction contains, and now you want to know *what it reveals*: who probably owns what, which output is change, how private the payment actually is, and which wallet software built it.
+
 Sherlock is your on-chain investigator. It applies heuristics, entropy analysis, and wallet fingerprinting to answer one question: *what can we actually infer about who owns what?*
 
 ## What it does
@@ -49,17 +51,38 @@ Heuristics are probabilistic, not definitive. A "likely Bitcoin Core" fingerprin
 ## CLI usage
 
 ```bash
-# full block analysis with heuristics
-txray analyze block.blk block.rev xor.dat
-
-# wallet fingerprinting
-txray fingerprint fixtures/segwit_v0.json
-
-# Boltzmann entropy analysis
-txray entropy fixtures/segwit_v0.json
-
-# privacy advisor score
+# privacy advisor score for a single transaction
 txray advise fixtures/segwit_v0.json
+```
+```
+Privacy score: 6 / 10  (grade C)
+Issues:
+  - address reuse between input and change output
+  - round payment amount (0.0120 BTC)
+Recommendations:
+  - ask the wallet to generate a fresh change address
+  - avoid round values when possible
+```
+
+```bash
+# Boltzmann entropy on the same transaction
+txray entropy fixtures/segwit_v0.json
+```
+```
+Boltzmann entropy
+  interpretations: 4
+  entropy:         2.00 bits
+  density:         0.50
+  grade:           B
+```
+
+```bash
+# fingerprint the wallet that built it
+txray fingerprint fixtures/segwit_v0.json
+```
+```
+best_match: Bitcoin Core 24+   confidence 0.78
+  + BIP69 sort, low-R sigs, anti-fee-sniping locktime
 ```
 
 ## How Sherlock differs from Lens

@@ -289,7 +289,7 @@ export default function DocsIndex() {
               Learn Bitcoin Transactions
             </h1>
             <p className="text-lg text-[var(--docs-muted)] max-w-xl leading-relaxed mb-6">
-              txray is a toolkit for understanding Bitcoin at every level — from
+              txray is a toolkit for understanding Bitcoin at every level - from
               raw bytes to privacy patterns to building better transactions.
             </p>
             <div className="flex items-center gap-3">
@@ -403,7 +403,7 @@ export default function DocsIndex() {
             learn from it.
           </p>
           <p className="text-[var(--docs-text)]">
-            This isn&apos;t just an analysis tool — it&apos;s an educational
+            This isn&apos;t just an analysis tool - it&apos;s an educational
             toolkit for understanding Bitcoin privacy at every level.
           </p>
         </div>
@@ -413,19 +413,19 @@ export default function DocsIndex() {
             <span className="text-[var(--docs-text)] font-medium">
               Open source
             </span>{" "}
-            — MIT licensed
+            - MIT licensed
           </span>
           <span className="text-[var(--docs-muted)]">
             <span className="text-[var(--docs-text)] font-medium">
               Transparent
             </span>{" "}
-            — see the math
+            - see the math
           </span>
           <span className="text-[var(--docs-muted)]">
             <span className="text-[var(--docs-text)] font-medium">
               Educational
             </span>{" "}
-            — learn, not just analyze
+            - learn, not just analyze
           </span>
         </div>
       </div>

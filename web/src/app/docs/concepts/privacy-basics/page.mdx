@@ -1,40 +1,53 @@
 # Privacy Basics
 
-Bitcoin is public by default. Identities are not directly stored, but transaction graphs are visible to everyone.
+**What you'll learn on this page:** why Bitcoin privacy is harder than most people think, how analysts actually link addresses together, and what simple habits give you most of the protection.
 
-## Core Idea
+## Start with a story
 
-Privacy in Bitcoin means reducing how easily someone can link addresses, transactions, and behavior back to you.
+On 22 May 2010, a programmer named Laszlo paid 10,000 BTC for two pizzas. That transaction is famous, and it lives forever in block 57,043.
 
-## Simple Analogy
+Sixteen years later you can still click on it, see the exact inputs Laszlo spent, trace which outputs moved next, and follow the coins through the chain. You cannot read Laszlo's name anywhere on the block. Bitcoin has no accounts, no logins, no email addresses. And yet, if you know his pizza transaction, you can still learn a surprising amount about how his wallet worked and where those coins went.
 
-Imagine wearing different outfits every day (new addresses), but always taking the same route and paying exact same amount. People can still recognize you from patterns.
+That is the tension at the heart of Bitcoin privacy: **identities are not stored on chain, but behaviour is, and behaviour is often enough.**
 
-On-chain privacy works the same way.
+## The real threat model
 
-## Common Privacy Leaks
+Bitcoin privacy is **not** about hiding that a transaction happened. Every transaction is public the moment it is confirmed. You cannot fix that.
 
-- Reusing addresses.
-- Merging many old UTXOs in one spend.
-- Predictable change outputs.
-- Unique payment amounts and timing patterns.
+Privacy on Bitcoin is about one specific thing: *stopping someone from linking a transaction back to you, or linking two of your transactions to each other.*
 
-## Better Habits
+An analyst does not need your name. They only need a chain of inferences.
 
-- Use fresh addresses.
-- Avoid unnecessary UTXO merges.
-- Prefer wallets with good privacy defaults.
-- Understand what your wallet reveals when building transactions.
+1. This address received coins from an exchange that knows your email.
+2. That address co-spent in a transaction with another address.
+3. That other address was used to pay a merchant who posted a tweet.
 
-## Why txray Helps
+Each step is weak on its own. Chained together, they get strong fast.
 
-txray does not just score privacy; it explains *why* a score changed.
+## The four ways behaviour leaks
 
-That helps you learn and improve behavior over time.
+Almost every privacy leak on Bitcoin boils down to one of these four habits.
+
+- **Address reuse.** If you use the same address twice, both transactions are now linked forever. This is the single biggest leak.
+- **Consolidation.** When you sweep many old UTXOs into one spend, you announce to the world that they all belonged to you.
+- **Predictable change outputs.** If your wallet always puts change at position 1 and uses the same script type as the inputs, analysts can spot it at a glance.
+- **Unique amounts and timing.** If you pay 0.0734912 BTC at 03:17 UTC and a receiver lists that exact amount on their website, the match is instant.
+
+Notice that none of these are failures of Bitcoin itself. They are failures of *how we use it*.
+
+## Habits that actually help
+
+You do not need to be a privacy expert to avoid most leaks. Four rules cover most of the ground.
+
+- **Use a fresh address for every payment you receive.** Modern wallets do this by default. Do not override them.
+- **Avoid consolidating old coins** unless you have a strong reason and understand the trade-off.
+- **Pick a wallet with sensible privacy defaults** (BIP69 sort, anti-fee-sniping locktime, no obvious fingerprints). Sparrow, Electrum, and Bitcoin Core are reasonable starting points.
+- **Think about amounts.** Round numbers and unique payment amounts both hurt you, for opposite reasons. When in doubt, let the wallet choose.
+
+## What txray adds
+
+Most privacy tools give you a single "privacy score" and move on. txray tries to show you *why* the score is what it is: which heuristic fired, which signal pushed confidence up or down, and what you could change next time. The aim is to build intuition, not to hand you a grade.
 
 ---
 
-Related:
-
-- [Change Detection](/docs/heuristics/change-detection)
-- [Wallet Fingerprinting](/docs/heuristics/fingerprinting)
+Related: [Change Detection](/docs/heuristics/change-detection) · [Wallet Fingerprinting](/docs/heuristics/fingerprinting)

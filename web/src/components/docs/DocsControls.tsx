@@ -44,7 +44,7 @@ export function DocsControls() {
 
   return (
     <div className="docs-top-controls mb-8 flex items-center justify-between gap-4">
-      {/* audience selector hidden — will wire up when per-audience content is written */}
+      {/* audience selector hidden - will wire up when per-audience content is written */}
       {/* <AudienceSelector /> */}
       <div />
 

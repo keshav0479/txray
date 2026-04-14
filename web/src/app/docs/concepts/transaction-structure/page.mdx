@@ -1,49 +1,87 @@
 # Transaction Structure
 
-A Bitcoin transaction is a compact data packet with predictable fields.
+**What you'll learn on this page:** the parts every Bitcoin transaction contains, what each part is for, and the order to read them in when you are trying to make sense of one.
 
-## Big Picture
+## The five parts
 
-Most transactions contain:
+Every Bitcoin transaction, no matter how complicated, is made of the same five pieces.
 
-- **Version**: rules/format indicator.
-- **Inputs**: previous outputs being spent.
-- **Outputs**: new spendable outputs.
-- **Locktime**: optional timing constraint.
-- **Witness** (SegWit): signature-related data.
+- **Version.** A small number telling the network which rules this transaction expects to be validated against.
+- **Inputs.** The list of old UTXOs being spent, each with proof that the spender is allowed to spend them.
+- **Outputs.** The list of new UTXOs being created, each with an amount and a spending condition.
+- **Locktime.** An optional rule saying "this transaction is not valid until block N or time T".
+- **Witness data.** Signatures and extra proof material, stored in a separate section when Segregated Witness (SegWit) is used.
 
-## Simple Analogy
+If you understand those five things, you understand every transaction on the chain. The complexity lives inside the *script* attached to each input and output, not in the outer shape.
 
-Think of a shipping form:
+<figure className="my-8 flex flex-col items-center">
+<svg viewBox="0 0 560 220" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full max-w-2xl" role="img" aria-label="An annotated Bitcoin transaction showing version, inputs, outputs, locktime, and witness sections">
+  <rect x="20" y="30" width="520" height="170" rx="14" stroke="var(--docs-accent)" strokeWidth="2" fill="var(--docs-panel)" />
+  <text x="36" y="50" fill="var(--docs-muted)" fontSize="10" fontWeight="500" letterSpacing="2">TRANSACTION</text>
 
-- sender references old packages (inputs),
-- creates new deliveries (outputs),
-- signs authorization,
-- optionally adds delivery timing rules.
+  <g>
+    <rect x="36" y="68" width="80" height="48" rx="10" stroke="var(--docs-accent)" strokeWidth="1.5" fill="var(--docs-bg)" />
+    <text x="76" y="88" textAnchor="middle" fill="var(--docs-muted)" fontSize="9" fontWeight="500">VERSION</text>
+    <text x="76" y="104" textAnchor="middle" fill="var(--docs-accent)" fontSize="14" fontWeight="600">2</text>
+  </g>
 
-## Why Structure Matters
+  <g>
+    <rect x="128" y="68" width="180" height="116" rx="10" stroke="var(--docs-accent)" strokeWidth="1.5" fill="var(--docs-bg)" />
+    <text x="218" y="88" textAnchor="middle" fill="var(--docs-muted)" fontSize="9" fontWeight="500">INPUTS</text>
+    <text x="218" y="112" textAnchor="middle" fill="var(--docs-accent)" fontSize="11" fontWeight="600">prev_txid : vout</text>
+    <text x="218" y="130" textAnchor="middle" fill="var(--docs-accent)" fontSize="11" fontWeight="600">script_sig</text>
+    <text x="218" y="148" textAnchor="middle" fill="var(--docs-accent)" fontSize="11" fontWeight="600">sequence</text>
+    <text x="218" y="170" textAnchor="middle" fill="var(--docs-muted)" fontSize="10">references old UTXOs</text>
+  </g>
 
-Structure gives both power and visibility:
+  <g>
+    <rect x="320" y="68" width="180" height="116" rx="10" stroke="var(--docs-accent)" strokeWidth="1.5" fill="var(--docs-bg)" />
+    <text x="410" y="88" textAnchor="middle" fill="var(--docs-muted)" fontSize="9" fontWeight="500">OUTPUTS</text>
+    <text x="410" y="112" textAnchor="middle" fill="var(--docs-accent)" fontSize="11" fontWeight="600">value (sats)</text>
+    <text x="410" y="130" textAnchor="middle" fill="var(--docs-accent)" fontSize="11" fontWeight="600">script_pubkey</text>
+    <text x="410" y="170" textAnchor="middle" fill="var(--docs-muted)" fontSize="10">creates new UTXOs</text>
+  </g>
 
-- You can verify valid spending paths.
-- You can estimate fees from size/weight.
-- You can infer behavior patterns from construction style.
+  <g>
+    <rect x="36" y="128" width="80" height="56" rx="10" stroke="var(--docs-accent)" strokeWidth="1.5" fill="var(--docs-bg)" />
+    <text x="76" y="148" textAnchor="middle" fill="var(--docs-muted)" fontSize="9" fontWeight="500">WITNESS</text>
+    <text x="76" y="166" textAnchor="middle" fill="var(--docs-accent)" fontSize="11" fontWeight="600">sigs</text>
+  </g>
 
-## Practical Reading Tips
+  <g>
+    <rect x="512" y="68" width="20" height="116" rx="6" stroke="var(--docs-accent)" strokeWidth="1.5" fill="var(--docs-bg)" />
+    <text x="522" y="130" textAnchor="middle" fill="var(--docs-muted)" fontSize="9" fontWeight="500" transform="rotate(90 522 130)">LOCKTIME</text>
+  </g>
+</svg>
+<figcaption className="text-center text-xs text-[var(--docs-muted)] mt-3">A typical SegWit transaction. Witness data lives outside the main body, which is what gives SegWit its weight discount.</figcaption>
+</figure>
 
-When reading a transaction, start in this order:
+## A shipping-form analogy
 
-1. Number of inputs and outputs
-2. Script types used
-3. Fee rate and weight
-4. Change likelihood
-5. Heuristic flags
+Think of a transaction like a shipping manifest a warehouse clerk fills out.
 
-This keeps analysis understandable and avoids jumping to conclusions.
+- **Inputs** are packages being pulled off the shelf. Each one needs a signature from whoever has the right to move it.
+- **Outputs** are the new packages being shipped out, each with a delivery address and a weight (its BTC value).
+- **Locktime** is the earliest date the shipment is allowed to leave.
+- **Witness data** is the bundle of signatures and receipts attached to the packages.
+- **Version** is just the form revision number.
+
+The clerk does not care what is *inside* each package. They only check that the paperwork is consistent: the total weight going in matches what goes out (minus the shipping fee), and every package pulled off the shelf has a valid signature.
+
+Bitcoin nodes are that clerk.
+
+## How to read one
+
+When txray hands you a parsed transaction, read it in this order. You will save yourself a lot of confusion.
+
+1. **Count the inputs and outputs.** 1-in-2-out is a plain payment with change. Many-in-1-out is a consolidation. 1-in-many-out is a batched payout. Many-in-many-out with equal amounts is probably a CoinJoin. Shape tells you the story before anything else.
+2. **Look at the script types.** Are all inputs the same type (P2WPKH, P2TR, etc.)? If yes, it is probably one wallet. Mixed types are a red flag for something unusual.
+3. **Check the fee rate.** A reasonable sat/vB puts the transaction in context: "this was a normal payment in a normal market".
+4. **Spot the likely change output.** Usually the one whose script type matches the inputs, or whose value is *not* round.
+5. **Read the heuristic flags last.** They are hypotheses, not facts. Do not let them overwrite what you already noticed in steps 1 to 4.
+
+Following this order keeps you grounded in what the transaction actually *is* before you start interpreting what it *means*.
 
 ---
 
-Related:
-
-- [UTXO Model](/docs/concepts/utxo-model)
-- [Privacy Basics](/docs/concepts/privacy-basics)
+Related: [The UTXO Model](/docs/concepts/utxo-model) · [Privacy Basics](/docs/concepts/privacy-basics)

@@ -1,45 +1,70 @@
 # Address Clustering
 
-## What Clustering Means
+**What you'll learn on this page:** how analysts group thousands of Bitcoin addresses into one "wallet", what makes the process fragile, and how to read the clusters txray builds without taking them too seriously.
 
-Address clustering is the process of grouping addresses that are likely controlled by the same entity.
+## The intuition
 
-The goal is not certainty. The goal is useful, transparent probability.
+One Bitcoin address is almost useless as an identity. Real wallets generate a fresh address every time they receive money, so a single person might own hundreds or thousands of addresses over a year.
 
-## Simple Analogy
+Clustering is the process of stitching those addresses back together. If you can group addresses by likely owner, you stop looking at individual transactions and start looking at *whole wallets* moving through time. That is where the interesting patterns live.
 
-Imagine seeing many social media accounts that always post together, at the same time, with similar style. You cannot prove they are one person, but you can infer they are linked.
+The catch is that clustering is fundamentally a chain of guesses. Each guess is probabilistic, and guesses compound. A cluster built on ten strong links is solid. A cluster built on ten weak links is fiction.
 
-Address clustering does a similar thing with transaction behavior.
+## A worked example
 
-## How Graph Clustering Works
+Imagine three addresses that would look unrelated at first glance:
 
-At a high level:
+```
+bc1q...aaa   seen in 2023
+bc1q...bbb   seen in 2024
+bc1q...ccc   seen in 2024
+```
 
-1. Build a graph where addresses are nodes.
-2. Add edges when heuristics suggest a link.
-3. Score edge strength from evidence.
-4. Form clusters from strong linked components.
+Then we find two transactions:
 
-txray emphasizes explainable edges (why two addresses were linked).
+```
+TX1:  INPUTS = [aaa, bbb]    OUTPUTS = [ddd, change_1]
+TX2:  INPUTS = [bbb, ccc]    OUTPUTS = [eee, change_2]
+```
 
-## Limits and False Links
+In TX1, the common-input-ownership heuristic links `aaa` and `bbb`. In TX2, it links `bbb` and `ccc`. Because `bbb` appears in both clusters, all three addresses collapse into one group.
 
-- Collaborative transactions can create false edges.
-- Shared infrastructure (for example exchanges) can blur ownership.
-- One heuristic can be noisy in isolation.
+Now add change detection. If `change_1` and `change_2` are confidently identified as change outputs, they get absorbed into the same cluster. In a few hops, one transaction pair has pulled five addresses into a single ownership group.
 
-That is why txray keeps confidence and rationale visible.
+Scale that up across millions of transactions and you get an address-clustering graph.
 
-## How to Read Results
+## How graph clustering works
 
-- Treat clusters as investigative maps, not court-proof identity claims.
-- Start from strongest links, then expand outward.
-- Re-check with fingerprinting and transaction-type context.
+At a high level, the algorithm is simple.
+
+1. Treat every address as a node in a graph.
+2. For each transaction, run the per-transaction heuristics (CIOH, change detection, fingerprinting).
+3. Add an edge between addresses whenever a heuristic links them, and attach a weight based on the confidence of the link.
+4. Walk the graph and collapse strongly connected components into clusters.
+5. Attach every cluster a provenance record: *why* each edge exists, not just that it exists.
+
+txray cares a lot about step 5. Most commercial clustering tools give you the cluster without the reasoning. That is exactly the thing you need if you ever want to argue about whether a cluster is right.
+
+## How to read a cluster
+
+Treat a cluster the same way you would treat a police sketch: useful direction, not identification.
+
+- **Start from the strongest edges.** A single-source two-input transaction with a high-confidence change detection is a much better anchor than a 40-input CoinJoin-adjacent blob.
+- **Spread outwards one hop at a time.** Re-evaluate the confidence after every hop. Clusters get softer the further you travel from the anchor.
+- **Look for contradiction.** If a cluster contains addresses whose wallet fingerprints disagree (one looks like Bitcoin Core, another looks like a Coinbase custody wallet), something is wrong. txray will flag this.
+- **Prefer small confident clusters over big ambitious ones.** A 6-address group you trust is more useful than a 600-address group you do not.
+
+## Why clustering is fragile
+
+Several real-world patterns create false edges.
+
+- **CoinJoin rounds.** The whole point of CoinJoin is to fire the CIOH heuristic *wrongly*. Any cluster that crosses a CoinJoin boundary without a caveat is suspect.
+- **Exchange custody.** Exchanges run huge shared wallets. A single exchange address can collapse thousands of unrelated users into one cluster if you are not careful.
+- **Payment processors.** Services that batch many customer payments into one transaction produce shapes that look like consolidation but are not.
+- **Multisig custody.** Collaborative spending from a shared vault *is* a real link, but to a vault, not a person.
+
+txray keeps an explicit `ambiguity_reasons` list on every cluster so you always know what the algorithm is unsure about.
 
 ---
 
-Related:
-
-- [Common Input Ownership](/docs/heuristics/common-input-ownership)
-- [Wallet Fingerprinting](/docs/heuristics/fingerprinting)
+Related: [Common-Input-Ownership](/docs/heuristics/common-input-ownership) · [Wallet Fingerprinting](/docs/heuristics/fingerprinting)

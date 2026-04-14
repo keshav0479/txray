@@ -1,5 +1,7 @@
 # Lens
 
+**When to reach for Lens:** you are holding a raw transaction or a block file and you want to know *what it contains*, down to the byte, without guessing.
+
 Lens is your transaction microscope. Hand it raw Bitcoin data and it breaks everything down into a structured, readable analysis. From individual bytes to high-level summaries, nothing stays hidden.
 
 ## What it does
@@ -54,12 +56,26 @@ New to Bitcoin internals? Start with Lens explain mode. It builds intuition befo
 ```bash
 # analyze a transaction fixture
 txray parse tx fixtures/segwit_v0.json
+```
+```
+Transaction 4a5e1e4b...33b
+  version:   2         locktime: 0
+  inputs:    1         outputs:  2
+  weight:    561 WU    vsize:   141 vB
+  fee:       1410 sats (10.0 sat/vB)
+  segwit_savings: 34%
+  warnings:  none
+```
 
-# analyze a block from data files
-txray parse block block.blk block.rev xor.dat
-
-# get a plain English explanation
+```bash
+# get a plain English explanation of the same transaction
 txray explain fixtures/segwit_v0.json
+```
+```
+This looks like a simple payment. One P2WPKH input is spent into two
+outputs: a P2WPKH payment of 0.0120 BTC and a smaller change output
+of 0.0038 BTC. The fee is typical for a normal-priority transaction
+at the time this fixture was captured.
 ```
 
 ## What Lens does NOT do

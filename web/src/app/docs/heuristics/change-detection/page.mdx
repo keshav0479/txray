@@ -1,46 +1,76 @@
 # Change Detection
 
-## Why Change Exists
+**What you'll learn on this page:** why every payment produces a "change" output, the handful of signals analysts use to pick it out, how txray scores them, and where the whole exercise falls apart.
 
-Bitcoin spends full UTXOs. If your input value is bigger than your payment, the leftover amount comes back to you as **change**.
+## The intuition
 
-Finding which output is change is a core step in privacy analysis.
+A Bitcoin transaction has to spend whole UTXOs. If the UTXO you pick is bigger than the amount you are paying, the leftover has to go somewhere, and it goes back to *you* as a new output called **change**.
 
-## Simple Analogy
+That means a normal payment almost always has exactly two outputs: the one the sender meant to create, and the one that is really just the sender talking to themselves. If an analyst can reliably tell which is which, they can follow the sender forward to their next transaction. If they cannot, the trail goes cold.
 
-You buy coffee with a large bill. The barista gives product + change.
+Change detection is the name of the game.
 
-On-chain, outputs are those two results. Analysts try to identify which output is the "change back to sender" output.
+## A worked example
 
-## Signals We Check
+You buy a coffee with a 500-rupee note. The barista hands you the coffee plus 430 rupees back. Anyone watching can guess: the coffee is the payment, the 430 is your change.
 
-No single signal is perfect. We combine multiple weak clues:
+Now the on-chain version:
 
-1. **Round-number behavior**: payment outputs are often human-round values.
-2. **Address/script match**: change may reuse sender wallet script style.
-3. **Output position**: some wallet implementations place change in predictable spots.
-4. **Value relationship**: one output often looks like payment intent, the other looks like remainder.
+```
+INPUT:  0.05 BTC   address bc1q...aa1
 
-## When It Fails
+OUTPUT 0: 0.01200000 BTC   address bc1q...xx7
+OUTPUT 1: 0.03793421 BTC   address bc1q...aa9
+```
 
-- Wallets can randomize output order.
-- Users can manually choose unusual values.
-- CoinJoin and collaborative transactions break typical patterns.
-- Merchants may use script types similar to sender wallets.
+Which one is change? The 0.012 is a suspiciously round number, that looks like a payment someone typed in by hand. The 0.03793421 is the kind of ugly leftover number a wallet produces automatically after subtracting the payment and the fee. So output 1 is almost certainly the change.
 
-## How txray Scores Change
+That is the kind of reasoning every change-detection algorithm is trying to automate.
 
-txray computes a confidence score from combined signals.
+## The signals we check
 
-- High score: change output is likely identified.
-- Medium score: plausible but uncertain.
-- Low score: treat as ambiguous.
+No single signal is reliable. txray combines several weak clues into one confidence score.
 
-Use this together with ownership and clustering signals, never alone.
+- **Round-number check.** Humans pick round values ("pay 0.012 BTC"). Wallets compute change to the satoshi. An ugly, non-round output is more likely to be change.
+- **Script-type match.** A wallet usually builds change using the same script type as its inputs (P2WPKH in, P2WPKH change). A different script type on one output often marks that output as the real payment.
+- **Address reuse.** If one of the outputs reuses an address from the input side, it is almost certainly change. (This is also a big privacy leak. See [Privacy Basics](/docs/concepts/privacy-basics).)
+- **Output position.** Some wallets historically placed change at index 0, others at index 1. On its own this is a weak signal, but it adds a small nudge.
+- **Value relationship.** If one output is close to the total input minus a sensible fee, and the other is a "human-typed" amount, the pattern tells the story.
+
+Alone each signal is noise. Together they add up to a useful hypothesis.
+
+## How txray scores change
+
+Sherlock reports change detection like this:
+
+```
+Change detection
+  change_output: 1
+  confidence:    0.82 (high)
+  signals:
+    + output 1 is non-round (score +0.30)
+    + output 1 matches input script type (score +0.25)
+    + output 0 is a human-round value (score +0.20)
+    - output position is inconsistent across wallet (score -0.05)
+```
+
+Three confidence buckets:
+
+- **High (above 0.75).** Multiple independent signals agree. You can use this result as the basis for follow-up tracing.
+- **Medium (0.4 to 0.75).** Plausible but not solid. Cross-check before you commit to a conclusion.
+- **Low (below 0.4).** Treat the output as ambiguous. Do not build a tracing story on top of it.
+
+## How to defeat it
+
+Change detection fails, sometimes silently, sometimes loudly, in these cases.
+
+- **Randomised output order.** Most modern wallets shuffle outputs, killing the position signal.
+- **Deliberately round change.** A user can hand-pick values so the "change" looks like a payment and vice versa.
+- **Mixed script types in the payment.** A merchant might post a P2WPKH invoice even though the customer's wallet uses P2TR, flipping the script-match signal.
+- **CoinJoin and PayJoin.** These break the core assumption that one sender made every input. Change-detection confidence should drop to zero on any transaction that looks like them.
+
+Sherlock applies these caveats automatically and downgrades the confidence score when it spots the patterns.
 
 ---
 
-Related:
-
-- [Common Input Ownership](/docs/heuristics/common-input-ownership)
-- [Address Clustering](/docs/heuristics/address-clustering)
+Related: [Common-Input-Ownership](/docs/heuristics/common-input-ownership) · [Address Clustering](/docs/heuristics/address-clustering)

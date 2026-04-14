@@ -1,47 +1,74 @@
 # Wallet Fingerprinting
 
-## What Wallet Fingerprinting Is
+**What you'll learn on this page:** how different wallet programs leave invisible "handwriting" on every transaction they build, which signals txray looks for, and why a strong fingerprint match is still only a lead.
 
-Wallet fingerprinting tries to identify wallet software behavior from transaction patterns.
+## The intuition
 
-Different wallets often leave different "style signatures" in how they build transactions.
+Bitcoin Core, Electrum, Sparrow, Wasabi, Ledger Live, and a long list of others all produce technically valid transactions. But none of them build those transactions *exactly* the same way. Each program makes small choices about input ordering, signature format, fee rounding, and sequence numbers. Those choices become signatures that stay attached to the transaction forever.
 
-## Simple Analogy
+Wallet fingerprinting is the art of reading that handwriting back. If a transaction uses BIP69 sorted inputs, a low-R signature, and an anti-fee-sniping locktime, the chances it was built by modern Bitcoin Core are very high. If it uses a specific quirky change-index choice, it might be an older Electrum.
 
-Like handwriting analysis: two notes may say similar things, but pen pressure, letter spacing, and style still hint at who wrote them.
+## A handwriting analogy
 
-On Bitcoin, those "style clues" are transaction construction choices.
+Two people can write the same sentence, but pen pressure, letter spacing, and where they dot the i still give the writer away. The *content* of the message is the same. The *style* leaks identity.
 
-## Signals We Use
+On Bitcoin, the "style" is a mix of a dozen tiny technical choices. Individually each is weak. Combined, they often narrow a transaction down to one or two candidate wallet programs.
 
-txray looks at combinations of signals such as:
+## The signals we use
 
-- input/output ordering tendencies,
-- fee-rate behavior,
-- script-type consistency,
-- sequence and locktime usage,
-- known policy patterns (for example anti-fee-sniping style).
+txray scores a fingerprint by checking a fixed battery of signals. A few of the important ones:
 
-## Known Limitations
+- **BIP69 input/output ordering.** Does the wallet lexicographically sort inputs and outputs? Many modern wallets do. Older ones did not.
+- **Low-R signature grinding.** Bitcoin Core grinds signatures until the R value is low (saves one byte). Most other wallets do not bother.
+- **Anti-fee-sniping locktime.** Wallets that care about miner incentives set the `nLockTime` to the current block height. A locktime of 0 is a strong anti-signal.
+- **Replace-by-Fee signaling.** Which `nSequence` value does the wallet use? Each common wallet has a favourite.
+- **Script type consistency.** A wallet that mixes P2WPKH and P2TR in the same output set is unusual and narrows the candidate list immediately.
+- **Change output position.** Some wallets place change at index 0, others at a random position, others always at the end.
+- **Fee-rate rounding.** Does the fee rate look like a round `sat/vB` value the user typed, or a float the wallet calculated?
 
-- Wallets evolve, so signatures drift over time.
-- Users can use hardware wallets + software combos.
-- Privacy tools intentionally hide fingerprints.
-- Similar wallets can overlap in behavior.
+Each signal contributes a score, and txray totals them against a table of known wallet profiles.
 
-So we report likelihood, not absolute identity.
+## What the output looks like
 
-## How to Interpret Matches
+```
+txray fingerprint fixtures/segwit_v0.json
 
-- Strong match: useful lead, still verify with more evidence.
-- Weak match: do not over-interpret.
-- Conflicting clues: prefer caution and show uncertainty.
+Wallet fingerprint
+  best_match:   Bitcoin Core 24+   confidence 0.78
+  second_best:  Sparrow 1.7+       confidence 0.31
+  signals:
+    + BIP69 input sort       (+0.20)
+    + BIP69 output sort      (+0.20)
+    + low-R signatures       (+0.25)
+    + anti-fee-sniping       (+0.15)
+    - no witness script hint (-0.02)
+```
 
-In txray, fingerprinting is one layer in a multi-signal analysis pipeline.
+Three things to read:
+
+- **best_match.** The most likely wallet, with a confidence from 0 to 1.
+- **second_best.** The runner-up, so you can see if the gap is decisive or close.
+- **signals.** The individual checks and whether they supported or argued against the match.
+
+## Known limitations
+
+Fingerprinting is useful, but it is wrong often enough that you must always show the caveats.
+
+- **Wallets evolve.** A signal that was unique to Bitcoin Core last year might be copied by three other wallets this year.
+- **Hardware + software combinations.** A transaction might be built by Sparrow and signed by a Ledger, leaving mixed fingerprints from both.
+- **Deliberate obfuscation.** Privacy-conscious users can strip fingerprints on purpose. A suspiciously *clean* transaction can itself be a fingerprint.
+- **Common defaults.** When many wallets agree on the same defaults, fingerprinting converges to "could be any of these" and stops narrowing.
+
+## How to interpret a match
+
+A few habits keep you honest.
+
+- **Strong match (above 0.7).** Useful lead. Pair it with at least one other signal (address reuse, cluster membership) before you commit to the wallet story.
+- **Weak match (0.4 to 0.7).** Treat as "consistent with" rather than "identified as". Do not build downstream claims on it.
+- **Conflicting signals.** When signals argue with each other, prefer the interpretation that is kinder to the subject. It is cheap to be wrong the other way.
+
+Fingerprinting is one layer in Sherlock's pipeline, not the whole stack. It gets stronger when it agrees with clustering and weaker when it does not.
 
 ---
 
-Related:
-
-- [Address Clustering](/docs/heuristics/address-clustering)
-- [Change Detection](/docs/heuristics/change-detection)
+Related: [Address Clustering](/docs/heuristics/address-clustering) · [Change Detection](/docs/heuristics/change-detection)

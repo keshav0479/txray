@@ -1,67 +1,185 @@
 # Getting Started
 
-Welcome to txray, a professional Bitcoin transaction analysis toolkit.
+**What you'll learn on this page:** what txray is, how its three tools fit together, and how to run your first command in under a minute.
 
-{/* audience blocks commented out — will add proper per-audience content later
-<AudienceIntro />
-<AudienceBlock for="beginner" title="Beginner focus">
-Start with Lens. Think of it like learning the labels on a map before solving routes.
-</AudienceBlock>
-<AudienceBlock for="analyst" title="Analyst focus">
-Prioritize confidence scoring and contradiction checks between heuristics.
-</AudienceBlock>
-<AudienceBlock for="builder" title="Builder focus">
-Use this section to map UI outputs back to CLI commands and pipeline assumptions.
-</AudienceBlock>
-*/}
+<figure className="my-8 flex flex-col items-center">
+<svg viewBox="0 0 720 240" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full max-w-3xl" role="img" aria-label="The three-tool journey: raw Bitcoin data flows into Lens to be decoded, Sherlock to be analysed, and Smith to be forged into new transactions">
+  <defs>
+    <pattern id="gs-grid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M 24 0 L 0 0 0 24" fill="none" stroke="var(--docs-panel-border)" strokeWidth="0.5" opacity="0.5" />
+    </pattern>
+    <radialGradient id="gs-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stopColor="var(--docs-accent)" stopOpacity="0.18" />
+      <stop offset="100%" stopColor="var(--docs-accent)" stopOpacity="0" />
+    </radialGradient>
+  </defs>
+  <rect width="720" height="240" fill="url(#gs-grid)" />
+
+  <g transform="translate(20, 90)">
+    <rect width="100" height="60" rx="10" stroke="var(--docs-accent)" strokeWidth="1.2" strokeDasharray="3 3" fill="var(--docs-panel)" opacity="0.6" />
+    <text x="50" y="28" textAnchor="middle" fill="var(--docs-muted)" fontSize="9" fontWeight="500" letterSpacing="1">RAW DATA</text>
+    <text x="50" y="44" textAnchor="middle" fill="var(--docs-muted)" fontSize="10" fontFamily="monospace">0100...ac</text>
+  </g>
+
+  <g className="opacity-70">
+    <path d="M 125 120 L 165 120" stroke="var(--docs-accent)" strokeWidth="1.5" strokeDasharray="3 3">
+      <animate attributeName="stroke-dashoffset" from="0" to="-12" dur="1.5s" repeatCount="indefinite" />
+    </path>
+    <polygon points="165,120 159,116 159,124" fill="var(--docs-accent)" />
+  </g>
+
+  <text x="220" y="62" textAnchor="middle" fill="var(--docs-muted)" fontSize="10" fontWeight="500" letterSpacing="2">DECODE</text>
+  <ellipse cx="220" cy="120" rx="70" ry="46" fill="url(#gs-glow)" />
+  <g>
+    <rect x="170" y="80" width="100" height="80" rx="12" stroke="var(--docs-accent)" strokeWidth="2" fill="var(--docs-panel)" />
+    <g transform="translate(206, 90)" stroke="var(--docs-accent)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none">
+      <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
+      <circle cx="12" cy="12" r="3" />
+    </g>
+    <text x="220" y="138" textAnchor="middle" fill="var(--docs-accent)" fontSize="13" fontWeight="600">LENS</text>
+    <text x="220" y="152" textAnchor="middle" fill="var(--docs-muted)" fontSize="10">understand</text>
+  </g>
+
+  <g className="opacity-70">
+    <path d="M 275 120 L 335 120" stroke="var(--docs-accent)" strokeWidth="2" strokeDasharray="4 2">
+      <animate attributeName="stroke-dashoffset" from="0" to="-12" dur="1.5s" repeatCount="indefinite" />
+    </path>
+    <polygon points="335,120 327,116 327,124" fill="var(--docs-accent)" />
+  </g>
+
+  <text x="390" y="62" textAnchor="middle" fill="var(--docs-muted)" fontSize="10" fontWeight="500" letterSpacing="2">DETECT</text>
+  <ellipse cx="390" cy="120" rx="70" ry="46" fill="url(#gs-glow)" />
+  <g>
+    <rect x="340" y="80" width="100" height="80" rx="12" stroke="var(--docs-accent)" strokeWidth="2" fill="var(--docs-panel)" />
+    <g transform="translate(376, 90)" stroke="var(--docs-accent)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none">
+      <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4" />
+      <path d="M14 13.12c0 2.38 0 6.38-1 8.88" />
+      <path d="M17.29 21.02c.12-.6.43-2.3.5-3.02" />
+      <path d="M2 12a10 10 0 0 1 18-6" />
+      <path d="M2 16h.01" />
+      <path d="M21.8 16c.2-2 .131-5.354 0-6" />
+      <path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2" />
+      <path d="M8.65 22c.21-.66.45-1.32.57-2" />
+      <path d="M9 6.8a6 6 0 0 1 9 5.2v2" />
+    </g>
+    <text x="390" y="138" textAnchor="middle" fill="var(--docs-accent)" fontSize="13" fontWeight="600">SHERLOCK</text>
+    <text x="390" y="152" textAnchor="middle" fill="var(--docs-muted)" fontSize="10">analyse</text>
+  </g>
+
+  <g className="opacity-70">
+    <path d="M 445 120 L 505 120" stroke="var(--docs-accent)" strokeWidth="2" strokeDasharray="4 2">
+      <animate attributeName="stroke-dashoffset" from="0" to="-12" dur="1.5s" repeatCount="indefinite" />
+    </path>
+    <polygon points="505,120 497,116 497,124" fill="var(--docs-accent)" />
+  </g>
+
+  <text x="560" y="62" textAnchor="middle" fill="var(--docs-muted)" fontSize="10" fontWeight="500" letterSpacing="2">FORGE</text>
+  <ellipse cx="560" cy="120" rx="70" ry="46" fill="url(#gs-glow)" />
+  <g>
+    <rect x="510" y="80" width="100" height="80" rx="12" stroke="var(--docs-accent)" strokeWidth="2" fill="var(--docs-panel)" />
+    <g transform="translate(546, 90)" stroke="var(--docs-accent)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none">
+      <path d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9" />
+      <path d="m18 15 4-4" />
+      <path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5" />
+    </g>
+    <text x="560" y="138" textAnchor="middle" fill="var(--docs-accent)" fontSize="13" fontWeight="600">SMITH</text>
+    <text x="560" y="152" textAnchor="middle" fill="var(--docs-muted)" fontSize="10">build</text>
+  </g>
+
+  <g className="opacity-70">
+    <path d="M 615 120 L 655 120" stroke="var(--docs-accent)" strokeWidth="1.5" strokeDasharray="3 3">
+      <animate attributeName="stroke-dashoffset" from="0" to="-12" dur="1.5s" repeatCount="indefinite" />
+    </path>
+    <polygon points="655,120 649,116 649,124" fill="var(--docs-accent)" />
+  </g>
+  <g transform="translate(660, 90)">
+    <rect width="50" height="60" rx="10" stroke="var(--docs-accent)" strokeWidth="1.2" strokeDasharray="3 3" fill="var(--docs-panel)" opacity="0.6" />
+    <text x="25" y="28" textAnchor="middle" fill="var(--docs-muted)" fontSize="9" fontWeight="500">PSBT</text>
+    <text x="25" y="44" textAnchor="middle" fill="var(--docs-muted)" fontSize="9">✓</text>
+  </g>
+
+  <text x="360" y="200" textAnchor="middle" fill="var(--docs-muted)" fontSize="11">Three tools. One pipeline. Same Rust core under the hood.</text>
+</svg>
+</figure>
 
 ## What is txray?
 
-txray provides three integrated tools for Bitcoin analysis:
+txray is a toolkit that takes raw Bitcoin data and turns it into something a human can actually read. It answers three kinds of questions.
 
-- **Lens**: Decode transactions at the byte level.
-- **Sherlock**: Cluster addresses and apply forensic heuristics.
-- **Smith**: Build optimized PSBTs with better privacy and fee control.
+- **What is inside this transaction?** Use **Lens**.
+- **What can we infer about the people behind it?** Use **Sherlock**.
+- **How do I build a better one myself?** Use **Smith**.
 
-## Quick Start
+You can use it through a web interface or through a command-line tool. Both call the same Rust core underneath.
 
-### Web Interface
+## A tiny glossary
 
-1. Open the app.
-2. Choose Lens, Sherlock, or Smith.
-3. Paste transaction/block data.
-4. Review the analysis.
+If you are new to Bitcoin, these three words come up constantly. Skim them now and come back later if needed.
 
-### CLI
+- **UTXO**, short for Unspent Transaction Output. A discrete chunk of bitcoin you can spend. Think of it like a banknote: you cannot spend half of it, you spend the whole note and get change back.
+- **Script**, the tiny program attached to every output that says *how* it can be spent (for example, "whoever can sign with this public key").
+- **Witness**, the signatures and extra proof data stored separately from the main transaction body. Introduced by Segregated Witness (SegWit) to save space and fix transaction malleability.
+
+Other terms are explained the first time they appear in later pages.
+
+## Your first command
+
+The fastest way to feel txray working is to run it against a famous block. The `famous` subcommand ships with a handful of hand-picked transactions baked into the binary, so you do not need to download anything.
 
 ```bash
-# Parse a transaction
-txray parse tx fixtures/segwit_v0.json
-
-# Analyze a block
-txray analyze block.blk block.rev xor.dat
-
-# Build a PSBT
-txray build fixtures/simple_payment.json
-
-# List famous blocks
 txray famous
 ```
 
-## Installation
+You get back a list that looks like this:
+
+```
+Famous Bitcoin moments bundled with txray:
+  genesis      Block 0, the first Bitcoin block (2009-01-03)
+  pizza        Block 57043, Laszlo's 10,000 BTC pizza (2010-05-22)
+  finney       Block 170, Hal Finney receives the first Bitcoin transfer
+  wasabi       Block 530484, a large Wasabi CoinJoin round
+  ...
+```
+
+Pick one and parse it.
+
+```bash
+txray famous pizza
+```
+
+txray prints the 10,000 BTC pizza transaction: inputs, outputs, fee, script types, and the human-readable story behind it. That is Lens in action.
+
+## Running the web interface
+
+The web UI wraps the same core with an interactive frontend. From the repo root:
+
+```bash
+docker compose up -d --build
+# open http://localhost:3000
+```
+
+Pick **Lens**, **Sherlock**, or **Smith** from the top navigation, paste a transaction or choose a preset, and read the analysis.
+
+## Installing from source
+
+If you would rather build it yourself:
 
 ```bash
 git clone https://github.com/keshav0479/txray.git
 cd txray
 cargo build --release
+./target/release/txray famous pizza
 ```
 
-## Next Steps
+The Rust toolchain version is pinned in `rust-toolchain.toml`, so rustup picks the right compiler automatically.
 
-- [Learn the UTXO model](/docs/concepts/utxo-model)
-- [Read heuristics docs](/docs/heuristics/common-input-ownership)
-- [Follow tutorials](/docs/tutorials)
+## Where to go next
+
+- [The UTXO model](/docs/concepts/utxo-model). Why Bitcoin looks like cash, not a bank account.
+- [Transaction structure](/docs/concepts/transaction-structure). The parts every transaction contains.
+- [Privacy basics](/docs/concepts/privacy-basics). Why on-chain privacy is harder than it looks.
+- [Common-input-ownership heuristic](/docs/heuristics/common-input-ownership). The first forensic rule most analysts learn.
 
 ---
 
-txray is an educational and analysis tool. Verify results independently for critical decisions.
+txray is for education and analysis. Treat every result as a strong hint, not proof. Always verify independently before making decisions that matter.

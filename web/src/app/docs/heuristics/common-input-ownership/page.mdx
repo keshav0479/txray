@@ -1,66 +1,110 @@
-# Common Input Ownership
+# Common-Input-Ownership Heuristic
 
-{/* audience blocks commented out — will add proper per-audience content later
-<AudienceIntro />
-<AudienceBlock for="beginner" title="Beginner view">
-Treat this as a strong hint, not a final answer. If many coins are spent together, they are often from one wallet.
-</AudienceBlock>
-<AudienceBlock for="analyst" title="Analyst view">
-Use CIOH as a high-weight signal only when transaction context does not suggest collaborative spending.
-</AudienceBlock>
-<AudienceBlock for="builder" title="Builder view">
-Model this as weighted evidence with explicit caveat flags for CoinJoin/PayJoin-like structures.
-</AudienceBlock>
-*/}
+**What you'll learn on this page:** the single most important rule in blockchain forensics, a worked example from a famous transaction, how txray flags it, and how modern wallets break it on purpose.
 
-## What This Heuristic Says
+## The intuition
 
-If one transaction uses many inputs, those inputs are usually controlled by one owner.
+If one transaction spends several UTXOs at the same time, those UTXOs were almost certainly controlled by one owner.
 
-In plain words: if several coins are spent together in one checkout, they are probably from the same wallet.
+That is the entire heuristic. It has a formal name, **Common-Input-Ownership Heuristic**, or **CIOH**, but the idea is the same as paying at a shop by pulling three ₹500 notes out of one wallet. The cashier does not need proof that all three notes belong to you. The fact that they came out together is enough to guess.
 
-## Simple Analogy
+CIOH is the oldest heuristic in blockchain analysis. It is also the strongest, because most wallet software has no way *not* to fire it: if a user picks "send", the wallet grabs the UTXOs it needs and signs them all. Every one of those signatures is a link.
 
-Think of paying at a store with three notes from one wallet. The cashier sees all three notes used together in one payment. Most of the time, the notes belong to the same person.
+<figure className="my-8 flex flex-col items-center">
+<svg viewBox="0 0 560 220" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full max-w-2xl" role="img" aria-label="Three independent addresses get collapsed into one ownership cluster after a single multi-input transaction">
+  <text x="90" y="22" textAnchor="middle" fill="var(--docs-muted)" fontSize="10" fontWeight="500">BEFORE</text>
+  <text x="430" y="22" textAnchor="middle" fill="var(--docs-muted)" fontSize="10" fontWeight="500">AFTER ONE TX</text>
 
-That is exactly what this heuristic does with UTXOs.
+  <g>
+    <rect x="30" y="40" width="120" height="40" rx="10" stroke="var(--docs-accent)" strokeWidth="1.5" fill="var(--docs-panel)" />
+    <text x="90" y="65" textAnchor="middle" fill="var(--docs-accent)" fontSize="12" fontWeight="600">addr aaa</text>
+    <rect x="30" y="90" width="120" height="40" rx="10" stroke="var(--docs-accent)" strokeWidth="1.5" fill="var(--docs-panel)" />
+    <text x="90" y="115" textAnchor="middle" fill="var(--docs-accent)" fontSize="12" fontWeight="600">addr bbb</text>
+    <rect x="30" y="140" width="120" height="40" rx="10" stroke="var(--docs-accent)" strokeWidth="1.5" fill="var(--docs-panel)" />
+    <text x="90" y="165" textAnchor="middle" fill="var(--docs-accent)" fontSize="12" fontWeight="600">addr ccc</text>
+    <text x="90" y="200" textAnchor="middle" fill="var(--docs-muted)" fontSize="10">independent strangers</text>
+  </g>
 
-## Why Analysts Use It
+  <g className="opacity-60">
+    <path d="M 165 110 L 305 110" stroke="var(--docs-accent)" strokeWidth="2" strokeDasharray="4 2" />
+    <polygon points="305,110 297,106 297,114" fill="var(--docs-accent)" />
+    <text x="235" y="100" textAnchor="middle" fill="var(--docs-muted)" fontSize="10" fontWeight="500">CIOH</text>
+  </g>
 
-- It is one of the strongest first-pass heuristics.
-- It works well on normal wallet behavior.
-- It helps build address clusters quickly.
+  <g>
+    <rect x="310" y="40" width="220" height="140" rx="14" stroke="var(--docs-accent)" strokeWidth="2" strokeDasharray="6 3" fill="var(--docs-panel)" />
+    <text x="420" y="62" textAnchor="middle" fill="var(--docs-muted)" fontSize="9" fontWeight="500" letterSpacing="1">CLUSTER #1</text>
+    <rect x="328" y="78" width="60" height="36" rx="8" stroke="var(--docs-accent)" strokeWidth="1.5" fill="var(--docs-bg)" />
+    <text x="358" y="100" textAnchor="middle" fill="var(--docs-accent)" fontSize="11" fontWeight="600">aaa</text>
+    <rect x="392" y="78" width="60" height="36" rx="8" stroke="var(--docs-accent)" strokeWidth="1.5" fill="var(--docs-bg)" />
+    <text x="422" y="100" textAnchor="middle" fill="var(--docs-accent)" fontSize="11" fontWeight="600">bbb</text>
+    <rect x="456" y="78" width="60" height="36" rx="8" stroke="var(--docs-accent)" strokeWidth="1.5" fill="var(--docs-bg)" />
+    <text x="486" y="100" textAnchor="middle" fill="var(--docs-accent)" fontSize="11" fontWeight="600">ccc</text>
+    <text x="420" y="150" textAnchor="middle" fill="var(--docs-muted)" fontSize="11">probably one wallet</text>
+  </g>
+</svg>
+<figcaption className="text-center text-xs text-[var(--docs-muted)] mt-3">A single multi-input transaction collapses three independent addresses into one ownership cluster.</figcaption>
+</figure>
 
-## When It Fails
+## A worked example
 
-This is important. It is not a law.
+Take a look at an ordinary payment from the chain.
 
-It can fail in cases like:
+```
+INPUT 0:  0.041 BTC   address bc1q...a3f
+INPUT 1:  0.028 BTC   address bc1q...9c2
+INPUT 2:  0.011 BTC   address bc1q...77d
 
-- **CoinJoin**: many users deliberately combine inputs.
-- **Collaborative spending** (for example PayJoin): two parties co-create one transaction.
-- **Some multisig workflows** where control is shared.
+OUTPUT 0: 0.074 BTC   address bc1q...kk8   (payment)
+OUTPUT 1: 0.005 BTC   address bc1q...xx1   (change)
+```
 
-## How txray Uses It
+Three inputs, three different addresses. Before this transaction an analyst looking at the chain could treat those three addresses as independent strangers. After this transaction, they are tagged as one cluster, almost certainly one wallet.
 
-txray uses this signal as part of a weighted model, not as a final truth by itself.
+Now imagine that wallet later spends from `bc1q...kk8` in another many-input transaction. Each new transaction grows the cluster by every input it touches. In a few hops, thousands of addresses can get rolled into one ownership group.
 
-That means:
+## How txray flags it
 
-- one strong signal increases confidence,
-- conflicting signals lower confidence,
-- edge-case patterns trigger caution.
+Sherlock applies CIOH to every transaction it parses and returns a small structured result.
 
-## Confidence Guidance
+```
+txray analyze --tx 4a5e1e4b...33b
 
-- Treat this as **"likely"**, not **"certain"**.
-- Always cross-check with change detection and transaction pattern context.
-- If a transaction looks like CoinJoin, reduce trust in this heuristic.
+Heuristics
+  common_input_ownership:
+    fired:      true
+    confidence: high
+    evidence:   3 inputs signed together; no CoinJoin structure detected
+    caveats:    none
+```
+
+Three fields matter.
+
+- **fired.** Whether the heuristic triggered at all.
+- **confidence.** High, medium, or low, based on how many other signals agree or disagree.
+- **caveats.** A list of reasons to distrust the flag (for example, "equal-amount outputs suggest a CoinJoin round").
+
+CIOH never runs alone. txray weighs it together with change detection, fingerprinting, and entropy so that one strong-looking flag cannot drag a wrong conclusion across the finish line.
+
+## How to defeat it
+
+CIOH breaks the moment the assumption "the inputs all belong to one owner" stops being true. Three real-world tools do exactly that.
+
+- **CoinJoin.** Many users collaboratively build one transaction where every input is from a different wallet and every output is an equal amount. From the outside it looks like CIOH should fire, but the whole point of the protocol is that the inference is wrong.
+- **PayJoin (BIP78).** The *receiver* of a payment adds one of their own UTXOs to the sender's transaction. Now CIOH would group the receiver's address with the sender's, which is flat out false.
+- **Collaborative multisig.** Two or more independent parties sign inputs in the same transaction as part of a custody setup.
+
+For all three, Sherlock downgrades the CIOH confidence automatically when it spots the tell-tale patterns (equal-value outputs, unusual input counts, known CoinJoin coordinator fingerprints).
+
+## How to read CIOH results
+
+A few rules of thumb keep you out of trouble.
+
+- Treat a CIOH flag as *likely*, not *certain*. Even outside CoinJoin, shared-custody setups exist.
+- Always cross-check with change detection. If the "change" output looks just as much like a payment, your story has a hole.
+- If a transaction has the shape of a CoinJoin (many inputs, many equal-value outputs), trust CIOH *less*, not more.
+- Short ownership chains are far more reliable than long ones. Every extra hop multiplies the chance that one link in the chain was wrong.
 
 ---
 
-Related:
-
-- [Change Detection](/docs/heuristics/change-detection)
-- [Address Clustering](/docs/heuristics/address-clustering)
-- [Wallet Fingerprinting](/docs/heuristics/fingerprinting)
+Related: [Change Detection](/docs/heuristics/change-detection) · [Address Clustering](/docs/heuristics/address-clustering) · [Wallet Fingerprinting](/docs/heuristics/fingerprinting)

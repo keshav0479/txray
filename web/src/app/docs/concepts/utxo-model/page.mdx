@@ -1,43 +1,140 @@
-# UTXO Model
+# The UTXO Model
 
-The Unspent Transaction Output model is Bitcoin's core accounting system.
+**What you'll learn on this page:** why Bitcoin looks more like cash than a bank account, and why that choice is the foundation of every privacy analysis you will ever do.
 
-## How It Works
+## Cash, not a bank account
 
-Bitcoin works more like cash than bank balances. You spend discrete outputs (UTXOs), not an account balance.
+When you look at your bank balance, you see one number. If you have ₹10,000 and spend ₹700, the bank subtracts 700 and you have 9,300. Simple.
 
-If Alice has `1 BTC`, `0.5 BTC`, and `0.25 BTC`, and wants to pay Bob `0.7 BTC`, she can spend the `1 BTC` UTXO and create:
+Bitcoin does **not** work like that.
 
-- `0.7 BTC` to Bob
-- `0.3 BTC` back to herself as change
+Bitcoin works like cash in your pocket. You do not have "a balance". You have a stack of individual notes, each with a fixed amount. When you pay, you hand over whole notes and you get change back.
 
-## Transaction Anatomy
+Each "note" in Bitcoin is called an **Unspent Transaction Output**, or **UTXO**. That is the entire mental model.
 
-### Inputs
+## A worked example
 
-- References to earlier UTXOs
-- Unlocking data proving spend authority
+Imagine Alice has three UTXOs in her wallet.
 
-### Outputs
+- one worth 1.00 BTC
+- one worth 0.50 BTC
+- one worth 0.25 BTC
 
-- Value amounts
-- Spending conditions (script)
+Alice wants to pay Bob 0.70 BTC. She cannot split the 1.00 BTC note in half and hand Bob a piece of it. She has to hand over the whole note and take change.
 
-### Change Output
+So she builds a transaction that does this:
 
-When inputs exceed the payment amount, the remainder becomes a change output.
+<figure className="my-8 flex flex-col items-center">
+<svg viewBox="0 0 720 320" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full max-w-3xl" role="img" aria-label="Alice's wallet contains three UTXOs. She spends the 1 BTC UTXO into two new outputs: 0.7 BTC to Bob and 0.3 BTC change. The other two UTXOs are untouched.">
+  <defs>
+    <pattern id="utxo-grid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M 24 0 L 0 0 0 24" fill="none" stroke="var(--docs-panel-border)" strokeWidth="0.5" opacity="0.5" />
+    </pattern>
+    <radialGradient id="utxo-pulse" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stopColor="var(--docs-accent)" stopOpacity="0.25" />
+      <stop offset="100%" stopColor="var(--docs-accent)" stopOpacity="0" />
+    </radialGradient>
+  </defs>
+  <rect width="720" height="320" fill="url(#utxo-grid)" />
 
-## Why It Matters for Privacy
+  <g>
+    <rect x="20" y="40" width="220" height="240" rx="18" stroke="var(--docs-accent)" strokeWidth="1.2" strokeDasharray="6 4" fill="var(--docs-panel)" opacity="0.85" />
+    <text x="36" y="64" fill="var(--docs-muted)" fontSize="9" fontWeight="500" letterSpacing="2">ALICE'S WALLET</text>
 
-The UTXO model leaks patterns that analysis tools can detect:
+    <ellipse cx="130" cy="118" rx="80" ry="36" fill="url(#utxo-pulse)">
+      <animate attributeName="opacity" values="0.6;1;0.6" dur="3s" repeatCount="indefinite" />
+    </ellipse>
+    <g>
+      <rect x="50" y="86" width="160" height="64" rx="10" stroke="var(--docs-accent)" strokeWidth="2" fill="var(--docs-panel)" />
+      <text x="68" y="108" fill="var(--docs-muted)" fontSize="9" fontWeight="500" letterSpacing="1">UTXO #1</text>
+      <text x="130" y="130" textAnchor="middle" fill="var(--docs-accent)" fontSize="18" fontWeight="600">1.00 BTC</text>
+      <text x="180" y="146" textAnchor="end" fill="var(--docs-muted)" fontSize="9">SELECTED</text>
+    </g>
 
-1. Input selection patterns
-2. Change output patterns
-3. Address reuse links
-4. Multi-input ownership links
+    <g>
+      <rect x="50" y="166" width="160" height="44" rx="10" stroke="var(--docs-accent)" strokeWidth="1.2" fill="var(--docs-panel)" opacity="0.55" />
+      <text x="68" y="184" fill="var(--docs-muted)" fontSize="9" fontWeight="500" letterSpacing="1">UTXO #2</text>
+      <text x="130" y="200" textAnchor="middle" fill="var(--docs-accent)" fontSize="14" fontWeight="600" opacity="0.7">0.50 BTC</text>
+    </g>
+    <g>
+      <rect x="50" y="220" width="160" height="44" rx="10" stroke="var(--docs-accent)" strokeWidth="1.2" fill="var(--docs-panel)" opacity="0.55" />
+      <text x="68" y="238" fill="var(--docs-muted)" fontSize="9" fontWeight="500" letterSpacing="1">UTXO #3</text>
+      <text x="130" y="254" textAnchor="middle" fill="var(--docs-accent)" fontSize="14" fontWeight="600" opacity="0.7">0.25 BTC</text>
+    </g>
+  </g>
 
-Understanding this model is essential for interpreting txray results.
+  <g>
+    <rect x="290" y="120" width="140" height="80" rx="12" stroke="var(--docs-accent)" strokeWidth="2" fill="var(--docs-panel)" />
+    <text x="360" y="148" textAnchor="middle" fill="var(--docs-muted)" fontSize="9" fontWeight="500" letterSpacing="2">TRANSACTION</text>
+    <line x1="306" y1="158" x2="414" y2="158" stroke="var(--docs-panel-border)" strokeWidth="1" />
+    <text x="360" y="176" textAnchor="middle" fill="var(--docs-accent)" fontSize="11" fontWeight="600">1 in / 2 out</text>
+    <text x="360" y="192" textAnchor="middle" fill="var(--docs-muted)" fontSize="10">fee 0.0001 BTC</text>
+  </g>
+
+  <g className="opacity-80">
+    <path d="M 215 118 C 250 118, 270 145, 290 155" stroke="var(--docs-accent)" strokeWidth="2" strokeDasharray="4 2" fill="none">
+      <animate attributeName="stroke-dashoffset" from="0" to="-12" dur="1.5s" repeatCount="indefinite" />
+    </path>
+    <polygon points="290,155 282,150 282,158" fill="var(--docs-accent)" />
+  </g>
+
+  <g className="opacity-80">
+    <path d="M 432 145 C 460 130, 490 90, 520 80" stroke="var(--docs-accent)" strokeWidth="2" strokeDasharray="4 2" fill="none">
+      <animate attributeName="stroke-dashoffset" from="0" to="-12" dur="1.5s" repeatCount="indefinite" />
+    </path>
+    <polygon points="520,80 512,80 515,88" fill="var(--docs-accent)" />
+  </g>
+  <g className="opacity-80">
+    <path d="M 432 175 C 460 195, 490 235, 520 245" stroke="var(--docs-accent)" strokeWidth="2" strokeDasharray="4 2" fill="none">
+      <animate attributeName="stroke-dashoffset" from="0" to="-12" dur="1.5s" repeatCount="indefinite" />
+    </path>
+    <polygon points="520,245 512,237 515,245" fill="var(--docs-accent)" />
+  </g>
+
+  <g>
+    <rect x="525" y="50" width="170" height="76" rx="12" stroke="var(--docs-accent)" strokeWidth="2" fill="var(--docs-panel)" />
+    <text x="540" y="72" fill="var(--docs-muted)" fontSize="9" fontWeight="500" letterSpacing="1">OUTPUT 0</text>
+    <text x="610" y="96" textAnchor="middle" fill="var(--docs-accent)" fontSize="17" fontWeight="600">0.70 BTC</text>
+    <text x="610" y="114" textAnchor="middle" fill="var(--docs-muted)" fontSize="11">to Bob</text>
+  </g>
+
+  <g>
+    <rect x="525" y="200" width="170" height="76" rx="12" stroke="var(--docs-accent)" strokeWidth="2" fill="var(--docs-panel)" />
+    <text x="540" y="222" fill="var(--docs-muted)" fontSize="9" fontWeight="500" letterSpacing="1">OUTPUT 1</text>
+    <text x="610" y="246" textAnchor="middle" fill="var(--docs-accent)" fontSize="17" fontWeight="600">0.30 BTC</text>
+    <text x="610" y="264" textAnchor="middle" fill="var(--docs-muted)" fontSize="11">change → Alice</text>
+  </g>
+</svg>
+<figcaption className="text-center text-xs text-[var(--docs-muted)] mt-3">Alice's wallet holds three UTXOs. The 1 BTC one is spent through a single transaction into two new outputs. The other two notes never move.</figcaption>
+</figure>
+
+The 1.00 BTC UTXO is now *spent*. It cannot be used again. In its place, two brand-new UTXOs exist: one owned by Bob, one owned by Alice. Alice's 0.50 and 0.25 UTXOs were not touched.
+
+That is the UTXO model in one picture: **old notes get destroyed, new notes get created, the total stays the same (minus the fee).**
+
+## Why analysts care
+
+Because every Bitcoin transaction is public, anyone can look at a transaction and see:
+
+- which old UTXOs it consumed,
+- which new UTXOs it created,
+- which of the new UTXOs looks like payment, and which looks like change.
+
+That last question is the whole game. If you can reliably tell change from payment, you can follow the sender's wallet forward through time. If you can tell which inputs were bundled together, you can infer that they probably belong to the same owner.
+
+The UTXO model is what makes this possible. A pure account model would hide it.
+
+## What this model leaks
+
+Four patterns come directly from how UTXOs work, and every heuristic in txray is built on top of them.
+
+1. **Which coins were spent together.** When one transaction spends several UTXOs, those UTXOs were almost certainly controlled by the same wallet.
+2. **Which output is change.** Wallets have tell-tale habits when building the change output (round payment amounts, matching script types, predictable position).
+3. **Address reuse.** If the same address appears in two unrelated transactions, those transactions link back to one person.
+4. **Multi-input clustering.** Repeating the first pattern across many transactions lets you group thousands of addresses into one "wallet cluster".
+
+You will meet all four again in the heuristics pages.
 
 ---
 
-See also: [Transaction Structure](/docs/concepts/transaction-structure), [Change Detection](/docs/heuristics/change-detection)
+Next: [Transaction Structure](/docs/concepts/transaction-structure) · [Change Detection](/docs/heuristics/change-detection)
