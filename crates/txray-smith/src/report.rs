@@ -40,7 +40,7 @@ pub fn generate_warnings(
     }
 
     // DUST_CHANGE: change output exists with value < 546 sats
-    // (defensive — coin selection should prevent this, but README requires the warning)
+    // (defensive - coin selection should prevent this, but README requires the warning)
     if let Some(cv) = change_value {
         if cv < 546 {
             warnings.push(Warning {

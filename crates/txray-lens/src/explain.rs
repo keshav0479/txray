@@ -101,7 +101,7 @@ pub fn explain_transaction(report: &serde_json::Value) -> String {
         .unwrap_or(0.0);
 
     out.push_str(&format!(
-        "FEE: {} sats ({:.1} sat/vB) — {}\n",
+        "FEE: {} sats ({:.1} sat/vB) - {}\n",
         fee_sats,
         fee_rate,
         fee_context(fee_rate),

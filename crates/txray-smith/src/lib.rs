@@ -3,7 +3,7 @@
 //! PSBT building, coin selection, and transaction construction.
 //! Uses the `bitcoin` crate for PSBT serialization.
 //!
-//! Main entry point: `build_psbt_from_fixture()` — reads a fixture JSON string,
+//! Main entry point: `build_psbt_from_fixture()` - reads a fixture JSON string,
 //! performs coin selection, builds a PSBT, and returns the report as JSON.
 
 pub(crate) mod coin_selection;

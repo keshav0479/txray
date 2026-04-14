@@ -16,8 +16,8 @@ export function SherlockBackground() {
           mask-size: 24vw × 56vh  →  center at (12vw, 28vh) from box origin
           mask-position = (cx - 12vw,  cy - 28vh)
 
-          Torch 1: diagonal TL→BR  — enters top-left, exits bottom-right
-          Torch 2: diagonal BL→TR  — enters bottom-left, exits top-right
+          Torch 1: diagonal TL→BR  - enters top-left, exits bottom-right
+          Torch 2: diagonal BL→TR  - enters bottom-left, exits top-right
           They cross near screen center → most interesting moment of each cycle.
           Different durations (18s vs 23s) → phase drifts, never feels looping.
         */
@@ -80,7 +80,7 @@ export function SherlockBackground() {
         }}
       />
 
-      {/* LAYER 0: Dim base — always-visible ghost of the full pattern */}
+      {/* LAYER 0: Dim base - always-visible ghost of the full pattern */}
       <div
         className="absolute inset-0 opacity-[0.18]"
         style={{
@@ -90,7 +90,7 @@ export function SherlockBackground() {
         }}
       />
 
-      {/* LAYER 1a: Torch 1 — diagonal TL→BR, with hesitation */}
+      {/* LAYER 1a: Torch 1 - diagonal TL→BR, with hesitation */}
       <div
         className="absolute inset-0 mask-torch-shared mask-torch-1 opacity-[0.92] mix-blend-screen"
         style={{
@@ -101,7 +101,7 @@ export function SherlockBackground() {
         }}
       />
 
-      {/* LAYER 1b: Torch 2 — diagonal BL→TR, counter-diagonal, out of phase */}
+      {/* LAYER 1b: Torch 2 - diagonal BL→TR, counter-diagonal, out of phase */}
       <div
         className="absolute inset-0 mask-torch-shared mask-torch-2 opacity-[0.80] mix-blend-screen"
         style={{
@@ -112,7 +112,7 @@ export function SherlockBackground() {
         }}
       />
 
-      {/* LAYER 3: Soft center veil — suppresses pattern brightness behind hero content */}
+      {/* LAYER 3: Soft center veil - suppresses pattern brightness behind hero content */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -121,7 +121,7 @@ export function SherlockBackground() {
         }}
       />
 
-      {/* Edge fades — blend pattern into page boundaries */}
+      {/* Edge fades - blend pattern into page boundaries */}
       <div className="absolute inset-x-0 bottom-0 h-40 bg-linear-to-t from-surface-bg to-transparent pointer-events-none" />
       <div className="absolute inset-x-0 top-0 h-24 bg-linear-to-b from-surface-bg to-transparent pointer-events-none" />
       <div className="absolute inset-y-0 left-0 w-32 bg-linear-to-r from-surface-bg to-transparent pointer-events-none" />

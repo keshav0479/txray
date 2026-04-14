@@ -31,7 +31,7 @@ pub fn compute_txid_raw(base_bytes: &[u8]) -> [u8; 32] {
     dsha256(base_bytes)
 }
 
-/// RIPEMD160(SHA256(data)) — used by OP_HASH160 and P2PKH/P2WPKH addresses
+/// RIPEMD160(SHA256(data)) - used by OP_HASH160 and P2PKH/P2WPKH addresses
 pub fn hash160(data: &[u8]) -> Vec<u8> {
     let sha = Sha256::digest(data);
     let ripe = Ripemd160::digest(sha);
@@ -53,7 +53,7 @@ mod tests {
 
     #[test]
     fn test_dsha256_known_vector() {
-        // SHA256(SHA256("hello")) — verified against Bitcoin Core
+        // SHA256(SHA256("hello")) - verified against Bitcoin Core
         let result = dsha256(b"hello");
         let hex_result = hex::encode(result);
         // Double-hash should be deterministic and 64 hex chars

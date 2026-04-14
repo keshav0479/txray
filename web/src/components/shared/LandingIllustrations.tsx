@@ -7,7 +7,7 @@ const AMBER_DIM = "#fbbf24";
 const AMBER_BG = "rgba(245,158,11,0.08)";
 
 /* ─────────────────────────────────────────────
-   LensMini — Transaction flow with scanning lens
+   LensMini - Transaction flow with scanning lens
    Shows: inputs → core → outputs with smooth CSS-driven pulses
    Math: 0.50 + 0.30 + 0.20 = 1.00 → 0.85 + 0.14 (implicit fee: 0.01)
 ───────────────────────────────────────────── */
@@ -246,7 +246,7 @@ export function LensMini() {
 }
 
 /* ─────────────────────────────────────────────
-   SherlockMini — Fingerprint scan with heuristic callouts
+   SherlockMini - Fingerprint scan with heuristic callouts
    Shows: A fingerprint being scanned with detection labels
 ───────────────────────────────────────────── */
 export function SherlockMini() {
@@ -267,7 +267,7 @@ export function SherlockMini() {
         </filter>
       </defs>
 
-      {/* Authentic Fingerprint Biometric — draws in sequentially */}
+      {/* Authentic Fingerprint Biometric - draws in sequentially */}
       <g transform="translate(46, 20) scale(2.6)">
         {[
           "M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4",
@@ -310,7 +310,7 @@ export function SherlockMini() {
         })}
       </g>
 
-      {/* Detection callout lines — perfectly synced to the 5s drawing cycle */}
+      {/* Detection callout lines - perfectly synced to the 5s drawing cycle */}
       <motion.g
         animate={{ opacity: [0, 0, 1, 1, 0, 0], x: [-5, -5, 0, 0, -5, -5] }}
         transition={{
@@ -434,7 +434,7 @@ export function SherlockMini() {
         </text>
       </motion.g>
 
-      {/* Confidence meter — steps up instantly as each callout fires, clears with arcs */}
+      {/* Confidence meter - steps up instantly as each callout fires, clears with arcs */}
       <rect
         x="200"
         y="20"
@@ -479,7 +479,7 @@ export function SherlockMini() {
 }
 
 /* ─────────────────────────────────────────────
-   SmithMini — Smart coin selection → PSBT output
+   SmithMini - Smart coin selection → PSBT output
 ───────────────────────────────────────────── */
 export function SmithMini() {
   // UTXO rows: amount, whether selected (for styling), and stagger delay

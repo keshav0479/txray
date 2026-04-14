@@ -7,13 +7,13 @@ const BLUE_DIM = "#60a5fa";
 
 /* ─────────────────────────────────────────────
    Helper: strokeDasharray / strokeDashoffset
-   trick — we pass the total path length so the
+   trick - we pass the total path length so the
    draw animation works for any element.
 ───────────────────────────────────────────── */
 
 // ─── Card 1: AnimatedTrail ───────────────────────────────────────────────────
 export function AnimatedTrail({ isPlaying }: { isPlaying: boolean }) {
-  // Scrolling hex lines — 8 rows, repeated for seamless scroll
+  // Scrolling hex lines - 8 rows, repeated for seamless scroll
   const hexLines = [
     "a3f2b1c9d0e4",
     "8f3a12cc9e71",

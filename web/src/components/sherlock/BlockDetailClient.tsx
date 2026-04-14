@@ -313,7 +313,7 @@ function TxRow({
           )}
         </span>
         <span className="w-16 text-right font-mono text-xs text-zinc-500 hidden md:block shrink-0">
-          {tx.fee_sats != null ? tx.fee_sats.toLocaleString() : "—"}
+          {tx.fee_sats != null ? tx.fee_sats.toLocaleString() : "-"}
         </span>
         {isExpanded ? (
           <ChevronUp className="w-4 h-4 text-zinc-600 shrink-0" />
@@ -568,13 +568,13 @@ export default function BlockDetailClient({ stem }: { stem: string }) {
         <StatCard
           icon={Activity}
           label="Total Txs"
-          value={summary?.total_transactions_analyzed.toLocaleString() || "—"}
+          value={summary?.total_transactions_analyzed.toLocaleString() || "-"}
         />
         <StatCard
           icon={AlertTriangle}
           alert
           label="Flagged"
-          value={summary?.flagged_transactions.toLocaleString() || "—"}
+          value={summary?.flagged_transactions.toLocaleString() || "-"}
           sub={`${summary ? ((summary.flagged_transactions / summary.total_transactions_analyzed) * 100).toFixed(1) : 0}% of total transactions`}
         />
         <StatCard
@@ -692,7 +692,7 @@ export default function BlockDetailClient({ stem }: { stem: string }) {
           </div>
         </div>
 
-        {/* Table Header — sortable columns */}
+        {/* Table Header - sortable columns */}
         <div className="flex items-center gap-3 px-4 py-2 text-xs text-zinc-600 uppercase tracking-widest border-b border-white/5 bg-black/30">
           <div className="flex-1">Transaction ID</div>
           <button
@@ -718,7 +718,7 @@ export default function BlockDetailClient({ stem }: { stem: string }) {
           <div className="w-4" />
         </div>
 
-        {/* Transaction Rows — scrollable body */}
+        {/* Transaction Rows - scrollable body */}
         <div className="max-h-[55vh] overflow-y-auto">
           {paginatedTxs.map((tx) => (
             <TxRow

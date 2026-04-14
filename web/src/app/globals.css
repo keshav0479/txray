@@ -13,7 +13,7 @@
   --color-text-secondary: #a8a29e;
   --color-text-muted: #78716c;
 
-  /* ─── Lens Brand (Blue — structure & parsing) ─── */
+  /* ─── Lens Brand (Blue - structure & parsing) ─── */
   --color-lens-50: #eff6ff;
   --color-lens-300: #93c5fd;
   --color-lens-400: #60a5fa;
@@ -22,7 +22,7 @@
   --color-lens-700: #1d4ed8;
   --color-lens-900: #1e3a8a;
 
-  /* ─── Sherlock Brand (Amber — privacy analysis) ─── */
+  /* ─── Sherlock Brand (Amber - privacy analysis) ─── */
   --color-sherlock-50: #fefce8;
   --color-sherlock-300: #fcd34d;
   --color-sherlock-400: #fbbf24;
@@ -31,7 +31,7 @@
   --color-sherlock-700: #92400e;
   --color-sherlock-900: #451a03;
 
-  /* ─── Smith Brand (Emerald — construction & forging) ─── */
+  /* ─── Smith Brand (Emerald - construction & forging) ─── */
   --color-smith-50: #ecfdf5;
   --color-smith-300: #6ee7b7;
   --color-smith-400: #34d399;

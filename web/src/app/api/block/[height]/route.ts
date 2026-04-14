@@ -3,7 +3,7 @@ import { checkLightLimit } from "@/lib/server/rateLimit";
 
 const MEMPOOL_BASE = "https://mempool.space/api";
 
-// In-memory LRU cache — blocks are immutable once confirmed
+// In-memory LRU cache - blocks are immutable once confirmed
 const CACHE_MAX = 25;
 const blockCache = new Map<string, object>();
 
@@ -19,7 +19,7 @@ function cacheSet(key: string, value: object) {
  * Fetch block from mempool.space by height or hash, transform into
  * the BlockAnalysis shape that BlockOverview expects.
  *
- * No CLI needed — we build the analysis JSON directly from mempool REST data.
+ * No CLI needed - we build the analysis JSON directly from mempool REST data.
  */
 export async function GET(
   request: NextRequest,
@@ -42,7 +42,7 @@ export async function GET(
       }
     } else if (!/^[0-9a-fA-F]{64}$/.test(heightOrHash)) {
       return NextResponse.json(
-        { error: { message: "Invalid block identifier — must be a height (0–1000000) or 64-char hex hash" } },
+        { error: { message: "Invalid block identifier - must be a height (0–1000000) or 64-char hex hash" } },
         { status: 400 },
       );
     }

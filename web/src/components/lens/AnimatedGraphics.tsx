@@ -366,7 +366,7 @@ export function AnimatedMiners({ isPlaying }: GraphicProps) {
   return (
     <div className="relative w-full h-full flex items-center justify-center">
       <svg viewBox="0 0 340 240" className="w-full h-full" fill="none">
-        {/* Master fade wrapper — fades entire scene at cycle boundary for seamless loop */}
+        {/* Master fade wrapper - fades entire scene at cycle boundary for seamless loop */}
         <motion.g
           animate={
             isPlaying

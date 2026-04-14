@@ -11,7 +11,7 @@
   <!-- Inner darker chamber indentation -->
   <rect x="24" y="24" width="72" height="72" rx="14" fill="#030406" stroke="#11141a" strokeWidth="1" />
 
-  <!-- The Dormant (Dark) BTC Logo — perfectly centered mathematically -->
+  <!-- The Dormant (Dark) BTC Logo - perfectly centered mathematically -->
   <!-- Calculated bounding box center: 31.1545, 31.4145 -->
   <!-- Desired center: 60, 60. Scale: 1.5 -->
   <!-- Translate X: 60 - (31.1545 * 1.5) = 13.268 -->

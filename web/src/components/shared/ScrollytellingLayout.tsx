@@ -17,12 +17,12 @@ export function ScrollytellingLayout({
 
       {/* ── MOBILE layout: sticky graph + cards scroll underneath ── */}
       <div className="lg:hidden">
-        {/* Sticky graph pane — stays locked below the header */}
+        {/* Sticky graph pane - stays locked below the header */}
         {/* z-index kept low (z-10) so card tooltips (z-[90]) can render above it */}
         <div className="sticky top-16 z-10 w-full h-[36vh] mb-6">
-          {/* Clipped background layer only — rounded corners without clipping tooltip children */}
+          {/* Clipped background layer only - rounded corners without clipping tooltip children */}
           <div className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl bg-stone-950/80 border border-white/8" />
-          {/* Graph layer — override min-h on mobile so it fills the 36vh container */}
+          {/* Graph layer - override min-h on mobile so it fills the 36vh container */}
           <motion.div
             initial={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}

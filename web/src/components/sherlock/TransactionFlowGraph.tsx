@@ -357,7 +357,7 @@ export function TransactionFlowGraph({
           />
         </motion.g>
 
-        {/* Annotations now rendered as inline badges on nodes — see input/output node sections */}
+        {/* Annotations now rendered as inline badges on nodes - see input/output node sections */}
 
         {/* === INPUT NODES === */}
         {visibleInputs.map((inp, i) => {

@@ -1,4 +1,4 @@
-//! PSBT Inspector — human-readable breakdown of base64-encoded PSBTs.
+//! PSBT Inspector - human-readable breakdown of base64-encoded PSBTs.
 //!
 //! Parses a PSBT, extracts per-input and per-output details, determines
 //! signing status, and generates actionable next-step recommendations.
@@ -267,7 +267,7 @@ fn generate_warnings(
     let missing_count = inputs.iter().filter(|inp| !inp.has_utxo).count();
     if missing_count > 0 {
         warnings.push(format!(
-            "{} input(s) missing UTXO data — fee cannot be verified",
+            "{} input(s) missing UTXO data - fee cannot be verified",
             missing_count
         ));
     }

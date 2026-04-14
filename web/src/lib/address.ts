@@ -1,6 +1,6 @@
 // Bitcoin address parsing and scriptPubKey derivation
 // Supports: P2PKH (1...), P2SH (3...), P2WPKH (bc1q 42-char), P2WSH (bc1q 62-char), P2TR (bc1p)
-// Pure TypeScript — no external dependencies
+// Pure TypeScript - no external dependencies
 
 // ─── Bech32 / Bech32m ────────────────────────────────────────────────────────
 

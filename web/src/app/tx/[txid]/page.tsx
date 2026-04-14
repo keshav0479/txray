@@ -203,7 +203,7 @@ export default function UnifiedTxPage({
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Sticky nav — identity + tabs + external link, nothing else */}
+      {/* Sticky nav - identity + tabs + external link, nothing else */}
       <div className="border-b border-white/5 bg-black/40 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
@@ -238,7 +238,7 @@ export default function UnifiedTxPage({
               </div>
             </div>
 
-            {/* Center: tabs — truly centered via grid */}
+            {/* Center: tabs - truly centered via grid */}
             <div className="flex items-center gap-1 bg-white/5 rounded-lg p-1">
               {tabs.map((tab) => (
                 <button
@@ -272,7 +272,7 @@ export default function UnifiedTxPage({
         </div>
       </div>
 
-      {/* Stats strip — non-sticky, scrolls with page */}
+      {/* Stats strip - non-sticky, scrolls with page */}
       <div className="border-b border-white/5 bg-black/10">
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center gap-4 overflow-x-auto scrollbar-none">
           <TxStat value={mempool.vin.length.toString()} label="inputs" />
@@ -592,12 +592,12 @@ function RawTab({ mempool, structure }: { mempool: MempoolTx; structure: Analyze
               />
             </div>
           ) : (
-            <div className="text-yellow-400 text-sm">Unconfirmed — pending in mempool</div>
+            <div className="text-yellow-400 text-sm">Unconfirmed - pending in mempool</div>
           )}
         </div>
       </div>
 
-      {/* HexTerminal — txray lens output if available, else mempool JSON */}
+      {/* HexTerminal - txray lens output if available, else mempool JSON */}
       <HexTerminal rawJsonData={structure ?? mempool} />
     </div>
   );

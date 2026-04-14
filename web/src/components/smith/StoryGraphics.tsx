@@ -20,7 +20,7 @@ const GREEN = "#10b981";
 // Begins a coherent narrative involving a realistic user tool (smartphone app).
 // ----------------------------------------------------------------------
 export function AnimatedWallet({ isPlaying }: { isPlaying: boolean }) {
-  // Phone fills the canvas — content area is generous
+  // Phone fills the canvas - content area is generous
   const phoneW = 200;
   const phoneH = 230;
   const phoneX = 60; // (320-200)/2
@@ -148,7 +148,7 @@ export function AnimatedWallet({ isPlaying }: { isPlaying: boolean }) {
         />
         {/* Merge point dot */}
         <circle cx={midX} cy={60} r="3" fill={BLUE} opacity="0.6" />
-        {/* Result value at merge — just the number, bigger */}
+        {/* Result value at merge - just the number, bigger */}
         <text
           x={midX}
           y={52}
@@ -209,7 +209,7 @@ export function AnimatedWallet({ isPlaying }: { isPlaying: boolean }) {
           </text>
         </g>
 
-        {/* The 0.20 UTXO Block (Bottom Left) — aligned at y=145 */}
+        {/* The 0.20 UTXO Block (Bottom Left) - aligned at y=145 */}
         <g transform={`translate(${midX - 42}, 145)`}>
           <rect
             x="-30"
@@ -245,7 +245,7 @@ export function AnimatedWallet({ isPlaying }: { isPlaying: boolean }) {
           </text>
         </g>
 
-        {/* The 0.10 UTXO Block (Bottom Right) — aligned at y=145 too */}
+        {/* The 0.10 UTXO Block (Bottom Right) - aligned at y=145 too */}
         <g transform={`translate(${midX + 42}, 145)`}>
           <rect
             x="-30"
@@ -281,7 +281,7 @@ export function AnimatedWallet({ isPlaying }: { isPlaying: boolean }) {
           </text>
         </g>
 
-        {/* Math Equation — consistent 2 decimal places */}
+        {/* Math Equation - consistent 2 decimal places */}
         <text
           x={midX}
           y="190"
@@ -1355,7 +1355,7 @@ export function AnimatedFee({ isPlaying }: { isPlaying: boolean }) {
 // 04: AnimatedDust (The Heavy Toll)
 // A tiny UTXO travels up a network lane toward an imposing toll booth,
 // gets laser-scanned, fails the math check, and is knocked back as
-// "UNSPENDABLE" — stuck in the wallet forever.
+// "UNSPENDABLE" - stuck in the wallet forever.
 // ----------------------------------------------------------------------
 export function AnimatedDust({ isPlaying }: { isPlaying: boolean }) {
   const W = 320;
@@ -1366,7 +1366,7 @@ export function AnimatedDust({ isPlaying }: { isPlaying: boolean }) {
   const walletY = 195; // UTXO resting position (bottom)
   const tollY = 65; // Toll booth center
   const approachY = 115; // Where UTXO stops before toll (mid-point)
-  const dur = 8; // Full animation cycle — slow and cinematic
+  const dur = 8; // Full animation cycle - slow and cinematic
 
   // Colors
   const RED = "#ef4444";
@@ -1496,7 +1496,7 @@ export function AnimatedDust({ isPlaying }: { isPlaying: boolean }) {
       {/* ========================================== */}
 
       <g transform={`translate(${cx}, ${tollY})`}>
-        {/* Main booth body — wider and more imposing */}
+        {/* Main booth body - wider and more imposing */}
         <rect
           x="-70"
           y="-28"
@@ -1510,7 +1510,7 @@ export function AnimatedDust({ isPlaying }: { isPlaying: boolean }) {
         {/* Inner panel */}
         <rect x="-64" y="-24" width="128" height="40" rx="4" fill="#080a0e" />
 
-        {/* Indicator lights — horizontal row below fee amount, no text overlap */}
+        {/* Indicator lights - horizontal row below fee amount, no text overlap */}
         <circle cx="-10" cy="14" r="2.5" fill="#1e2430" />
         <circle cx="0" cy="14" r="2.5" fill="#1e2430" />
         <circle cx="10" cy="14" r="2.5" fill="#1e2430" />
@@ -1574,7 +1574,7 @@ export function AnimatedDust({ isPlaying }: { isPlaying: boolean }) {
           NETWORK FEE REQUIRED
         </text>
 
-        {/* Fee amount — pulses subtly */}
+        {/* Fee amount - pulses subtly */}
         <motion.g
           initial={{ opacity: 0.9 }}
           animate={isPlaying ? { opacity: [0.9, 1, 0.9] } : { opacity: 0.9 }}
@@ -1702,7 +1702,7 @@ export function AnimatedDust({ isPlaying }: { isPlaying: boolean }) {
         }}
       >
         <g transform={`translate(${cx}, ${walletY})`}>
-          {/* UTXO box — dims after rejection */}
+          {/* UTXO box - dims after rejection */}
           <motion.rect
             x="-32"
             y="-17"
@@ -1828,7 +1828,7 @@ export function AnimatedDust({ isPlaying }: { isPlaying: boolean }) {
       {/* ANIMATION SEQUENCE OVERLAYS                */}
       {/* ========================================== */}
 
-      {/* 1. LASER SCAN — horizontal sweep across UTXO at approach point */}
+      {/* 1. LASER SCAN - horizontal sweep across UTXO at approach point */}
       <motion.g
         initial={{ opacity: 0 }}
         animate={
@@ -1884,7 +1884,7 @@ export function AnimatedDust({ isPlaying }: { isPlaying: boolean }) {
         />
       </motion.g>
 
-      {/* 2. CONNECTION BEAMS — laser lines from UTXO to Toll during scan */}
+      {/* 2. CONNECTION BEAMS - laser lines from UTXO to Toll during scan */}
       <motion.g
         initial={{ opacity: 0 }}
         animate={
@@ -1935,7 +1935,7 @@ export function AnimatedDust({ isPlaying }: { isPlaying: boolean }) {
         />
       </motion.g>
 
-      {/* 3. MATH COMPARISON PILL — color-coded, dramatic */}
+      {/* 3. MATH COMPARISON PILL - color-coded, dramatic */}
       <motion.g
         initial={{ scale: 0, opacity: 0 }}
         animate={
@@ -2006,7 +2006,7 @@ export function AnimatedDust({ isPlaying }: { isPlaying: boolean }) {
         }}
       />
 
-      {/* 5. LOCK ICON + UNSPENDABLE PILL — appears after UTXO returns */}
+      {/* 5. LOCK ICON + UNSPENDABLE PILL - appears after UTXO returns */}
       <motion.g
         initial={{ opacity: 0, scale: 0 }}
         animate={
@@ -2024,7 +2024,7 @@ export function AnimatedDust({ isPlaying }: { isPlaying: boolean }) {
           ease: "backOut",
         }}
       >
-        {/* Lock icon — positioned above the UTXO, not covering it */}
+        {/* Lock icon - positioned above the UTXO, not covering it */}
         <g transform={`translate(${cx}, ${walletY - 28})`}>
           <rect x="-9" y="-4" width="18" height="14" rx="3" fill={RED} />
           <path
@@ -2043,7 +2043,7 @@ export function AnimatedDust({ isPlaying }: { isPlaying: boolean }) {
           />
         </g>
 
-        {/* "UNSPENDABLE" pill — below UTXO */}
+        {/* "UNSPENDABLE" pill - below UTXO */}
         <rect
           x={cx - 48}
           y={walletY + 6}
@@ -2078,7 +2078,7 @@ export function AnimatedDust({ isPlaying }: { isPlaying: boolean }) {
         </text>
       </motion.g>
 
-      {/* 6. STUCK pill — final dramatic status */}
+      {/* 6. STUCK pill - final dramatic status */}
       <motion.g
         initial={{ opacity: 0, y: 5 }}
         animate={
@@ -2115,7 +2115,7 @@ export function AnimatedDust({ isPlaying }: { isPlaying: boolean }) {
 // ----------------------------------------------------------------------
 // 05: AnimatedForge (The Scan & Forge)
 // A scanner beam sweeps across raw wallet complexity, transforming it
-// into a clean structured PSBT — showing what Coin Smith does.
+// into a clean structured PSBT - showing what Coin Smith does.
 // Background = chaos (UTXOs, fee rates, dust, hex)
 // Foreground = order (clean PSBT with inputs, outputs, fee)
 // ----------------------------------------------------------------------
@@ -2217,7 +2217,7 @@ export function AnimatedForge({ isPlaying }: { isPlaying: boolean }) {
       {/* LAYER 1: THE CHAOS (Raw wallet data)       */}
       {/* ========================================== */}
       <g clipPath="url(#chaos-clip)">
-        {/* JSON data rows — faded, monospace, looking like raw wallet file */}
+        {/* JSON data rows - faded, monospace, looking like raw wallet file */}
         {jsonRows.map((row, i) => (
           <text
             key={i}
@@ -2233,7 +2233,7 @@ export function AnimatedForge({ isPlaying }: { isPlaying: boolean }) {
           </text>
         ))}
 
-        {/* Scattered UTXO blocks — different sizes, no order */}
+        {/* Scattered UTXO blocks - different sizes, no order */}
         {utxos.map((u, i) => (
           <g key={i}>
             <rect
@@ -2272,7 +2272,7 @@ export function AnimatedForge({ isPlaying }: { isPlaying: boolean }) {
           </g>
         ))}
 
-        {/* The "Problem State" — grouped questions on the right */}
+        {/* The "Problem State" - grouped questions on the right */}
         <g opacity="0.6">
           <text x="130" y="60" fill="#cbd5e1" fontSize="9" fontWeight="bold">
             TARGET: 0.30 BTC

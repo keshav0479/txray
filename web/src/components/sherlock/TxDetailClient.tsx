@@ -43,10 +43,10 @@ const HEURISTIC_CARDS: CardConfig[] = [
           <strong className="text-white">
             {tx.inputs?.length || 0} inputs
           </strong>{" "}
-          — and since they&apos;re all being spent together in a single
+          - and since they&apos;re all being spent together in a single
           transaction, they are almost certainly controlled by the{" "}
           <strong className="text-brand-400">same wallet</strong>. Watch the
-          inputs on the left — Sherlock groups them together.
+          inputs on the left - Sherlock groups them together.
         </p>
       ) : (
         <p>
@@ -63,7 +63,7 @@ const HEURISTIC_CARDS: CardConfig[] = [
       if (!h.detected)
         return (
           <p>
-            Could not determine which output is change — the outputs may be
+            Could not determine which output is change - the outputs may be
             ambiguous.
           </p>
         );
@@ -75,7 +75,7 @@ const HEURISTIC_CARDS: CardConfig[] = [
           <p className="mb-3">
             Sherlock identified{" "}
             <strong className="text-brand-400">Output #{idx}</strong> as the
-            likely <strong className="text-white">change output</strong> — the
+            likely <strong className="text-white">change output</strong> - the
             leftover coins returning to the sender.
           </p>
           {method && (
@@ -91,7 +91,7 @@ const HEURISTIC_CARDS: CardConfig[] = [
             </p>
           )}
           <p className="text-sm text-zinc-500 mt-3">
-            Look at the graph — the highlighted output is where the
+            Look at the graph - the highlighted output is where the
             sender&apos;s change goes. The other outputs are payments to
             recipients.
           </p>
@@ -107,13 +107,13 @@ const HEURISTIC_CARDS: CardConfig[] = [
       h.detected ? (
         <p>
           An address from the inputs was{" "}
-          <strong className="text-red-400">reused in the outputs</strong> — this
+          <strong className="text-red-400">reused in the outputs</strong> - this
           is a significant privacy leak. It links the sender directly to a
           receiving output, making it trivial to trace funds.
         </p>
       ) : (
         <p>
-          No address reuse detected — the sender uses fresh addresses, which is
+          No address reuse detected - the sender uses fresh addresses, which is
           good for privacy.
         </p>
       ),
@@ -154,7 +154,7 @@ const HEURISTIC_CARDS: CardConfig[] = [
             {tx.outputs?.length} output
             {(tx.outputs?.length || 0) > 1 ? "s" : ""}
           </strong>
-          . Like exchanging a jar of loose coins for a single clean bill — fewer
+          . Like exchanging a jar of loose coins for a single clean bill - fewer
           UTXOs to manage.
         </p>
       ) : (
@@ -171,7 +171,7 @@ const HEURISTIC_CARDS: CardConfig[] = [
     getBody: (h) =>
       h.detected ? (
         <p>
-          All outputs match the input script type — this strongly suggests the
+          All outputs match the input script type - this strongly suggests the
           funds are
           <strong className="text-cyan-400">
             {" "}
@@ -182,7 +182,7 @@ const HEURISTIC_CARDS: CardConfig[] = [
         </p>
       ) : (
         <p>
-          Outputs suggest different recipients — this transaction appears to
+          Outputs suggest different recipients - this transaction appears to
           involve external payments.
         </p>
       ),
@@ -197,13 +197,13 @@ const HEURISTIC_CARDS: CardConfig[] = [
           One or more outputs have{" "}
           <strong className="text-brand-400">round BTC values</strong> (like
           0.1, 0.5, 1.0 BTC). Humans tend to send round amounts when making
-          payments. The round-value outputs are highlighted in the graph — these
+          payments. The round-value outputs are highlighted in the graph - these
           are likely the actual payments, and the non-round outputs are likely
           change.
         </p>
       ) : (
         <p>
-          No round-number outputs detected — values appear to be algorithmic
+          No round-number outputs detected - values appear to be algorithmic
           rather than human-chosen.
         </p>
       ),
@@ -216,14 +216,14 @@ const HEURISTIC_CARDS: CardConfig[] = [
       h.detected ? (
         <p>
           This transaction includes an{" "}
-          <strong className="text-cyan-400">OP_RETURN output</strong> — data
+          <strong className="text-cyan-400">OP_RETURN output</strong> - data
           permanently embedded in the blockchain. This is often used for
           timestamping, anchoring protocols (like Omni Layer), or storing
           arbitrary messages. The data output is highlighted in the graph.
         </p>
       ) : (
         <p>
-          No OP_RETURN outputs found — this transaction doesn&apos;t embed any
+          No OP_RETURN outputs found - this transaction doesn&apos;t embed any
           external data.
         </p>
       ),
@@ -355,7 +355,7 @@ export default function TxDetailClient({
       {/* === SCROLLYTELLING LAYOUT === */}
       {tx.inputs && tx.outputs ? (
         <div className="flex flex-col lg:flex-row gap-6">
-          {/* LEFT: Sticky Graph — fixed viewport height like week 1 */}
+          {/* LEFT: Sticky Graph - fixed viewport height like week 1 */}
           <div className="lg:w-3/5">
             <div className="lg:sticky lg:top-20 lg:h-[calc(100vh-6rem)] flex flex-col gap-2">
               <div className="flex-1 min-h-0 overflow-hidden">
@@ -409,7 +409,7 @@ export default function TxDetailClient({
                     {tx.outputs.length !== 1 ? "s" : ""}
                   </strong>
                   . Sherlock ran{" "}
-                  <strong className="text-white">8 heuristics</strong> —{" "}
+                  <strong className="text-white">8 heuristics</strong> -{" "}
                   {triggeredKeys.length} triggered, {clearKeys.length} clear.
                 </p>
                 <p className="text-sm text-zinc-500">
@@ -495,7 +495,7 @@ export default function TxDetailClient({
               </StoryCard>
             </div>
 
-            {/* Bottom spacer — large enough for last card to reach viewport center */}
+            {/* Bottom spacer - large enough for last card to reach viewport center */}
             <div className="h-[50vh]" />
           </div>
         </div>

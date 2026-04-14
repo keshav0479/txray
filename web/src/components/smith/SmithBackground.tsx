@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 
 /**
- * InteractiveBackground — "Coin Smith" Edition
+ * InteractiveBackground - "Coin Smith" Edition
  *
  * Dense grid of small BTC moulds. Grid lines carry a subtle orange pulse.
  * Only the BTC logo shape glows inside the mould, not the surrounding plate.
@@ -29,7 +29,7 @@ function MouldTile({ delay, uniqueId }: { delay: number; uniqueId: string }) {
       xmlns="http://www.w3.org/2000/svg"
     >
       <defs>
-        {/* Directional fill gradient — sweeps left-to-right across the logo shape */}
+        {/* Directional fill gradient - sweeps left-to-right across the logo shape */}
         <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stopColor="#f7931a" />
           <stop offset="40%" stopColor="#ffcc66" />
@@ -49,7 +49,7 @@ function MouldTile({ delay, uniqueId }: { delay: number; uniqueId: string }) {
         strokeWidth="1"
       />
 
-      {/* Corner Rivets — filled solid for subtle visibility */}
+      {/* Corner Rivets - filled solid for subtle visibility */}
       {/* Corner Rivets */}
       <circle cx="22" cy="22" r="3" fill="rgba(255,255,255,0.04)" />
       <circle cx="98" cy="22" r="3" fill="rgba(255,255,255,0.04)" />
@@ -68,7 +68,7 @@ function MouldTile({ delay, uniqueId }: { delay: number; uniqueId: string }) {
         strokeWidth="1"
       />
 
-      {/* Dormant BTC Logo — ghost outline only */}
+      {/* Dormant BTC Logo - ghost outline only */}
       <g
         fill="none"
         stroke="#3a3632"
@@ -85,7 +85,7 @@ function MouldTile({ delay, uniqueId }: { delay: number; uniqueId: string }) {
           opacity: 0,
         }}
       >
-        {/* The filled BTC logo — only the path shape glows, nothing else */}
+        {/* The filled BTC logo - only the path shape glows, nothing else */}
         <g
           fill={`url(#${gradId})`}
           transform={LOGO_TRANSFORM}

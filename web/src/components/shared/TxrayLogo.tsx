@@ -7,7 +7,7 @@ interface LogoProps extends React.SVGProps<SVGSVGElement> {
 }
 
 /**
- * TX Diamond logo — pixel-perfect Inkscape trace with border sub-path removed.
+ * TX Diamond logo - pixel-perfect Inkscape trace with border sub-path removed.
  * Uses `fill="currentColor"` so color is controlled via Tailwind `text-*` classes.
  *
  * Usage:

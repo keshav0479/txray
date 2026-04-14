@@ -54,7 +54,7 @@ export function AnimatedPsbtFlow({
   const showInputSummary = totalInputs > MAX_VISIBLE_NODES;
   const showOutputSummary = totalOutputs > MAX_VISIBLE_NODES;
 
-  // Build visible output indices — always include change if it exists
+  // Build visible output indices - always include change if it exists
   const visibleOutputIndices: number[] = [];
   if (!showOutputSummary) {
     // Show all outputs

@@ -10,7 +10,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
  * it becomes the active card. The active card stays until a different
  * card enters the band.
  *
- * `readyKey` — pass any value that changes when the observed elements
+ * `readyKey` - pass any value that changes when the observed elements
  * mount (e.g. a page-state string). The observer re-attaches whenever
  * it changes.
  */

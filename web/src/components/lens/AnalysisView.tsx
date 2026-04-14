@@ -62,7 +62,7 @@ export function AnalysisView({ data, onReset, onBack, hideTerminal }: AnalysisVi
 
   return (
     <div className="w-full bg-transparent text-white animate-in fade-in duration-1000">
-      {/* Floating action bar — only shown when handlers provided (Lens page, not /tx/ page) */}
+      {/* Floating action bar - only shown when handlers provided (Lens page, not /tx/ page) */}
       {(onBack || onReset) && (
         <div className="w-full max-w-7xl mx-auto px-6 py-3 flex justify-end gap-3 z-50 relative">
           {onBack && (

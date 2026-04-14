@@ -1,4 +1,4 @@
-//! txray TUI — interactive Bitcoin analysis dashboard.
+//! txray TUI - interactive Bitcoin analysis dashboard.
 
 mod app;
 mod data;

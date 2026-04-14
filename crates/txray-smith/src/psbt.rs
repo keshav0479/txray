@@ -45,7 +45,7 @@ pub fn build_psbt(
                 txid,
                 vout: utxo.vout,
             },
-            script_sig: ScriptBuf::new(), // unsigned — empty
+            script_sig: ScriptBuf::new(), // unsigned - empty
             sequence: Sequence(tx_params.n_sequence),
             witness: bitcoin::Witness::default(), // empty
         });

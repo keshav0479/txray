@@ -13,7 +13,7 @@ fn safe_block_count(val: u64, remaining: usize, label: &str) -> Result<usize, Tx
     Ok(count)
 }
 
-/// Checked addition for block offsets — returns error instead of wrapping.
+/// Checked addition for block offsets - returns error instead of wrapping.
 fn checked_offset(pos: usize, add: usize, limit: usize, label: &str) -> Result<usize, TxrayError> {
     let new_pos = pos
         .checked_add(add)

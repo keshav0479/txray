@@ -1,6 +1,6 @@
 //! # txray-sherlock
 //!
-//! Chain analysis heuristics — CIOH, change detection, CoinJoin detection,
+//! Chain analysis heuristics - CIOH, change detection, CoinJoin detection,
 //! consolidation, address reuse, and more.
 //!
 //! Main entry point: `analyze_block_file()` reads block/undo/xor files,
@@ -461,7 +461,7 @@ pub fn generate_markdown(
 
     for (idx, bo) in block_outputs.iter().enumerate() {
         md.push_str(&format!(
-            "### Block {} — Height {}\n\n",
+            "### Block {} - Height {}\n\n",
             idx + 1,
             bo.block_height
         ));
@@ -534,7 +534,7 @@ pub fn generate_markdown(
         if !notable.is_empty() {
             md.push_str("#### Notable Transactions\n\n");
             for ta in notable {
-                md.push_str(&format!("- `{}` — **{}**\n", ta.txid, ta.classification));
+                md.push_str(&format!("- `{}` - **{}**\n", ta.txid, ta.classification));
             }
             md.push('\n');
         }

@@ -43,7 +43,7 @@ import { TxrayLogo } from "@/components/shared/TxrayLogo";
 import { useMempool } from "@/context/MempoolContext";
 import { Tooltip } from "@/components/ui/Tooltip";
 
-// Curated pool — rotate 3 per day so returning users see variety
+// Curated pool - rotate 3 per day so returning users see variety
 const CHIP_POOL_IDS = [
   "genesis",
   "satoshi-to-finney",
@@ -718,7 +718,7 @@ function CapCard({ cap }: { cap: (typeof CAPABILITIES)[number] }) {
       <p className="text-sm text-stone-400 leading-relaxed flex-1">
         {cap.description}
       </p>
-      {/* CTA — shimmer gradient flows amber→cream→amber */}
+      {/* CTA - shimmer gradient flows amber→cream→amber */}
       <div className="flex items-center gap-1.5 mt-4">
         <span className="shimmer-text text-[11px] font-mono tracking-wide">
           {cap.cta}

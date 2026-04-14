@@ -52,7 +52,7 @@ mod tests {
 
     #[test]
     fn test_xor_cyclic_key() {
-        // Key shorter than data — cycles
+        // Key shorter than data - cycles
         let key = vec![0xFF];
         let mut data = vec![0x00, 0x55, 0xAA];
         xor_decode(&mut data, &key);

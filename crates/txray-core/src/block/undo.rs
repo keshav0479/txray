@@ -96,7 +96,7 @@ impl UndoRecord {
         // Parse the undo payload
         let mut cursor = UndoCursor::new(payload);
 
-        // Number of CTxUndo entries (CompactSize) — should equal number of non-coinbase txs
+        // Number of CTxUndo entries (CompactSize) - should equal number of non-coinbase txs
         let num_txs_raw = cursor.read_compact_size()?;
         let num_txs = num_txs_raw as usize;
 
@@ -228,7 +228,7 @@ impl<'a> UndoCursor<'a> {
         let _height = n_code >> 1;
         let _is_coinbase = (n_code & 1) != 0;
 
-        // 2. If height > 0, read nVersion (Core VARINT) — we don't use it
+        // 2. If height > 0, read nVersion (Core VARINT) - we don't use it
         if _height > 0 {
             let _n_version = self.read_core_varint()?;
         }

@@ -61,7 +61,7 @@ export function Header() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // focus search input when opened — delay lets animation mount the input first
+  // focus search input when opened - delay lets animation mount the input first
   useEffect(() => {
     if (!searchOpen) return;
     const id = setTimeout(() => searchRef.current?.focus(), 50);
@@ -104,7 +104,7 @@ export function Header() {
   const isDocs = pathname.startsWith("/docs");
   const isHome = pathname === "/";
 
-  // Ctrl+K / ⌘K opens navbar search (not on home — hero has its own)
+  // Ctrl+K / ⌘K opens navbar search (not on home - hero has its own)
   useEffect(() => {
     if (isHome) return;
     const handler = (e: KeyboardEvent) => {
@@ -287,7 +287,7 @@ export function Header() {
 
           {/* ── Right: Search + GitHub + Mobile toggle ── */}
           <div className="flex-1 flex items-center justify-end gap-1">
-            {/* Desktop search — hidden on home (hero has its own) */}
+            {/* Desktop search - hidden on home (hero has its own) */}
             {!isHome && (
               <div className="hidden md:block">
                 <AnimatePresence mode="wait">

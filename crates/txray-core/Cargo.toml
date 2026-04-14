@@ -4,7 +4,7 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Core Bitcoin primitives — transaction parsing, script classification, address derivation, block parsing"
+description = "Core Bitcoin primitives - transaction parsing, script classification, address derivation, block parsing"
 
 [dependencies]
 serde.workspace = true

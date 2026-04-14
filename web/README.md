@@ -14,11 +14,11 @@ The dev server looks for the binary at `../target/release/txray` or `../target/d
 
 ## Routes
 
-- `/lens` — transaction analysis
-- `/sherlock` — privacy / heuristic analysis
-- `/smith` — PSBT builder
-- `/api/health` — liveness probe (verifies the CLI binary is reachable)
+- `/lens` - transaction analysis
+- `/sherlock` - privacy / heuristic analysis
+- `/smith` - PSBT builder
+- `/api/health` - liveness probe (verifies the CLI binary is reachable)
 
 ## Production
 
-Use the repo-root `Dockerfile` / `docker-compose.yml` — it builds the Rust CLI and the Next.js standalone bundle into a single image.
+Use the repo-root `Dockerfile` / `docker-compose.yml` - it builds the Rust CLI and the Next.js standalone bundle into a single image.

@@ -3,7 +3,7 @@ name = "txray-cli"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "txray — Parse. Analyze. Build. Learn. Unified Bitcoin CLI."
+description = "txray - Parse. Analyze. Build. Learn. Unified Bitcoin CLI."
 
 [[bin]]
 name = "txray"

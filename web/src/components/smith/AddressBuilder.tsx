@@ -163,7 +163,7 @@ export function AddressBuilder({ onError }: AddressBuilderProps) {
       setPhase("ready");
     } catch {
       setPhase("idle");
-      onError("Could not reach mempool.space — check your connection");
+      onError("Could not reach mempool.space - check your connection");
     }
   }, [senderAddr, onError]);
 
@@ -186,7 +186,7 @@ export function AddressBuilder({ onError }: AddressBuilderProps) {
     }
     if (recipientParsed.network !== senderParsed.network) {
       setRecipientErr(
-        `Network mismatch — sender is ${senderParsed.network}, recipient is ${recipientParsed.network}`,
+        `Network mismatch - sender is ${senderParsed.network}, recipient is ${recipientParsed.network}`,
       );
       return;
     }
@@ -396,7 +396,7 @@ export function AddressBuilder({ onError }: AddressBuilderProps) {
                 />
                 <StatPill
                   label="Network"
-                  value={parseAddress(senderAddr.trim())?.network ?? "—"}
+                  value={parseAddress(senderAddr.trim())?.network ?? "-"}
                 />
               </div>
 
@@ -408,7 +408,7 @@ export function AddressBuilder({ onError }: AddressBuilderProps) {
           )}
         </AnimatePresence>
 
-        {/* Form — only shown in ready/building phase */}
+        {/* Form - only shown in ready/building phase */}
         <AnimatePresence>
           {(phase === "ready" || phase === "building") && fetched && (
             <motion.div
@@ -537,7 +537,7 @@ export function AddressBuilder({ onError }: AddressBuilderProps) {
                 />
                 <span className="text-sm text-stone-400">
                   Enable RBF{" "}
-                  <span className="text-stone-600 text-xs">(recommended — allows fee bumping)</span>
+                  <span className="text-stone-600 text-xs">(recommended - allows fee bumping)</span>
                 </span>
               </label>
 

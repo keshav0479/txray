@@ -32,8 +32,8 @@ const HEURISTIC_META: Record<
     description:
       "If a transaction spends multiple inputs, they likely belong to the same entity.",
     detectedExplanation:
-      "This transaction has multiple inputs — they are all likely controlled by the same wallet.",
-    notDetectedExplanation: "Single-input transaction — CIOH does not apply.",
+      "This transaction has multiple inputs - they are all likely controlled by the same wallet.",
+    notDetectedExplanation: "Single-input transaction - CIOH does not apply.",
   },
   change_detection: {
     icon: ArrowLeftRight,
@@ -43,7 +43,7 @@ const HEURISTIC_META: Record<
     detectedExplanation:
       "A likely change output was identified, revealing the sender's payment pattern.",
     notDetectedExplanation:
-      "Could not determine which output is change — outputs may be ambiguous.",
+      "Could not determine which output is change - outputs may be ambiguous.",
   },
   address_reuse: {
     icon: RefreshCw,
@@ -51,9 +51,9 @@ const HEURISTIC_META: Record<
     description:
       "Detects when the same address appears in both inputs and outputs.",
     detectedExplanation:
-      "An address from the inputs was reused in the outputs — a significant privacy leak.",
+      "An address from the inputs was reused in the outputs - a significant privacy leak.",
     notDetectedExplanation:
-      "No address reuse detected — sender uses fresh addresses.",
+      "No address reuse detected - sender uses fresh addresses.",
   },
   coinjoin: {
     icon: Users,
@@ -70,7 +70,7 @@ const HEURISTIC_META: Record<
     description:
       "Many inputs combined into few outputs of the same script type.",
     detectedExplanation:
-      "Multiple inputs were merged into 1-2 outputs — a wallet maintenance operation.",
+      "Multiple inputs were merged into 1-2 outputs - a wallet maintenance operation.",
     notDetectedExplanation: "Transaction does not match consolidation pattern.",
   },
   self_transfer: {
@@ -79,7 +79,7 @@ const HEURISTIC_META: Record<
     description:
       "All outputs appear to belong to the same entity as the inputs.",
     detectedExplanation:
-      "All outputs match the input script type — funds are moving within the same wallet.",
+      "All outputs match the input script type - funds are moving within the same wallet.",
     notDetectedExplanation: "Outputs suggest different recipients.",
   },
   op_return: {
@@ -96,9 +96,9 @@ const HEURISTIC_META: Record<
     description:
       "Outputs divisible by 100,000 sats suggest human-chosen payment amounts.",
     detectedExplanation:
-      "A round-number output was found — likely a human-chosen payment amount, not algorithmic change.",
+      "A round-number output was found - likely a human-chosen payment amount, not algorithmic change.",
     notDetectedExplanation:
-      "No round-number outputs — values appear to be algorithmic.",
+      "No round-number outputs - values appear to be algorithmic.",
   },
 };
 

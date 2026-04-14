@@ -33,7 +33,7 @@ pub fn classify_output_script(script: &[u8]) -> &'static str {
         return "p2wsh";
     }
 
-    // P2TR: 5120{32} (34 bytes) — OP_1 OP_PUSHBYTES_32
+    // P2TR: 5120{32} (34 bytes) - OP_1 OP_PUSHBYTES_32
     if len == 34 && script[0] == 0x51 && script[1] == 0x20 {
         return "p2tr";
     }
@@ -104,7 +104,7 @@ fn classify_p2sh_spend(script_sig: &[u8], witness: &[Vec<u8>]) -> &'static str {
     // P2SH-P2WSH:  scriptSig = <push 34 bytes: 0020{32}>
 
     if !witness.is_empty() {
-        // Has witness data — this is nested segwit
+        // Has witness data - this is nested segwit
         // Parse the scriptSig to find the pushed redeem script
         if let Some(redeem) = extract_single_push(script_sig) {
             if redeem.len() == 22 && redeem[0] == 0x00 && redeem[1] == 0x14 {
@@ -116,7 +116,7 @@ fn classify_p2sh_spend(script_sig: &[u8], witness: &[Vec<u8>]) -> &'static str {
         }
     }
 
-    // Non-segwit P2SH or unrecognized — just classify as unknown for inputs
+    // Non-segwit P2SH or unrecognized - just classify as unknown for inputs
     // (the spec doesn't have a plain "p2sh" input type)
     "unknown"
 }
@@ -412,7 +412,7 @@ pub fn decode_op_return(script: &[u8]) -> (String, Option<String>, &'static str)
                 &[]
             }
             _ => {
-                // Not a push opcode — stop parsing (some OP_RETURN scripts
+                // Not a push opcode - stop parsing (some OP_RETURN scripts
                 // have non-push opcodes, we just stop)
                 break;
             }

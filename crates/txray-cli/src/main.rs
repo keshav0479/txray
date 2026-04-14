@@ -5,7 +5,7 @@ use colored::*;
 #[derive(Parser)]
 #[command(
     name = "txray",
-    about = "txray — Parse. Analyze. Build. Learn.",
+    about = "txray - Parse. Analyze. Build. Learn.",
     version,
     after_help = "Examples:\n  txray famous                           List all famous blocks\n  txray famous genesis                   Show genesis block details\n  txray fetch --block 170                Fetch Satoshi→Hal Finney block\n  txray parse tx fixture.json            Parse a transaction fixture\n  txray parse block blk.dat rev.dat xor.dat  Parse a block file\n  txray analyze blk.dat rev.dat xor.dat  Run heuristics on a block\n  txray build fixture.json               Build PSBT from fixture"
 )]
@@ -396,9 +396,12 @@ fn cmd_advise(fixture_path: &str, json_output: bool) -> Result<()> {
 }
 
 async fn cmd_fetch(block: Option<String>, tx: Option<String>, source: &str) -> Result<()> {
+    // `--source esplora` is an explicit override. Otherwise honor the
+    // env-driven primary so operators can point txray at their own
+    // mempool/Esplora instance via TXRAY_MEMPOOL_API without rebuilding.
     let api_source = match source {
         "esplora" => txray_net::ApiSource::Esplora,
-        _ => txray_net::ApiSource::MempoolSpace,
+        _ => txray_net::ApiSource::primary_from_env(),
     };
 
     if let Some(block_id) = block {

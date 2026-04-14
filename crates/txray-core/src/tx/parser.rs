@@ -23,7 +23,7 @@ pub struct RawTransaction {
     pub locktime: u32,
     /// Full serialization bytes (with witness if segwit)
     pub raw_bytes: Vec<u8>,
-    /// Base serialization bytes (without witness — legacy format)
+    /// Base serialization bytes (without witness - legacy format)
     pub base_bytes: Vec<u8>,
 }
 

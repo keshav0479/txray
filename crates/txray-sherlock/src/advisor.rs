@@ -1,4 +1,4 @@
-//! Privacy Advisor — combined privacy score and recommendation engine.
+//! Privacy Advisor - combined privacy score and recommendation engine.
 //!
 //! Combines heuristic analysis, entropy, and wallet fingerprint signals
 //! into a single 1–10 privacy score with actionable recommendations.
@@ -26,7 +26,7 @@ pub enum PrivacyIssue {
     MixedInputTypes,
     /// Low entropy (few valid interpretations)
     LowEntropy,
-    /// Single input, single output — trivially linkable
+    /// Single input, single output - trivially linkable
     TrivialStructure,
 }
 
@@ -68,7 +68,7 @@ pub fn advise_transaction(
         score -= 3;
         issues.push(PrivacyIssue::AddressReuse);
         recommendations.push(
-            "Never reuse addresses — generate a fresh address for each transaction".to_string(),
+            "Never reuse addresses - generate a fresh address for each transaction".to_string(),
         );
     }
 
@@ -114,7 +114,7 @@ pub fn advise_transaction(
         score -= 2;
         issues.push(PrivacyIssue::RoundNumberPayment);
         recommendations.push(
-            "Avoid sending exact round amounts (e.g., 0.01 BTC) — add random sats".to_string(),
+            "Avoid sending exact round amounts (e.g., 0.01 BTC) - add random sats".to_string(),
         );
     }
 
@@ -150,7 +150,7 @@ pub fn advise_transaction(
             score -= 2;
             issues.push(PrivacyIssue::LowEntropy);
             recommendations.push(
-                "Transaction has few valid interpretations — consider CoinJoin for better privacy"
+                "Transaction has few valid interpretations - consider CoinJoin for better privacy"
                     .to_string(),
             );
         }
@@ -161,7 +161,7 @@ pub fn advise_transaction(
         score -= 1;
         issues.push(PrivacyIssue::TrivialStructure);
         recommendations.push(
-            "Single-output transactions are trivially linkable — use batching or CoinJoin"
+            "Single-output transactions are trivially linkable - use batching or CoinJoin"
                 .to_string(),
         );
     }

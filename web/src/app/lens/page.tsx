@@ -517,7 +517,7 @@ export default function LensPage() {
                           Raw Transaction Hex
                         </h3>
                         <p className="text-sm text-stone-400">
-                          Paste raw transaction hex — prevout data is fetched
+                          Paste raw transaction hex - prevout data is fetched
                           automatically from mempool.space.
                         </p>
                       </div>

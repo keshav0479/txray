@@ -1,11 +1,11 @@
 //! # txray-lens
 //!
-//! Transaction and block analysis — extends txray-core with warnings,
+//! Transaction and block analysis - extends txray-core with warnings,
 //! explanations, and human-readable output generation.
 //!
 //! Two main entry points:
-//! - `analyze_transaction()` — parse a fixture JSON, analyze the tx, return JSON
-//! - `analyze_block()` — read block/undo/xor files, analyze all txs, return JSON
+//! - `analyze_transaction()` - parse a fixture JSON, analyze the tx, return JSON
+//! - `analyze_block()` - read block/undo/xor files, analyze all txs, return JSON
 
 pub mod explain;
 pub mod warnings;

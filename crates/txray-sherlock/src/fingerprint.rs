@@ -1,4 +1,4 @@
-//! Wallet fingerprinting — identify wallet software from transaction patterns.
+//! Wallet fingerprinting - identify wallet software from transaction patterns.
 //!
 //! Checks BIP69 ordering, low-R signature grinding, anti-fee-sniping locktime,
 //! RBF signaling, change position, and input type consistency to identify
@@ -109,7 +109,7 @@ fn check_bip69(tx: &RawTransaction, prevouts: Option<&[UndoPrevout]>) -> bool {
         }
     });
 
-    // For single input/output txs, BIP69 is trivially true — don't count that
+    // For single input/output txs, BIP69 is trivially true - don't count that
     // as a meaningful signal
     let _ = prevouts; // prevouts not needed for ordering check
     inputs_sorted && outputs_sorted
@@ -303,7 +303,7 @@ fn detect_change_position(tx: &RawTransaction, prevouts: Option<&[UndoPrevout]>)
         None => return ChangePosition::Indeterminate,
     };
 
-    // Find outputs matching input type — those are likely change
+    // Find outputs matching input type - those are likely change
     let matching: Vec<usize> = candidate_indices
         .iter()
         .filter(|&&i| output_types[i] == majority)
@@ -588,7 +588,7 @@ mod tests {
 
         let tx = make_tx(
             vec![
-                make_input_with(txid_a, 0, 0xffffffff), // 0x02 first — wrong order
+                make_input_with(txid_a, 0, 0xffffffff), // 0x02 first - wrong order
                 make_input_with(txid_b, 0, 0xffffffff),
             ],
             vec![
@@ -605,7 +605,7 @@ mod tests {
         let tx = make_tx(
             vec![make_input_with([0x01; 32], 0, 0xffffffff)],
             vec![
-                output(20_000, p2wpkh_script(0xaa)), // 20k first — wrong order
+                output(20_000, p2wpkh_script(0xaa)), // 20k first - wrong order
                 output(10_000, p2wpkh_script(0xbb)),
             ],
             0,

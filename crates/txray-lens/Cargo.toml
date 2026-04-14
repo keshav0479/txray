@@ -4,7 +4,7 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Transaction and block analysis — parse, explain, and generate warnings"
+description = "Transaction and block analysis - parse, explain, and generate warnings"
 
 [dependencies]
 txray-core = { path = "../txray-core" }

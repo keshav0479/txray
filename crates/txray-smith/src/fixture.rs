@@ -6,7 +6,7 @@ use crate::error::BuilderError;
 // ─── Top-level fixture ──────────────────────────────────────────────────────
 
 /// Top-level fixture JSON structure.
-/// NO #[serde(deny_unknown_fields)] — extra fields silently ignored (README line 150).
+/// NO #[serde(deny_unknown_fields)] - extra fields silently ignored (README line 150).
 #[derive(Debug, Deserialize)]
 pub struct Fixture {
     pub network: String,
@@ -27,7 +27,7 @@ pub struct Fixture {
 // ─── Sub-structures ─────────────────────────────────────────────────────────
 
 /// A UTXO available for spending.
-/// Extra fields silently ignored — no deny_unknown_fields.
+/// Extra fields silently ignored - no deny_unknown_fields.
 #[derive(Debug, Deserialize, Clone)]
 pub struct Utxo {
     pub txid: String,
@@ -315,7 +315,7 @@ mod tests {
 
     #[test]
     fn test_parse_extra_fields_ignored() {
-        // Extra fields at all levels — MUST NOT cause errors
+        // Extra fields at all levels - MUST NOT cause errors
         let json = r#"{
             "network": "mainnet",
             "fee_rate_sat_vb": 5.0,

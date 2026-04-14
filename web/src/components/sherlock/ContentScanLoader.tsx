@@ -87,7 +87,7 @@ export function ContentScanLoader({
       }, 400);
       return () => clearTimeout(timer);
     } else {
-      // All steps checked AND data is ready — fade out
+      // All steps checked AND data is ready - fade out
       const timer = setTimeout(() => {
         onComplete();
       }, 500);

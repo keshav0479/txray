@@ -4,10 +4,10 @@
 ///
 /// | rbf          | locktime present | current_height | nSequence  | nLockTime      |
 /// |--------------|------------------|----------------|------------|----------------|
-/// | false/absent | no               | —              | 0xFFFFFFFF | 0              |
-/// | false/absent | yes              | —              | 0xFFFFFFFE | locktime value |
+/// | false/absent | no               | -              | 0xFFFFFFFF | 0              |
+/// | false/absent | yes              | -              | 0xFFFFFFFE | locktime value |
 /// | true         | no               | yes            | 0xFFFFFFFD | current_height |
-/// | true         | yes              | —              | 0xFFFFFFFD | locktime value |
+/// | true         | yes              | -              | 0xFFFFFFFD | locktime value |
 /// | true         | no               | no             | 0xFFFFFFFD | 0              |
 use crate::fixture::Fixture;
 

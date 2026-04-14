@@ -1,4 +1,4 @@
-//! Script step-through debugger — execute Bitcoin Script opcodes with stack snapshots.
+//! Script step-through debugger - execute Bitcoin Script opcodes with stack snapshots.
 //!
 //! Educational tool: walks through P2PKH and P2WPKH verification flows
 //! opcode-by-opcode, showing the stack state at each step. OP_CHECKSIG is
@@ -40,7 +40,7 @@ pub struct ScriptStep {
 /// For legacy P2PKH: runs scriptSig first, then scriptPubKey (combined execution).
 /// For SegWit P2WPKH: runs the witness program (constructs implied P2PKH script).
 ///
-/// OP_CHECKSIG and OP_CHECKMULTISIG are "assumed valid" — no actual signature
+/// OP_CHECKSIG and OP_CHECKMULTISIG are "assumed valid" - no actual signature
 /// verification is performed.
 pub fn execute_script(
     script_pubkey: &[u8],
@@ -330,7 +330,7 @@ fn execute_opcodes(
                 });
             }
 
-            // OP_HASH160 (0xa9) — RIPEMD160(SHA256(data))
+            // OP_HASH160 (0xa9) - RIPEMD160(SHA256(data))
             0xa9 => {
                 *step_num += 1;
                 if stack.is_empty() {
@@ -380,7 +380,7 @@ fn execute_opcodes(
                 });
             }
 
-            // OP_EQUALVERIFY (0x88) — OP_EQUAL + OP_VERIFY
+            // OP_EQUALVERIFY (0x88) - OP_EQUAL + OP_VERIFY
             0x88 => {
                 *step_num += 1;
                 if stack.len() < 2 {
@@ -450,7 +450,7 @@ fn execute_opcodes(
                 }
             }
 
-            // OP_CHECKSIG (0xac) — assumed valid for educational purposes
+            // OP_CHECKSIG (0xac) - assumed valid for educational purposes
             0xac => {
                 *step_num += 1;
                 if stack.len() < 2 {
@@ -466,7 +466,7 @@ fn execute_opcodes(
                 // Pop pubkey and signature, push TRUE
                 stack.pop(); // pubkey
                 stack.pop(); // signature
-                stack.push(vec![1]); // TRUE — assumed valid
+                stack.push(vec![1]); // TRUE - assumed valid
                 steps.push(ScriptStep {
                     step_number: *step_num,
                     opcode: "OP_CHECKSIG".to_string(),
@@ -476,7 +476,7 @@ fn execute_opcodes(
                 });
             }
 
-            // OP_RETURN (0x6a) — marks output as unspendable
+            // OP_RETURN (0x6a) - marks output as unspendable
             0x6a => {
                 *step_num += 1;
                 steps.push(ScriptStep {

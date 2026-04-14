@@ -126,7 +126,7 @@ export default function BuildPage() {
 
   const warningExplanations: Record<string, string> = {
     SEND_ALL:
-      "All input value goes to outputs and fees — no change comes back to your wallet. This happens when the leftover would be too small (dust) to be worth keeping.",
+      "All input value goes to outputs and fees - no change comes back to your wallet. This happens when the leftover would be too small (dust) to be worth keeping.",
     HIGH_FEE:
       "The total fee is unusually high relative to the amount being sent. Double-check the fee rate if you didn't intend to overpay.",
     RBF_SIGNALING:
@@ -354,8 +354,8 @@ export default function BuildPage() {
                   called{" "}
                   <Tooltip
                     term="UTXOs"
-                    definition="Unspent Transaction Outputs — the individual coins your wallet owns. Each has a specific amount and can only be spent whole."
-                    analogy="Like having specific bills in your wallet — a ₹500 note and a ₹100 note, not just a ₹600 balance."
+                    definition="Unspent Transaction Outputs - the individual coins your wallet owns. Each has a specific amount and can only be spent whole."
+                    analogy="Like having specific bills in your wallet - a ₹500 note and a ₹100 note, not just a ₹600 balance."
                   >
                     UTXOs
                   </Tooltip>
@@ -373,7 +373,7 @@ export default function BuildPage() {
                   <Tooltip
                     term="coin selection"
                     definition="The algorithm that picks the best combination of UTXOs to cover your payment + fees, minimizing waste."
-                    analogy="Like choosing which banknotes to hand over at a shop — you want the fewest notes possible to avoid getting lots of small change."
+                    analogy="Like choosing which banknotes to hand over at a shop - you want the fewest notes possible to avoid getting lots of small change."
                   >
                     selection engine
                   </Tooltip>{" "}
@@ -383,7 +383,7 @@ export default function BuildPage() {
                 {isConsolidation && (
                   <p className="mb-4 text-sm text-emerald-400/80 bg-emerald-500/5 border border-emerald-500/10 rounded-xl px-4 py-3">
                     <Hammer className="w-4 h-4 inline-block mr-1.5 -mt-0.5" />
-                    This looks like a <strong>consolidation</strong> — merging{" "}
+                    This looks like a <strong>consolidation</strong> - merging{" "}
                     {data.selected_inputs.length} small coins into one larger
                     UTXO. This reduces future fees by cleaning up your wallet.
                   </p>
@@ -392,7 +392,7 @@ export default function BuildPage() {
                   <p className="mb-4 text-sm text-blue-400/80 bg-blue-500/5 border border-blue-500/10 rounded-xl px-4 py-3">
                     <Sparkles className="w-4 h-4 inline-block mr-1.5 -mt-0.5" />
                     Only <strong>one coin</strong> was needed to cover this
-                    payment — a clean, efficient selection.
+                    payment - a clean, efficient selection.
                   </p>
                 )}
                 {hasMixedScripts && (
@@ -419,7 +419,7 @@ export default function BuildPage() {
                 <p className="text-sm text-zinc-500">
                   See the{" "}
                   <strong className="text-emerald-400">green nodes</strong> on
-                  the left — those are the coins being consumed.
+                  the left - those are the coins being consumed.
                 </p>
               </StoryCard>
             </div>
@@ -440,12 +440,12 @@ export default function BuildPage() {
                   <p className="mb-4">
                     This is a{" "}
                     <strong className="text-amber-400">Send-All</strong>{" "}
-                    transaction — every single satoshi goes to the recipient
+                    transaction - every single satoshi goes to the recipient
                     {data.outputs.length > 1 ? "s" : ""} and the miner fee. No{" "}
                     <Tooltip
                       term="change"
                       definition="Leftover value from your inputs that gets sent back to your own wallet."
-                      analogy="Like paying ₹500 for a ₹350 item — the ₹150 you get back is your change."
+                      analogy="Like paying ₹500 for a ₹350 item - the ₹150 you get back is your change."
                     >
                       change
                     </Tooltip>{" "}
@@ -464,12 +464,12 @@ export default function BuildPage() {
                           <strong className="text-emerald-400 inline-flex items-center gap-1">
                             <RefreshCw className="w-4 h-4 inline" /> Change
                           </strong>{" "}
-                          is your leftover — it routes back to your wallet, just
+                          is your leftover - it routes back to your wallet, just
                           like getting{" "}
                           <Tooltip
                             term="change"
                             definition="Leftover value from your inputs that gets sent back to your own wallet."
-                            analogy="Like paying ₹500 for a ₹350 item — the ₹150 you get back is your change."
+                            analogy="Like paying ₹500 for a ₹350 item - the ₹150 you get back is your change."
                           >
                             change
                           </Tooltip>{" "}
@@ -510,7 +510,7 @@ export default function BuildPage() {
                   <Tooltip
                     term="fee rate"
                     definition="Cost per virtual byte of transaction data. Higher rates = faster confirmation."
-                    analogy="Like choosing shipping speed — express costs more per gram."
+                    analogy="Like choosing shipping speed - express costs more per gram."
                   >
                     fee rate
                   </Tooltip>{" "}
@@ -523,7 +523,7 @@ export default function BuildPage() {
                       {data.vbytes}{" "}
                       <Tooltip
                         term="vBytes"
-                        definition="Virtual bytes — how much block space your transaction uses. More inputs = heavier = costlier."
+                        definition="Virtual bytes - how much block space your transaction uses. More inputs = heavier = costlier."
                         analogy="Like the weight of a package determining shipping costs."
                       >
                         vB
@@ -536,8 +536,8 @@ export default function BuildPage() {
                       {data.fee_rate_sat_vb.toFixed(1)}{" "}
                       <Tooltip
                         term="sat/vB"
-                        definition="Satoshis per virtual byte — the 'price per gram.' 1 sat = 0.00000001 BTC."
-                        analogy="Like choosing between standard and express shipping — more per gram for faster delivery."
+                        definition="Satoshis per virtual byte - the 'price per gram.' 1 sat = 0.00000001 BTC."
+                        analogy="Like choosing between standard and express shipping - more per gram for faster delivery."
                       >
                         sat/vB
                       </Tooltip>
@@ -555,7 +555,7 @@ export default function BuildPage() {
                     <AlertTriangle className="w-4 h-4 text-amber-400" />
                     <Tooltip
                       term="Dust Threshold"
-                      definition="The minimum useful output amount. Anything smaller costs more in fees to spend than it's worth — permanently stuck in your wallet."
+                      definition="The minimum useful output amount. Anything smaller costs more in fees to spend than it's worth - permanently stuck in your wallet."
                       analogy="Like a coin so small it costs more to pick up than its face value."
                     >
                       Dust Limit: 546 sats
@@ -563,7 +563,7 @@ export default function BuildPage() {
                   </p>
                   <p className="text-xs text-zinc-500 leading-relaxed">
                     If a change output would be smaller than 546 sats, it&apos;s
-                    not worth creating — it would cost more in future fees to
+                    not worth creating - it would cost more in future fees to
                     spend than it&apos;s worth. In that case, the leftover is
                     absorbed into the miner fee instead.
                   </p>
@@ -572,14 +572,14 @@ export default function BuildPage() {
                   <p className="text-sm text-amber-400/80 bg-amber-500/5 border border-amber-500/10 rounded-xl px-4 py-3 mt-3">
                     <Zap className="w-4 h-4 inline-block mr-1.5 -mt-0.5" />
                     This is a <strong>high-priority</strong> transaction at{" "}
-                    {data.fee_rate_sat_vb.toFixed(1)} sat/vB — it should confirm
+                    {data.fee_rate_sat_vb.toFixed(1)} sat/vB - it should confirm
                     quickly.
                   </p>
                 )}
                 {isLowFee && (
                   <p className="text-sm text-cyan-400/80 bg-cyan-500/5 border border-cyan-500/10 rounded-xl px-4 py-3 mt-3">
                     <Snail className="w-4 h-4 inline-block mr-1.5 -mt-0.5" />
-                    Economy rate at {data.fee_rate_sat_vb.toFixed(1)} sat/vB —
+                    Economy rate at {data.fee_rate_sat_vb.toFixed(1)} sat/vB -
                     this may take longer to confirm during busy periods.
                   </p>
                 )}
@@ -620,8 +620,8 @@ export default function BuildPage() {
                         RBF
                       </Tooltip>{" "}
                       {data.rbf_signaling
-                        ? "is enabled — you can bump the fee later if this transaction gets stuck in the mempool."
-                        : "is disabled — once broadcast, you cannot replace this transaction with a higher-fee version."}
+                        ? "is enabled - you can bump the fee later if this transaction gets stuck in the mempool."
+                        : "is disabled - once broadcast, you cannot replace this transaction with a higher-fee version."}
                     </p>
                   </div>
 
@@ -646,15 +646,15 @@ export default function BuildPage() {
                       </Tooltip>{" "}
                       {data.locktime > 0
                         ? data.locktime >= 500_000_000
-                          ? `is set to Unix timestamp ${data.locktime} — this transaction can't be confirmed until that time.`
-                          : `is set to block height ${data.locktime} — this transaction can't be confirmed until that block is mined.`
-                        : "is not set — this transaction can be confirmed immediately."}
+                          ? `is set to Unix timestamp ${data.locktime} - this transaction can't be confirmed until that time.`
+                          : `is set to block height ${data.locktime} - this transaction can't be confirmed until that block is mined.`
+                        : "is not set - this transaction can be confirmed immediately."}
                     </p>
                     {isAntiFeeSnipe && (
                       <p className="text-xs text-purple-400/70 mt-2">
                         <Shield className="w-3.5 h-3.5 inline-block mr-1 -mt-0.5" />
                         This locktime likely provides{" "}
-                        <strong>anti-fee-sniping protection</strong> — it
+                        <strong>anti-fee-sniping protection</strong> - it
                         prevents miners from re-mining old blocks to steal fees.
                       </p>
                     )}
@@ -716,7 +716,7 @@ export default function BuildPage() {
                       <Package className="w-4 h-4" />{" "}
                       <Tooltip
                         term="PSBT"
-                        definition="Partially Signed Bitcoin Transaction — an unsigned transaction packaged with all metadata needed for safe offline signing."
+                        definition="Partially Signed Bitcoin Transaction - an unsigned transaction packaged with all metadata needed for safe offline signing."
                         analogy="A pre-filled check with the amount, recipient, and date filled in. It just needs your signature to become active."
                       >
                         PSBT
@@ -756,7 +756,7 @@ export default function BuildPage() {
           </ScrollytellingLayout>
         </div>
       </motion.div>
-      {/* Summary Modal — portaled to body so fixed positioning works */}
+      {/* Summary Modal - portaled to body so fixed positioning works */}
       {summaryModal &&
         data &&
         createPortal(

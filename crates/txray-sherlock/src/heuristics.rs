@@ -242,7 +242,7 @@ fn detect_change(
     // Find majority input script type
     let majority_input_type = find_majority_type(input_script_types);
 
-    // Method 1: Script type match — output matching input type is likely change
+    // Method 1: Script type match - output matching input type is likely change
     if let Some(ref majority) = majority_input_type {
         let matching: Vec<usize> = candidate_indices
             .iter()
@@ -261,7 +261,7 @@ fn detect_change(
         }
     }
 
-    // Method 2: Round number analysis — non-round output is likely change
+    // Method 2: Round number analysis - non-round output is likely change
     let round_statuses: Vec<bool> = candidate_indices
         .iter()
         .map(|&i| is_round_amount(tx.outputs[i].value))
@@ -282,7 +282,7 @@ fn detect_change(
         };
     }
 
-    // Method 3: Value analysis — the smaller output is likely change (for 2-output txs)
+    // Method 3: Value analysis - the smaller output is likely change (for 2-output txs)
     if candidate_indices.len() == 2 {
         let idx_a = candidate_indices[0];
         let idx_b = candidate_indices[1];
@@ -291,7 +291,7 @@ fn detect_change(
 
         // Don't flag if values are equal (could be coinjoin)
         if val_a != val_b {
-            // Check if one output reuses an input address — that's the change
+            // Check if one output reuses an input address - that's the change
             let input_addr_set: std::collections::HashSet<&str> = output_addresses
                 .iter()
                 .filter_map(|addr| addr.as_deref())

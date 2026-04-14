@@ -174,7 +174,7 @@ pub fn select_coins(fixture: &Fixture) -> Result<CoinSelectionResult, BuilderErr
         let indices: Vec<usize> = by_value[0..n].to_vec();
         try_subset(&indices, &mut best_with_change, &mut best_send_all);
         if best_with_change.is_some() {
-            break; // Fewest inputs with change — stop
+            break; // Fewest inputs with change - stop
         }
     }
 
@@ -421,8 +421,8 @@ mod tests {
 
     #[test]
     fn test_codex_lighter_utxo_preferred() {
-        // UTXO A: 118k, unknown script (592 WU) — sorted first by value
-        // UTXO B: 115k, p2tr (230 WU) — lighter, should be selected
+        // UTXO A: 118k, unknown script (592 WU) - sorted first by value
+        // UTXO B: 115k, p2tr (230 WU) - lighter, should be selected
         // Payment: 100k, fee_rate: 100, max_inputs: 1
         // With UTXO A: fee would be very high due to 592 WU → may not fit
         // With UTXO B: fee is lower → should work

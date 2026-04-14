@@ -1,4 +1,4 @@
-//! Boltzmann entropy analysis — measure transaction privacy via interpretation counting.
+//! Boltzmann entropy analysis - measure transaction privacy via interpretation counting.
 //!
 //! Uses backtracking over input→output assignments to count valid matchings.
 //! Each input is assigned to exactly one output; multiple inputs may fund the
@@ -324,7 +324,7 @@ mod tests {
         assert_eq!(result.interpretations, 2);
         assert!((result.entropy_bits - 1.0).abs() < 0.01); // log2(2) = 1.0
         assert_eq!(result.privacy_grade, 'D');
-        // No deterministic links — each link has 50% probability
+        // No deterministic links - each link has 50% probability
         assert!(result.deterministic_links.is_empty());
     }
 

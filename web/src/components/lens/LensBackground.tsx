@@ -4,8 +4,8 @@
  * LensBackground
  *
  * 3 layers on top of a dim ₿ base pattern:
- * 1. Orb 1 — large soft spotlight drifting left to right (upper half)
- * 2. Orb 2 — large soft spotlight drifting left to right (lower half, phase-shifted)
+ * 1. Orb 1 - large soft spotlight drifting left to right (upper half)
+ * 2. Orb 2 - large soft spotlight drifting left to right (lower half, phase-shifted)
  */
 export function LensBackground() {
   const tileSize = "200px 220px";

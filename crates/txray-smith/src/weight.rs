@@ -135,7 +135,7 @@ pub fn estimate_weight(inputs: &[InputInfo], outputs: &[OutputInfo]) -> u64 {
     // Version (4 bytes, non-witness)
     weight += 16;
 
-    // Marker + flag (2 bytes, witness) — only if segwit
+    // Marker + flag (2 bytes, witness) - only if segwit
     if has_segwit {
         weight += 2;
     }
