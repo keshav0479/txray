@@ -1,9 +1,15 @@
 /**
- * Fetches prevout data from mempool.space for a raw transaction hex.
- * Used when the user pastes raw hex without prevout information.
+ * Fetches prevout data from a configurable Bitcoin source for a raw
+ * transaction hex. Used when the user pastes raw hex without prevout info.
  */
 
-const MEMPOOL_API = "https://mempool.space/api";
+// Ordered list of upstream APIs. The first one is tried, and on any failure
+// (network error or non-2xx) the next one is used. Configurable via env so
+// self-hosters can point at their own Esplora/mempool instance.
+const SOURCES: string[] = [
+  process.env.TXRAY_MEMPOOL_API ?? "https://mempool.space/api",
+  process.env.TXRAY_ESPLORA_API ?? "https://blockstream.info/api",
+].filter((u, i, arr) => u && arr.indexOf(u) === i);
 
 interface InputRef {
   txid: string;
@@ -37,7 +43,7 @@ function readVarint(buf: Uint8Array, offset: number): [number, number] {
   if (first === 0xfe) {
     return [readU32LE(buf, offset + 1), 5];
   }
-  // 0xff — 8-byte, but tx inputs won't exceed 32-bit count
+  // 0xff - 8-byte, but tx inputs won't exceed 32-bit count
   return [readU32LE(buf, offset + 1), 9];
 }
 
@@ -111,16 +117,25 @@ export async function fetchPrevouts(inputs: InputRef[]): Promise<Prevout[]> {
   const txidSet = new Set(inputs.map((i) => i.txid));
   const txCache = new Map<string, { vout: { scriptpubkey: string; value: number }[] }>();
 
-  // Fetch each unique parent tx
+  // Fetch each unique parent tx, walking the source list on failure.
   const fetchPromises = Array.from(txidSet).map(async (txid) => {
-    const res = await fetch(`${MEMPOOL_API}/tx/${txid}`);
-    if (!res.ok) {
-      throw new Error(
-        `Failed to fetch parent tx ${txid.slice(0, 12)}... from mempool.space (${res.status})`,
-      );
+    let lastErr: unknown = null;
+    for (const base of SOURCES) {
+      try {
+        const res = await fetch(`${base}/tx/${txid}`);
+        if (!res.ok) {
+          lastErr = new Error(`HTTP ${res.status} from ${base}`);
+          continue;
+        }
+        txCache.set(txid, await res.json());
+        return;
+      } catch (err) {
+        lastErr = err;
+      }
     }
-    const data = await res.json();
-    txCache.set(txid, data);
+    throw new Error(
+      `Failed to fetch parent tx ${txid.slice(0, 12)}... from all sources: ${String(lastErr)}`,
+    );
   });
 
   await Promise.all(fetchPromises);
@@ -129,7 +144,7 @@ export async function fetchPrevouts(inputs: InputRef[]): Promise<Prevout[]> {
   return inputs.map(({ txid, vout }) => {
     const parentTx = txCache.get(txid);
     if (!parentTx || !parentTx.vout[vout]) {
-      throw new Error(`Prevout ${txid.slice(0, 12)}...:${vout} not found on mempool.space`);
+      throw new Error(`Prevout ${txid.slice(0, 12)}...:${vout} not found upstream`);
     }
     const output = parentTx.vout[vout];
     return {

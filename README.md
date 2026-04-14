@@ -1,165 +1,237 @@
 <p align="center">
-  <img src="assets/txray-logo.svg" alt="txray" width="120" />
-</p>
-
-<h1 align="center">TXRAY</h1>
-
-<p align="center">
-  <strong>See the story behind every Bitcoin transaction.</strong><br/>
-  Privacy analysis, wallet fingerprinting, and transaction construction. Built right into your browser.
+  <img src="assets/banner.svg" alt="txray, see the story behind every Bitcoin transaction" width="100%" />
 </p>
 
 <p align="center">
-  <img src="assets/screenshots/hero.png" alt="txray hero" width="100%" />
+  <a href="https://github.com/keshav0479/txray/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/keshav0479/txray/ci.yml?branch=main&style=for-the-badge&labelColor=0B0E14&color=F7931A&label=CI" alt="CI" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-F7931A?style=for-the-badge&labelColor=0B0E14" alt="MIT" /></a>
+  <img src="https://img.shields.io/badge/rust-1.90%2B-F7931A?style=for-the-badge&labelColor=0B0E14&logo=rust&logoColor=F7931A" alt="Rust 1.90+" />
+  <img src="https://img.shields.io/badge/next.js-15-FAFAF9?style=for-the-badge&labelColor=0B0E14&logo=nextdotjs&logoColor=FAFAF9" alt="Next.js 15" />
+  <a href="https://github.com/keshav0479/txray/pkgs/container/txray"><img src="https://img.shields.io/badge/ghcr-multi--arch-00E5FF?style=for-the-badge&labelColor=0B0E14&logo=docker&logoColor=00E5FF" alt="ghcr image" /></a>
 </p>
 
----
+<br/>
 
-## Three perspectives, one transaction
+> Bitcoin block explorers tell you **what** happened. txray tells you **the story**: who paid whom, what the script actually does, how private the transaction really is, and how to build a better one yourself. It's a Rust workspace plus a Next.js front end you can run with one command.
 
-Every transaction gets X-rayed from structure, privacy, and construction angles.
+<br/>
+
+## Three tools, one journey
+
+<table>
+<tr>
+<td width="33%" valign="top">
+
+#### 🔵 Lens
+<sub>**DECODE**</sub>
+
+Every input, output, script, and byte. The Money Flow graph traces value across the chain.
+
+</td>
+<td width="33%" valign="top">
+
+#### 🟡 Sherlock
+<sub>**DETECT**</sub>
+
+Privacy scored 1 to 10. Heuristics, Boltzmann entropy, wallet fingerprints, concrete advice.
+
+</td>
+<td width="33%" valign="top">
+
+#### 🟢 Smith
+<sub>**FORGE**</sub>
+
+Raw transactions with smart coin selection, fee estimation, and a clear walkthrough.
+
+</td>
+</tr>
+</table>
 
 <p align="center">
-  <img src="assets/screenshots/perspectives.png" alt="three perspectives" width="100%" />
+  <img src="assets/screenshots/perspectives.png" alt="three perspectives on the same transaction" width="92%" />
 </p>
 
-| | |
-|---|---|
-| **Lens** — Structure | See every input, output, script, and byte. Understand exactly how Bitcoin moves value. |
-| **Sherlock** — Privacy | Analyze coin privacy through fingerprints, heuristics, entropy scoring, and actionable advice. |
-| **Smith** — Construct | Build raw transactions with smart coin selection, fee estimation, and a clear walkthrough. |
+<br/>
 
----
+## What it looks like
 
-## Money Flow
+<table align="center">
+<tr>
+<td width="33%"><img src="assets/screenshots/lens.png" alt="Lens: money flow graph" /></td>
+<td width="33%"><img src="assets/screenshots/sherlock.png" alt="Sherlock: privacy score" /></td>
+<td width="33%"><img src="assets/screenshots/docs.png" alt="In-app docs" /></td>
+</tr>
+</table>
+
+<br/>
 
 <p align="center">
-  <img src="assets/screenshots/lens.png" alt="lens money flow" width="100%" />
+  <img src="assets/features.svg" alt="feature matrix" width="92%" />
 </p>
 
-Follow the flow from inputs (green) to outputs (purple). Script types, values, and warnings — all in one view.
+<br/>
 
----
-
-## Privacy Analysis
+## Architecture
 
 <p align="center">
-  <img src="assets/screenshots/sherlock.png" alt="sherlock privacy score" width="100%" />
+  <img src="assets/architecture.svg" alt="txray architecture" width="82%" />
 </p>
 
-Privacy scored 1–10 with heuristic breakdown, wallet fingerprinting (Bitcoin Core, Electrum, Sparrow, Ledger), Boltzmann entropy, and concrete recommendations.
+<sub align="center">A modular Rust workspace fronted by a Next.js app. Every web action shells out to the same <code>txray</code> CLI, so the browser and the terminal share one source of truth.</sub>
 
----
-
-## Built-in Docs
-
-<p align="center">
-  <img src="assets/screenshots/docs.png" alt="built-in docs" width="100%" />
-</p>
-
-UTXO model, transaction structure, privacy basics, heuristics — all explained in-app. No tab switching.
-
----
+<br/>
 
 ## Run it
 
+<table>
+<tr>
+<td width="50%" valign="top">
+
+#### Try it
+<sub>One command. Docker does the rest.</sub>
+
 ```bash
 docker compose up -d --build
-# http://localhost:3000
 ```
 
----
+Then open [localhost:3000](http://localhost:3000).
 
-## CLI
+</td>
+<td width="50%" valign="top">
+
+#### Hack on it
+<sub>Native build, hot reload.</sub>
 
 ```bash
-# browse famous Bitcoin blocks
-txray famous
-txray famous genesis
-txray famous pizza
-
-# fetch a block or transaction
-txray fetch --block 170
-txray fetch --tx <txid>
-
-# parse transactions and blocks
-txray parse tx fixture.json
-txray parse block blk.dat rev.dat xor.dat
-
-# chain analysis heuristics
-txray analyze blk.dat rev.dat xor.dat
-
-# build a PSBT
-txray build fixture.json
-
-# plain-English explanation
-txray explain fixture.json
-
-# wallet fingerprinting
-txray fingerprint fixture.json
-
-# Boltzmann entropy
-txray entropy fixture.json
-
-# step-through script debugger
-txray debug-script 76a914<hash>88ac --script-sig <hex>
-
-# inspect a PSBT
-txray inspect <base64-psbt>
-
-# privacy advisor
-txray advise fixture.json
+cargo run -p txray-cli -- famous pizza
+cd web && npm install && npm run dev
 ```
 
+Web at [localhost:3000](http://localhost:3000), CLI in your shell.
+
+</td>
+</tr>
+</table>
+
+<br/>
+
 <details>
-<summary>Crates</summary>
+<summary><b>CLI reference</b></summary>
 
-### `txray-core`
-Shared Bitcoin primitives — tx/block parsing, script classification, address derivation, weight estimation, script debugger.
+<br/>
 
-### `txray-lens`
-Transaction and block analysis with warnings and plain-English explanations.
+Install the unified binary:
 
-### `txray-sherlock`
-Chain analysis heuristics, wallet fingerprinting, Boltzmann entropy, privacy advisor.
+```bash
+cargo install --path crates/txray-cli
+```
 
-| Heuristic | Description |
-|-----------|-------------|
-| CIOH | Common-Input-Ownership Heuristic |
-| Change Detection | Identifies likely change outputs |
-| Address Reuse | Flags address reuse across inputs/outputs |
-| CoinJoin | Detects equal-output CoinJoin patterns |
-| Consolidation | Identifies UTXO consolidation transactions |
-| Self-Transfer | Detects self-transfer patterns |
-| OP_RETURN | Analyzes data carrier outputs |
-| Round Number | Flags round-number payment heuristic |
+#### Browse Bitcoin history
 
-### `txray-smith`
-PSBT construction with coin selection, fee estimation, RBF/locktime matrix, dust enforcement, PSBT inspector.
+```console
+$ txray famous genesis
+📚 The Genesis Block
+   Mined by Satoshi on 2009-01-03. Contains the famous Times headline.
 
-### `txray-net`
-Fetch blocks/txs from mempool.space and Blockstream Esplora with retry and disk cache.
+$ txray famous pizza
+📚 The Bitcoin Pizza Transaction
+   10,000 BTC for two Papa John's pizzas (block 57043).
+```
 
-### `txray-corpus`
-8 historically significant blocks with educational annotations:
+#### Fetch from public APIs
 
-Genesis Block · First Transaction · Pizza Transaction · First OP_RETURN · SegWit Activation · Largest Transaction · Wasabi CoinJoin · First Taproot Spends
+```bash
+txray fetch --block 170          # first non-coinbase tx
+txray fetch --tx <txid>          # any transaction by id
+```
+
+Honors `TXRAY_MEMPOOL_API` and `TXRAY_ESPLORA_API` env vars. Point it at your own Esplora instance if you self-host.
+
+#### Parse, analyze, build, explain
+
+```bash
+txray parse tx fixture.json      # decode raw tx → structured JSON
+txray analyze blk.dat            # heuristics + privacy score on a block file
+txray build fixture.json         # construct PSBT with coin selection
+txray explain fixture.json       # plain-English walkthrough
+```
+
+#### Privacy suite
+
+```bash
+txray fingerprint fixture.json   # which wallet probably built this?
+txray entropy fixture.json       # Boltzmann mixing entropy
+txray advise fixture.json        # what would have made it more private?
+```
+
+#### Low level
+
+```bash
+txray debug-script 76a914<hash>88ac --script-sig <hex>
+txray inspect <base64-psbt>
+```
 
 </details>
 
----
+<details>
+<summary><b>TUI</b></summary>
 
-## TUI
+<br/>
+
+A keyboard-driven five-tab dashboard for when you don't want a browser.
 
 ```bash
 cargo run -p txray-tui
 cargo run -p txray-tui -- path/to/fixture.json
 ```
 
-5-tab dashboard — Famous Blocks, Script Debugger, Heuristics, and more. Keyboard-driven (`Tab`, `Shift+Tab`, `1-5`).
+Tabs: Dashboard · Tx Detail · Heuristics · Famous Blocks · Script Debugger.
+Navigate with `Tab`, `Shift+Tab`, or jump directly with `1`–`5`.
 
----
+</details>
 
-## License
+<details>
+<summary><b>Deploying to a fresh Linux VM</b></summary>
 
-[MIT](LICENSE)
+<br/>
+
+Once a release tag is pushed, GitHub Actions builds a multi-arch image and publishes it to [GHCR](https://github.com/keshav0479/txray/pkgs/container/txray). On the VM you don't have to compile anything:
+
+```bash
+# one-time setup
+git clone https://github.com/keshav0479/txray.git
+cd txray
+cp .env.example .env
+
+# pull the latest image and run it
+docker compose pull && docker compose up -d
+```
+
+To upgrade later: `docker compose pull && docker compose up -d`. Rollback to a specific version with `IMAGE_TAG=v0.1.2 docker compose up -d`.
+
+</details>
+
+<br/>
+
+## Configuration
+
+Copy [.env.example](.env.example) to `.env`. The relevant knobs:
+
+| Variable | Default | What it does |
+|---|---|---|
+| `TXRAY_BIN` | `/usr/local/bin/txray` | Path to the CLI used by the web layer. Set automatically inside Docker. |
+| `TXRAY_MEMPOOL_API` | `https://mempool.space/api` | Primary Bitcoin data source. Point at your own mempool/Esplora to self-host. |
+| `TXRAY_ESPLORA_API` | `https://blockstream.info/api` | Fallback source. txray walks here if the primary fails. |
+| `PORT` / `HOSTNAME` | `3000` / `0.0.0.0` | Where the Next.js server binds. |
+
+<br/>
+
+<p align="center">
+  <em>Runs entirely on your machine. No telemetry. No keys ever touched.</em>
+</p>
+
+<br/>
+
+<div align="center">
+<sub><a href="LICENSE">MIT License</a> · <a href="crates/">Crate docs</a> · Built with Rust + Next.js</sub>
+</div>

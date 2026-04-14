@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 540" width="1080" height="540" role="img" aria-label="txray feature matrix">
+  <defs>
+    <pattern id="fgrid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#1A1E26" stroke-width="1" stroke-dasharray="2 4" />
+    </pattern>
+    <linearGradient id="fbg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0B0E14" />
+      <stop offset="100%" stop-color="#070910" />
+    </linearGradient>
+    <filter id="fglow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="b" />
+      <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1080" height="540" fill="url(#fbg)" />
+  <rect width="1080" height="540" fill="url(#fgrid)" opacity="0.5" />
+
+  <!-- Title -->
+  <text x="60" y="58"
+        font-family="'JetBrains Mono','Fira Mono',ui-monospace,monospace"
+        font-weight="800" font-size="22" fill="#FAFAF9" letter-spacing="3">FEATURE MATRIX</text>
+  <text x="60" y="82"
+        font-family="'Inter','Helvetica Neue',Arial,sans-serif"
+        font-size="13" fill="#78716C">Three tools, four capabilities, one data model.</text>
+
+  <!-- Column headers -->
+  <g font-family="'JetBrains Mono','Fira Mono',ui-monospace,monospace" font-weight="700" font-size="14" letter-spacing="2">
+    <g transform="translate(330 130)">
+      <rect x="-90" y="-22" width="180" height="34" rx="17" fill="none" stroke="#3B82F6" stroke-width="1.5" />
+      <circle cx="-66" cy="-5" r="4" fill="#3B82F6" filter="url(#fglow)" />
+      <text x="-50" y="0" fill="#3B82F6">LENS</text>
+      <text x="-50" y="14" font-size="9" fill="#3B82F6" opacity="0.6" letter-spacing="1">DECODE</text>
+    </g>
+    <g transform="translate(560 130)">
+      <rect x="-90" y="-22" width="180" height="34" rx="17" fill="none" stroke="#D4A546" stroke-width="1.5" />
+      <circle cx="-66" cy="-5" r="4" fill="#D4A546" filter="url(#fglow)" />
+      <text x="-50" y="0" fill="#D4A546">SHERLOCK</text>
+      <text x="-50" y="14" font-size="9" fill="#D4A546" opacity="0.6" letter-spacing="1">DETECT</text>
+    </g>
+    <g transform="translate(790 130)">
+      <rect x="-90" y="-22" width="180" height="34" rx="17" fill="none" stroke="#10B981" stroke-width="1.5" />
+      <circle cx="-66" cy="-5" r="4" fill="#10B981" filter="url(#fglow)" />
+      <text x="-50" y="0" fill="#10B981">SMITH</text>
+      <text x="-50" y="14" font-size="9" fill="#10B981" opacity="0.6" letter-spacing="1">FORGE</text>
+    </g>
+  </g>
+
+  <!-- Horizontal flow line -->
+  <line x1="60" y1="170" x2="1020" y2="170" stroke="#1A1E26" stroke-width="1" stroke-dasharray="4 4" />
+
+  <!-- Rows -->
+  <g font-family="'JetBrains Mono','Fira Mono',ui-monospace,monospace" font-size="12">
+    <!-- PARSE -->
+    <g transform="translate(0 220)">
+      <text x="60" y="6" fill="#A8A29E" font-weight="700" letter-spacing="2">PARSE</text>
+      <text x="60" y="24" fill="#3F3F3F" font-size="10">→ raw bytes to structured tx</text>
+      <g transform="translate(330 0)">
+        <circle cx="0" cy="0" r="6" fill="#3B82F6" filter="url(#fglow)" />
+        <text x="14" y="4" fill="#FAFAF9" font-family="'Inter',sans-serif">scripts, witnesses, weights</text>
+      </g>
+      <g transform="translate(560 0)">
+        <circle cx="0" cy="0" r="6" fill="#D4A546" filter="url(#fglow)" />
+        <text x="14" y="4" fill="#FAFAF9" font-family="'Inter',sans-serif">block-level extraction</text>
+      </g>
+      <g transform="translate(790 0)">
+        <circle cx="0" cy="0" r="6" fill="#10B981" filter="url(#fglow)" />
+        <text x="14" y="4" fill="#FAFAF9" font-family="'Inter',sans-serif">PSBT round-trip</text>
+      </g>
+    </g>
+
+    <!-- ANALYZE -->
+    <g transform="translate(0 290)">
+      <text x="60" y="6" fill="#A8A29E" font-weight="700" letter-spacing="2">ANALYZE</text>
+      <text x="60" y="24" fill="#3F3F3F" font-size="10">→ flag intent and structure</text>
+      <g transform="translate(330 0)">
+        <circle cx="0" cy="0" r="6" fill="#3B82F6" filter="url(#fglow)" />
+        <text x="14" y="4" fill="#FAFAF9" font-family="'Inter',sans-serif">script class, address derive</text>
+      </g>
+      <g transform="translate(560 0)">
+        <circle cx="0" cy="0" r="6" fill="#D4A546" filter="url(#fglow)" />
+        <text x="14" y="4" fill="#FAFAF9" font-family="'Inter',sans-serif">heuristics, fingerprints</text>
+      </g>
+      <g transform="translate(790 0)">
+        <circle cx="0" cy="0" r="6" fill="#10B981" filter="url(#fglow)" />
+        <text x="14" y="4" fill="#FAFAF9" font-family="'Inter',sans-serif">coin selection, fees</text>
+      </g>
+    </g>
+
+    <!-- VISUALIZE -->
+    <g transform="translate(0 360)">
+      <text x="60" y="6" fill="#A8A29E" font-weight="700" letter-spacing="2">VISUALIZE</text>
+      <text x="60" y="24" fill="#3F3F3F" font-size="10">→ make it legible</text>
+      <g transform="translate(330 0)">
+        <circle cx="0" cy="0" r="6" fill="#3B82F6" filter="url(#fglow)" />
+        <text x="14" y="4" fill="#FAFAF9" font-family="'Inter',sans-serif">money-flow graph</text>
+      </g>
+      <g transform="translate(560 0)">
+        <circle cx="0" cy="0" r="6" fill="#D4A546" filter="url(#fglow)" />
+        <text x="14" y="4" fill="#FAFAF9" font-family="'Inter',sans-serif">privacy score 1–10</text>
+      </g>
+      <g transform="translate(790 0)">
+        <circle cx="0" cy="0" r="6" fill="#10B981" filter="url(#fglow)" />
+        <text x="14" y="4" fill="#FAFAF9" font-family="'Inter',sans-serif">build walkthrough</text>
+      </g>
+    </g>
+
+    <!-- EXPLAIN -->
+    <g transform="translate(0 430)">
+      <text x="60" y="6" fill="#A8A29E" font-weight="700" letter-spacing="2">EXPLAIN</text>
+      <text x="60" y="24" fill="#3F3F3F" font-size="10">→ teach as it works</text>
+      <g transform="translate(330 0)">
+        <circle cx="0" cy="0" r="6" fill="#3B82F6" filter="url(#fglow)" />
+        <text x="14" y="4" fill="#FAFAF9" font-family="'Inter',sans-serif">script step debugger</text>
+      </g>
+      <g transform="translate(560 0)">
+        <circle cx="0" cy="0" r="6" fill="#D4A546" filter="url(#fglow)" />
+        <text x="14" y="4" fill="#FAFAF9" font-family="'Inter',sans-serif">concrete fix advice</text>
+      </g>
+      <g transform="translate(790 0)">
+        <circle cx="0" cy="0" r="6" fill="#10B981" filter="url(#fglow)" />
+        <text x="14" y="4" fill="#FAFAF9" font-family="'Inter',sans-serif">why this fee, why this UTXO</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Bottom rule -->
+  <line x1="60" y1="490" x2="1020" y2="490" stroke="#1A1E26" stroke-width="1" />
+  <text x="60" y="514"
+        font-family="'JetBrains Mono','Fira Mono',ui-monospace,monospace"
+        font-size="10" fill="#3F3F3F" letter-spacing="3">
+    txray-core  ·  txray-net  ·  txray-corpus
+  </text>
+</svg>

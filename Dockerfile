@@ -39,15 +39,19 @@ RUN apt-get update && apt-get install -y \
     libssl3 \
     && rm -rf /var/lib/apt/lists/*
 
+# Create a dedicated non-root user. The image runs as `txray` from here on.
+RUN groupadd --system txray \
+ && useradd --system --gid txray --home-dir /app --shell /usr/sbin/nologin txray
+
 # Copy Rust binary from rust-builder
 COPY --from=rust-builder /build/target/release/txray /usr/local/bin/txray
 
-# Copy Next.js build from web-builder
-COPY --from=web-builder /build/.next/standalone ./
-COPY --from=web-builder /build/.next/static ./.next/static
-COPY --from=web-builder /build/public ./public
+# Copy Next.js build from web-builder, owned by the non-root user
+COPY --from=web-builder --chown=txray:txray /build/.next/standalone ./
+COPY --from=web-builder --chown=txray:txray /build/.next/static ./.next/static
+COPY --from=web-builder --chown=txray:txray /build/public ./public
 
-# Verify txray binary works
+# Verify txray binary works (still as root, before USER switch)
 RUN txray --version
 
 # Set environment variables
@@ -55,6 +59,10 @@ ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 ENV TXRAY_BIN=/usr/local/bin/txray
+ENV TXRAY_MEMPOOL_API=https://mempool.space/api
+ENV TXRAY_ESPLORA_API=https://blockstream.info/api
+
+USER txray
 
 # Expose port
 EXPOSE 3000

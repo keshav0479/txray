@@ -21,6 +21,48 @@ pub enum ApiSource {
     Custom(String),
 }
 
+impl ApiSource {
+    /// Build an `ApiSource` from environment variables. Honors
+    /// `TXRAY_MEMPOOL_API` first, then falls back to the default
+    /// `mempool.space` endpoint.
+    pub fn primary_from_env() -> Self {
+        match std::env::var("TXRAY_MEMPOOL_API") {
+            Ok(url) if !url.trim().is_empty() => ApiSource::Custom(url),
+            _ => ApiSource::MempoolSpace,
+        }
+    }
+
+    /// Secondary fallback source. Honors `TXRAY_ESPLORA_API`, then
+    /// falls back to the default `blockstream.info` endpoint.
+    pub fn secondary_from_env() -> Self {
+        match std::env::var("TXRAY_ESPLORA_API") {
+            Ok(url) if !url.trim().is_empty() => ApiSource::Custom(url),
+            _ => ApiSource::Esplora,
+        }
+    }
+}
+
+/// Try a fetch against the primary source, then walk to the secondary
+/// source on any failure that isn't a 404. Used by the CLI to mask
+/// upstream outages without changing call sites.
+pub async fn fetch_raw_block_with_fallback(id: &BlockId) -> Result<Vec<u8>, NetError> {
+    match fetch_raw_block(&ApiSource::primary_from_env(), id).await {
+        Ok(bytes) => Ok(bytes),
+        Err(NetError::NotFound(e)) => Err(NetError::NotFound(e)),
+        Err(_) => fetch_raw_block(&ApiSource::secondary_from_env(), id).await,
+    }
+}
+
+/// Try a fetch against the primary source, then walk to the secondary
+/// source on any failure that isn't a 404.
+pub async fn fetch_raw_tx_with_fallback(txid: &str) -> Result<Vec<u8>, NetError> {
+    match fetch_raw_tx(&ApiSource::primary_from_env(), txid).await {
+        Ok(bytes) => Ok(bytes),
+        Err(NetError::NotFound(e)) => Err(NetError::NotFound(e)),
+        Err(_) => fetch_raw_tx(&ApiSource::secondary_from_env(), txid).await,
+    }
+}
+
 /// Identify a block by hash or height
 #[derive(Debug, Clone)]
 pub enum BlockId {
@@ -68,7 +110,7 @@ pub async fn fetch_raw_block(source: &ApiSource, id: &BlockId) -> Result<Vec<u8>
         )));
     }
 
-    // cache for next time — non-fatal, fetch succeeded regardless
+    // cache for next time - non-fatal, fetch succeeded regardless
     if let Err(e) = cache::write_cache(&hash, &data) {
         eprintln!("txray-net: cache write skipped: {}", e);
     }
