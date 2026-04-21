@@ -19,10 +19,12 @@ pub fn explain_transaction(report: &serde_json::Value) -> String {
         .and_then(|v| v.as_bool())
         .unwrap_or(false);
 
-    out.push_str("📝 Transaction Explanation\n");
-    out.push_str("───────────────────────────\n");
+    out.push_str("Transaction Explanation\n");
+    out.push_str(
+        "---------------------------------------------------------------------------------\n",
+    );
     out.push_str(&format!(
-        "This is a {} transaction ({} input{} → {} output{}).\n",
+        "This is a {} transaction ({} input{} -> {} output{}).\n",
         tx_type,
         num_inputs,
         if num_inputs == 1 { "" } else { "s" },
@@ -52,7 +54,7 @@ pub fn explain_transaction(report: &serde_json::Value) -> String {
                 .unwrap_or("unknown");
 
             out.push_str(&format!(
-                "  • Input {}: {} BTC from {} ({})\n",
+                "  - Input {}: {} BTC from {} ({})\n",
                 i,
                 format_btc(value),
                 addr,
@@ -82,7 +84,7 @@ pub fn explain_transaction(report: &serde_json::Value) -> String {
             let label = output_label(script_type, num_outputs, n as usize);
 
             out.push_str(&format!(
-                "  • Output {}: {} BTC → {} ({}) [{}]\n",
+                "  - Output {}: {} BTC -> {} ({}) [{}]\n",
                 n,
                 format_btc(value),
                 addr,
@@ -111,34 +113,34 @@ pub fn explain_transaction(report: &serde_json::Value) -> String {
     // 5. Warnings
     if let Some(warnings) = report.get("warnings").and_then(|v| v.as_array()) {
         if !warnings.is_empty() {
-            out.push_str("⚠️ WARNINGS:\n");
+            out.push_str("WARNING WARNINGS:\n");
             for w in warnings {
                 let msg = w
                     .get("message")
                     .and_then(|v| v.as_str())
                     .unwrap_or("unknown warning");
-                out.push_str(&format!("  • {}\n", msg));
+                out.push_str(&format!("  - {}\n", msg));
             }
             out.push('\n');
         }
     }
 
     // 6. Educational tips
-    out.push_str("💡 Tips:\n");
+    out.push_str(" Tips:\n");
     if !segwit {
         out.push_str(
-            "  • This transaction doesn't use SegWit. Upgrading to SegWit (P2WPKH/P2TR)\n",
+            "  - This transaction doesn't use SegWit. Upgrading to SegWit (P2WPKH/P2TR)\n",
         );
         out.push_str("    would reduce fees by ~30-40%.\n");
     }
     if num_outputs == 2 && num_inputs >= 1 {
         out.push_str(
-            "  • A 2-output transaction typically means one payment + one change output.\n",
+            "  - A 2-output transaction typically means one payment + one change output.\n",
         );
         out.push_str("    Using the same script type for both outputs improves privacy.\n");
     }
     if fee_rate > 50.0 {
-        out.push_str("  • The fee rate is quite high. If not urgent, waiting for lower network\n");
+        out.push_str("  - The fee rate is quite high. If not urgent, waiting for lower network\n");
         out.push_str("    congestion could save significant fees.\n");
     }
 

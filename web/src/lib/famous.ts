@@ -16,7 +16,7 @@ export interface FamousEntry {
 }
 
 export const FAMOUS_ENTRIES: FamousEntry[] = [
-  // ─── Blocks (from txray-corpus) ───
+  // --------- Blocks (from txray-corpus) ---------
   {
     id: "genesis",
     name: "Genesis Block",
@@ -96,10 +96,10 @@ export const FAMOUS_ENTRIES: FamousEntry[] = [
     category: "milestone",
   },
 
-  // ─── Notable Individual Transactions ───
+  // --------- Notable Individual Transactions ---------
   {
     id: "satoshi-to-finney",
-    name: "Satoshi → Hal Finney",
+    name: "Satoshi -> Hal Finney",
     type: "tx",
     txid: "f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16",
     date: "Jan 12, 2009",

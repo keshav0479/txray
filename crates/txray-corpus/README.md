@@ -15,7 +15,7 @@ A static, hand-annotated list of eight blocks that teach Bitcoin by example. Use
 | Height | Block |
 |---|---|
 | 0 | Genesis Block |
-| 170 | First Transaction (Hal Finney → Satoshi) |
+| 170 | First Transaction (Hal Finney -> Satoshi) |
 | 57043 | The Pizza Transaction |
 | 252490 | OP_RETURN data |
 | 481824 | SegWit activation |

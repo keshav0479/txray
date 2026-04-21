@@ -19,9 +19,9 @@ import {
 /**
  * txray has THREE tools that form a learning journey:
  *
- * LENS → Understand (decode transactions at byte level)
- * SHERLOCK → Analyze (detect patterns, privacy leaks)
- * SMITH → Build (create better PSBTs)
+ * LENS -> Understand (decode transactions at byte level)
+ * SHERLOCK -> Analyze (detect patterns, privacy leaks)
+ * SMITH -> Build (create better PSBTs)
  *
  * The docs index should reflect this progression,
  * NOT push any single tool.
@@ -98,7 +98,7 @@ const sections = [
 
 /**
  * SVG showing the three-tool journey:
- * LENS (understand) → SHERLOCK (analyze) → SMITH (build)
+ * LENS (understand) -> SHERLOCK (analyze) -> SMITH (build)
  *
  * This represents txray's unique value: integrated toolkit for learning
  */

@@ -581,7 +581,7 @@ export default function BlockDetailClient({ stem }: { stem: string }) {
           icon={Zap}
           label="Median Fee"
           value={`${summary?.fee_rate_stats.median_sat_vb || 0} sat/vB`}
-          sub={`${summary?.fee_rate_stats.min_sat_vb}–${summary?.fee_rate_stats.max_sat_vb} range`}
+          sub={`${summary?.fee_rate_stats.min_sat_vb} to ${summary?.fee_rate_stats.max_sat_vb} range`}
         />
         <StatCard
           icon={Database}
@@ -744,7 +744,7 @@ export default function BlockDetailClient({ stem }: { stem: string }) {
           <span>
             {searchQuery
               ? `${sortedTxs.length} match${sortedTxs.length !== 1 ? "es" : ""}`
-              : `Showing ${safePage * PAGE_SIZE + 1}–${Math.min((safePage + 1) * PAGE_SIZE, sortedTxs.length)} of ${sortedTxs.length.toLocaleString()}`}
+              : `Showing ${safePage * PAGE_SIZE + 1} to ${Math.min((safePage + 1) * PAGE_SIZE, sortedTxs.length)} of ${sortedTxs.length.toLocaleString()}`}
           </span>
           {sortKey && (
             <span className="text-zinc-500">

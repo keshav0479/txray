@@ -17,7 +17,7 @@ The "Smith" tool. Takes a high-level intent (these UTXOs, this fee policy, these
 
 | Symbol | Purpose |
 |---|---|
-| `build_psbt_from_fixture(json)` | One-shot fixture → PSBT JSON report |
+| `build_psbt_from_fixture(json)` | One-shot fixture -> PSBT JSON report |
 | `parse_fixture` / `validate_fixture` | Manual fixture handling |
 | `Fixture` / `Utxo` / `Payment` / `Policy` / `ChangeTemplate` | Fixture data model |
 | `select_coins` (via `coin_selection`) | Plug-in coin selection algorithm |

@@ -234,7 +234,7 @@ export default function HomePage() {
     };
   }, []);
 
-  // New block mined → max glow instantly, then slow fade (~4s total)
+  // New block mined -> max glow instantly, then slow fade (~4s total)
   useEffect(() => {
     if (tipHeight === null) return;
     if (prevTipHeightRef.current === null) {
@@ -255,7 +255,7 @@ export default function HomePage() {
       blockPulseReturnRef.current = setTimeout(() => {
         fadeTimerRef.current = setInterval(() => {
           setHoldProgress((prev) => {
-            const next = prev - 0.008; // ~3.3s to fade from 1→0 (vs 0.04 for manual release)
+            const next = prev - 0.008; // ~3.3s to fade from 1->0 (vs 0.04 for manual release)
             if (next <= 0) {
               if (fadeTimerRef.current) clearInterval(fadeTimerRef.current);
               holdActivatedRef.current = false;
@@ -310,7 +310,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* ─── HERO ─── */}
+      {/* --------- HERO --------- */}
       <section className="flex-1 flex flex-col items-center justify-center px-6 pt-24 pb-16 relative">
         {/* Hide the global background and use interactive version on landing page */}
         <div className="fixed inset-0 bg-stone-950 z-[-2]" />
@@ -416,7 +416,7 @@ export default function HomePage() {
               {!searchQuery.trim() && (
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-60 group-focus-within:opacity-0 transition-opacity">
                   <span className="hidden sm:inline-flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-[11px] text-stone-400">
-                    Ctrl K / ⌘K
+                    Ctrl K / Cmd K
                   </span>
                 </div>
               )}
@@ -447,7 +447,7 @@ export default function HomePage() {
         </motion.div>
       </section>
 
-      {/* ─── LIVE PULSE (Floating Pill) ─── */}
+      {/* --------- LIVE PULSE (Floating Pill) --------- */}
       <section className="relative z-10 pt-4 pb-12">
         <motion.div
           initial={{ opacity: 0, filter: "blur(6px)" }}
@@ -649,7 +649,7 @@ export default function HomePage() {
         </motion.div>
       </section>
 
-      {/* ─── CAPABILITIES ─── */}
+      {/* --------- CAPABILITIES --------- */}
       <section className="relative z-10 bg-transparent px-6 py-20">
         <div className="max-w-4xl mx-auto">
           <motion.div
@@ -693,7 +693,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ─── FOOTER ─── */}
+      {/* --------- FOOTER --------- */}
       <Footer />
     </div>
   );
@@ -718,7 +718,7 @@ function CapCard({ cap }: { cap: (typeof CAPABILITIES)[number] }) {
       <p className="text-sm text-stone-400 leading-relaxed flex-1">
         {cap.description}
       </p>
-      {/* CTA - shimmer gradient flows amber→cream→amber */}
+      {/* CTA - shimmer gradient flows amber->cream->amber */}
       <div className="flex items-center gap-1.5 mt-4">
         <span className="shimmer-text text-[11px] font-mono tracking-wide">
           {cap.cta}

@@ -49,11 +49,9 @@ export function DocsZenPill() {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsVisible(true);
       const timeout = setTimeout(() => setIsVisible(false), 3000);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setHideTimeout(timeout);
       return () => clearTimeout(timeout);
     } else {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsVisible(false);
     }
   }, [isZen]);

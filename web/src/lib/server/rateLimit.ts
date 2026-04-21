@@ -30,16 +30,37 @@ setInterval(
   5 * 60 * 1000,
 ).unref();
 
-function getIp(request: Request): string {
-  // Trust X-Forwarded-For only when the request originates locally
-  // (i.e., behind an nginx reverse proxy on the same host).
-  const xff = request.headers.get("x-forwarded-for");
-  if (xff) {
-    // Take the first IP in the chain (client IP)
-    return xff.split(",")[0].trim();
+function normalizeIp(candidate: string | null): string | null {
+  const value = candidate?.trim();
+  if (!value || value.length > 100) return null;
+  if (!/^[0-9a-fA-F:.]+$/.test(value)) return null;
+  return value;
+}
+
+function getForwardedFor(header: string | null): string | null {
+  if (!header) return null;
+  const first = header.split(",")[0]?.trim();
+  return normalizeIp(first);
+}
+
+export function getRateLimitKey(request: Request): string {
+  if (process.env.TXRAY_TRUST_PROXY_HEADERS === "true") {
+    const trustedIp =
+      normalizeIp(request.headers.get("cf-connecting-ip")) ||
+      normalizeIp(request.headers.get("x-real-ip")) ||
+      getForwardedFor(request.headers.get("x-forwarded-for"));
+
+    if (trustedIp) {
+      return `ip:${trustedIp}`;
+    }
   }
-  // Fall back to a generic key; real IP not available in edge-less Node runtime
-  return "unknown";
+
+  // Next's Web Request does not expose the direct socket IP in route handlers.
+  // Without a trusted proxy we avoid spoofable IP headers and use a bounded
+  // best-effort key. Public deployments should enable trusted headers only
+  // behind a proxy that overwrites client-supplied forwarding headers.
+  const ua = request.headers.get("user-agent") || "unknown-agent";
+  return `direct:${ua.slice(0, 120)}`;
 }
 
 function consume(ip: string, config: LimitConfig): boolean {
@@ -70,7 +91,7 @@ const HEAVY: LimitConfig = { limit: 30, windowMs: 60_000 }; // 30 req/min
 const LIGHT: LimitConfig = { limit: 120, windowMs: 60_000 }; // 120 req/min
 
 export function checkHeavyLimit(request: Request): Response | null {
-  const ip = getIp(request);
+  const ip = getRateLimitKey(request);
   if (!consume(ip, HEAVY)) {
     return new Response(
       JSON.stringify({
@@ -90,7 +111,7 @@ export function checkHeavyLimit(request: Request): Response | null {
 }
 
 export function checkLightLimit(request: Request): Response | null {
-  const ip = getIp(request);
+  const ip = getRateLimitKey(request);
   if (!consume(ip, LIGHT)) {
     return new Response(
       JSON.stringify({

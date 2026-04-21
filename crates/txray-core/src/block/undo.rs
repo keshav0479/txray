@@ -100,7 +100,7 @@ impl UndoRecord {
         let num_txs_raw = cursor.read_compact_size()?;
         let num_txs = num_txs_raw as usize;
 
-        // Guard: count can't exceed remaining data (each entry is ≥1 byte)
+        // Guard: count can't exceed remaining data (each entry is >= 1 byte)
         if num_txs > cursor.data.len().saturating_sub(cursor.pos) {
             return Err(TxrayError::invalid_undo(format!(
                 "Undo tx count {} exceeds remaining data",
@@ -294,7 +294,7 @@ impl<'a> UndoCursor<'a> {
                 let x_bytes = self.read_bytes(32)?;
 
                 // Decompress: use secp256k1 point decompression
-                // nSize 4 → even y (0x02), nSize 5 → odd y (0x03)
+                // nSize 4 -> even y (0x02), nSize 5 -> odd y (0x03)
                 let compressed_prefix = if n_size == 4 { 0x02u8 } else { 0x03u8 };
                 let mut compressed = Vec::with_capacity(33);
                 compressed.push(compressed_prefix);
@@ -399,7 +399,7 @@ mod tests {
     #[test]
     fn test_decompress_amount_known_vectors() {
         // Bitcoin Core compressed amounts use denomination encoding:
-        // compressed 9 → 1 BTC = 100_000_000 sats
+        // compressed 9 -> 1 BTC = 100_000_000 sats
         assert_eq!(decompress_amount(9), 100_000_000);
 
         // Verify function handles various inputs without panicking

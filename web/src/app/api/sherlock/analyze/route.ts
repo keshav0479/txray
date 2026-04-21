@@ -4,10 +4,10 @@ import { createHash } from "crypto";
 import os from "os";
 import path from "path";
 import {
-  getWorkspaceRoot,
   parseJsonFromCliOutput,
   runTxray,
 } from "@/lib/server/txrayCli";
+import { getResultsDir } from "@/lib/server/config";
 import {
   extractInputRefs,
   fetchPrevouts,
@@ -301,8 +301,7 @@ export async function POST(req: Request) {
     const json = parseJsonFromCliOutput(result.stdout);
     const stem = path.basename(blkFile.name, path.extname(blkFile.name));
 
-    const workspaceRoot = getWorkspaceRoot();
-    const outDir = path.join(workspaceRoot, "out");
+    const outDir = getResultsDir();
     await mkdir(outDir, { recursive: true });
     await writeFile(
       path.join(outDir, `${stem}.json`),

@@ -103,6 +103,7 @@ export function VideoEmbed({
           // Thumbnail with play button
           <div className="absolute inset-0">
             {thumbnailUrl && (
+              /* eslint-disable-next-line @next/next/no-img-element */
               <img
                 src={thumbnailUrl}
                 alt={title}

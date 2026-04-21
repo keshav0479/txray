@@ -341,7 +341,7 @@ export function AnimatedWallet({ isPlaying }: { isPlaying: boolean }) {
           fontSize="13"
           fontWeight="bold"
         >
-          ₿
+          BTC
         </text>
         <text
           x={cx + 36}
@@ -388,7 +388,7 @@ export function AnimatedWallet({ isPlaying }: { isPlaying: boolean }) {
           rx="15"
           fill="#1c202a"
         />
-        {/* Send arrow icon ↗ */}
+        {/* Send arrow icon arrow */}
         <circle cx={cx + 14} cy={phoneY + 143} r="7" fill="#3f3f46" />
         <path
           d={`M${cx + 11} ${phoneY + 146} L${cx + 17} ${phoneY + 140} M${cx + 13} ${phoneY + 140} L${cx + 17} ${phoneY + 140} L${cx + 17} ${phoneY + 144}`}
@@ -504,7 +504,7 @@ export function AnimatedWallet({ isPlaying }: { isPlaying: boolean }) {
 // ----------------------------------------------------------------------
 // 02: AnimatedChange (The Cash Register)
 // Shows a whole UTXO entering a transaction node, splitting into
-// Payment (0.30 → right to recipient) and Change (0.20 → back to you).
+// Payment (0.30 -> right to recipient) and Change (0.20 -> back to you).
 // The change visually returns to the left side to teach the concept.
 // ----------------------------------------------------------------------
 export function AnimatedChange({ isPlaying }: { isPlaying: boolean }) {
@@ -570,7 +570,7 @@ export function AnimatedChange({ isPlaying }: { isPlaying: boolean }) {
         RECIPIENT
       </text>
 
-      {/* Connection line: Input → TX node (horizontal then down to TX) */}
+      {/* Connection line: Input -> TX node (horizontal then down to TX) */}
       <path
         d={`M${walletX + 42} ${inputY} L${txX - 10} ${inputY} L${txX - 10} ${txY - 24}`}
         fill="none"
@@ -579,7 +579,7 @@ export function AnimatedChange({ isPlaying }: { isPlaying: boolean }) {
         strokeDasharray="4 4"
       />
 
-      {/* Connection line: TX node → Payment (right, up to payY) */}
+      {/* Connection line: TX node -> Payment (right, up to payY) */}
       <path
         d={`M${txX + 10} ${txY - 24} L${txX + 10} ${payY} L${payX - 42} ${payY}`}
         fill="none"
@@ -588,7 +588,7 @@ export function AnimatedChange({ isPlaying }: { isPlaying: boolean }) {
         strokeDasharray="4 4"
       />
 
-      {/* Connection line: TX node → Change (down, then back left) */}
+      {/* Connection line: TX node -> Change (down, then back left) */}
       <path
         d={`M${txX} ${txY + 24} L${txX} ${changeRetY} L${walletX + 42} ${changeRetY}`}
         fill="none"
@@ -728,7 +728,7 @@ export function AnimatedChange({ isPlaying }: { isPlaying: boolean }) {
         }}
       />
 
-      {/* --- PHASE 2a: Payment output (0.30) ejects to the right → RECIPIENT --- */}
+      {/* --- PHASE 2a: Payment output (0.30) ejects to the right -> RECIPIENT --- */}
       <motion.g
         initial={{ x: txX, y: txY, opacity: 0, scale: 0.3 }}
         animate={
@@ -885,7 +885,7 @@ export function AnimatedChange({ isPlaying }: { isPlaying: boolean }) {
           times: [0, 0.5, 0.6, 0.78, 0.88, 1],
         }}
       >
-        <tspan fill={BLUE_LIGHT}>0.50</tspan> → <tspan fill={GREEN}>0.30</tspan>{" "}
+        <tspan fill={BLUE_LIGHT}>0.50</tspan> {"->"} <tspan fill={GREEN}>0.30</tspan>{" "}
         + <tspan fill={CYAN}>0.20</tspan>
       </motion.text>
 
@@ -917,8 +917,8 @@ export function AnimatedChange({ isPlaying }: { isPlaying: boolean }) {
 // ----------------------------------------------------------------------
 // 03: AnimatedFee (The Weighing Station)
 // Side-by-side comparison. Both send 0.30 BTC.
-// Left: 1 input → small data size → low fee
-// Right: 3 inputs → large data size → high fee
+// Left: 1 input -> small data size -> low fee
+// Right: 3 inputs -> large data size -> high fee
 // Teaches that Fee = Data Size (vBytes) × Fee Rate, NOT % of amount.
 // ----------------------------------------------------------------------
 export function AnimatedFee({ isPlaying }: { isPlaying: boolean }) {
@@ -1680,7 +1680,7 @@ export function AnimatedDust({ isPlaying }: { isPlaying: boolean }) {
         animate={
           isPlaying
             ? {
-                // Rests → slides up to approach point → pauses → knocked back down → rests
+                // Rests -> slides up to approach point -> pauses -> knocked back down -> rests
                 y: [
                   0,
                   0,
@@ -2353,7 +2353,7 @@ export function AnimatedForge({ isPlaying }: { isPlaying: boolean }) {
           UNSIGNED TRANSACTION (PSBT)
         </text>
         <text x="28" y="38" fill="#475569" fontSize="6" fontFamily="monospace">
-          v2 • 1 input • 2 outputs
+          v2 - 1 input - 2 outputs
         </text>
         {/* Checkmark badge */}
         <circle cx={W - 36} cy="28" r="8" fill="#065f46" />
@@ -2436,7 +2436,7 @@ export function AnimatedForge({ isPlaying }: { isPlaying: boolean }) {
           0.30 BTC
         </text>
         <text x="38" y="135" fill="#475569" fontSize="6" fontFamily="monospace">
-          → bc1q...r8pv (recipient)
+          {"->"} bc1q...r8pv (recipient)
         </text>
         <rect x={W - 68} y="122" width="40" height="14" rx="7" fill="#065f46" />
         <text
@@ -2466,7 +2466,7 @@ export function AnimatedForge({ isPlaying }: { isPlaying: boolean }) {
           0.1981 BTC
         </text>
         <text x="38" y="167" fill="#475569" fontSize="6" fontFamily="monospace">
-          → bc1q...m4kn (your wallet)
+          {"->"} bc1q...m4kn (your wallet)
         </text>
         <rect x={W - 66} y="154" width="38" height="14" rx="7" fill="#164e63" />
         <text

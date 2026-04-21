@@ -61,6 +61,8 @@ ENV HOSTNAME="0.0.0.0"
 ENV TXRAY_BIN=/usr/local/bin/txray
 ENV TXRAY_MEMPOOL_API=https://mempool.space/api
 ENV TXRAY_ESPLORA_API=https://blockstream.info/api
+ENV TXRAY_DATA_DIR=/tmp/txray
+ENV TXRAY_TRUST_PROXY_HEADERS=false
 
 USER txray
 

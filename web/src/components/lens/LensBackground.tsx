@@ -3,7 +3,7 @@
 /**
  * LensBackground
  *
- * 3 layers on top of a dim ₿ base pattern:
+ * 3 layers on top of a dim 1/2 base pattern:
  * 1. Orb 1 - large soft spotlight drifting left to right (upper half)
  * 2. Orb 2 - large soft spotlight drifting left to right (lower half, phase-shifted)
  */
@@ -16,7 +16,7 @@ export function LensBackground() {
 
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-surface-bg">
-      {/* LAYER 0: Dim base ₿ pattern */}
+      {/* LAYER 0: Dim base BTC pattern */}
       <div
         className="absolute inset-0 opacity-[0.20]"
         style={{
@@ -26,7 +26,7 @@ export function LensBackground() {
         }}
       />
 
-      {/* LAYER 1: Ambient Glowing Orb 1 (Upper half, drifts L → R) */}
+      {/* LAYER 1: Ambient Glowing Orb 1 (Upper half, drifts L -> R) */}
       <div
         className="absolute inset-0 animate-orb-1"
         style={{
@@ -44,7 +44,7 @@ export function LensBackground() {
         }}
       />
 
-      {/* LAYER 2: Ambient Glowing Orb 2 (Lower half, drifts L → R) */}
+      {/* LAYER 2: Ambient Glowing Orb 2 (Lower half, drifts L -> R) */}
       <div
         className="absolute inset-0 animate-orb-2"
         style={{

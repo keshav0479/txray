@@ -3,15 +3,15 @@ import { access, mkdir, mkdtemp, readFile, rm, writeFile } from "fs/promises";
 import os from "os";
 import path from "path";
 import {
-  getWorkspaceRoot,
   parseJsonFromCliOutput,
   runTxray,
 } from "@/lib/server/txrayCli";
+import { getPrimaryApiBase, getResultsDir } from "@/lib/server/config";
+import { checkHeavyLimit } from "@/lib/server/rateLimit";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
 
-const MEMPOOL_BASE = "https://mempool.space/api";
 const MAX_TXS = 100;
 const BATCH_SIZE = 8;
 
@@ -168,9 +168,10 @@ function buildSummary(txs: Transaction[]): AnalysisSummary {
 async function fetchAllBlockTxs(blockHash: string): Promise<MempoolTx[]> {
   const all: MempoolTx[] = [];
   let startIndex = 0;
+  const mempoolBase = getPrimaryApiBase();
 
   while (all.length < MAX_TXS) {
-    const res = await fetch(`${MEMPOOL_BASE}/block/${blockHash}/txs/${startIndex}`);
+    const res = await fetch(`${mempoolBase}/block/${blockHash}/txs/${startIndex}`);
     if (!res.ok) break;
     const page = (await res.json()) as MempoolTx[];
     if (page.length === 0) break;
@@ -218,7 +219,7 @@ async function analyzeTx(
   }
 
   // Fetch raw hex
-  const hexRes = await fetch(`${MEMPOOL_BASE}/tx/${tx.txid}/hex`);
+  const hexRes = await fetch(`${getPrimaryApiBase()}/tx/${tx.txid}/hex`);
   if (!hexRes.ok) {
     // If we can't get hex, return with empty heuristics
     return {
@@ -316,9 +317,12 @@ async function analyzeInBatches(
 // ---------------------------------------------------------------------------
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ height: string }> },
 ) {
+  const limited = checkHeavyLimit(req);
+  if (limited) return limited;
+
   const { height } = await params;
   const blockHeight = parseInt(height, 10);
 
@@ -329,10 +333,10 @@ export async function GET(
     );
   }
 
-  const workspaceRoot = getWorkspaceRoot();
-  const outDir = path.join(workspaceRoot, "out");
+  const outDir = getResultsDir();
   const stem = `online-blk${blockHeight}`;
   const outPath = path.join(outDir, `${stem}.json`);
+  const mempoolBase = getPrimaryApiBase();
 
   // Check if we already have this analysis cached
   try {
@@ -350,7 +354,7 @@ export async function GET(
 
   try {
     // Fetch block hash
-    const hashRes = await fetch(`${MEMPOOL_BASE}/block-height/${blockHeight}`);
+    const hashRes = await fetch(`${mempoolBase}/block-height/${blockHeight}`);
     if (!hashRes.ok) {
       return NextResponse.json(
         {
@@ -368,7 +372,7 @@ export async function GET(
     const blockHash = await hashRes.text();
 
     // Fetch block metadata for tx_count
-    const blockRes = await fetch(`${MEMPOOL_BASE}/block/${blockHash}`);
+    const blockRes = await fetch(`${mempoolBase}/block/${blockHash}`);
     if (!blockRes.ok) {
       return NextResponse.json(
         { ok: false, error: { code: "BLOCK_META_FAILED", message: "Failed to fetch block metadata" } },

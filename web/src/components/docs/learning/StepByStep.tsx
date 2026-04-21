@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronLeft,
@@ -199,6 +199,7 @@ export function StepByStep({
 
               {steps[currentStep].image && (
                 <div className="mt-4 rounded-xl overflow-hidden border border-[var(--docs-panel-border)]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={steps[currentStep].image}
                     alt={steps[currentStep].title}

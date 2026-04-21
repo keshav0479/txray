@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { readFile } from "fs/promises";
 import path from "path";
-import { getWorkspaceRoot } from "@/lib/server/txrayCli";
+import { getResultsDir } from "@/lib/server/config";
 
 export const runtime = "nodejs";
 
@@ -19,8 +19,7 @@ export async function GET(
     );
   }
 
-  const workspaceRoot = getWorkspaceRoot();
-  const outPath = path.join(workspaceRoot, "out", `${stem}.json`);
+  const outPath = path.join(getResultsDir(), `${stem}.json`);
 
   try {
     const raw = await readFile(outPath, "utf-8");

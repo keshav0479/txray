@@ -1,6 +1,6 @@
 //! Boltzmann entropy analysis - measure transaction privacy via interpretation counting.
 //!
-//! Uses backtracking over input→output assignments to count valid matchings.
+//! Uses backtracking over input->output assignments to count valid matchings.
 //! Each input is assigned to exactly one output; multiple inputs may fund the
 //! same output. This is the simplified single-assignment model (as used by OXT).
 //! Higher entropy = more ambiguous = better privacy.
@@ -13,13 +13,13 @@ const MAX_IO_COUNT: usize = 15;
 /// Result of Boltzmann entropy analysis.
 #[derive(Debug, Clone, Serialize)]
 pub struct BoltzmannResult {
-    /// Number of valid interpretations (input→output matchings)
+    /// Number of valid interpretations (input->output matchings)
     pub interpretations: u64,
     /// Entropy in bits: log2(interpretations)
     pub entropy_bits: f64,
     /// Maximum possible entropy for this tx shape: log2(n_inputs! * n_outputs!)
     pub max_entropy: f64,
-    /// Normalized entropy: entropy_bits / max_entropy (0.0–1.0)
+    /// Normalized entropy: entropy_bits / max_entropy (0.0 to 1.0)
     pub entropy_density: f64,
     /// Links that exist in ALL valid interpretations (forced connections)
     pub deterministic_links: Vec<(usize, usize)>,
@@ -56,7 +56,7 @@ pub fn compute_entropy(input_amounts: &[u64], output_amounts: &[u64]) -> Option<
         });
     }
 
-    // Count valid interpretations via input→output assignment backtracking.
+    // Count valid interpretations via input->output assignment backtracking.
     // Each input is assigned to exactly one output; multiple inputs can share
     // an output. We enumerate all assignments where sums match exactly.
     let (interpretations, link_counts) = count_interpretations(input_amounts, output_amounts);
@@ -131,7 +131,7 @@ pub fn compute_entropy(input_amounts: &[u64], output_amounts: &[u64]) -> Option<
 }
 
 /// Count the number of valid interpretations using brute-force enumeration
-/// of input→output assignments. For each valid assignment, track which
+/// of input->output assignments. For each valid assignment, track which
 /// (input, output) links are used.
 ///
 /// A valid interpretation is a partition of inputs into groups where each
@@ -231,7 +231,10 @@ fn grade_entropy(entropy_bits: f64) -> char {
 impl std::fmt::Display for BoltzmannResult {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f, "Boltzmann Entropy Analysis")?;
-        writeln!(f, "══════════════════════════")?;
+        writeln!(
+            f,
+            "------------------------------------------------------------------------------"
+        )?;
         writeln!(f)?;
 
         if self.too_complex {
@@ -257,7 +260,7 @@ impl std::fmt::Display for BoltzmannResult {
         if !self.deterministic_links.is_empty() {
             writeln!(f, "  Deterministic links (forced connections):")?;
             for &(i, j) in &self.deterministic_links {
-                writeln!(f, "    input[{}] → output[{}]", i, j)?;
+                writeln!(f, "    input[{}] -> output[{}]", i, j)?;
             }
             writeln!(f)?;
         }
@@ -288,7 +291,7 @@ mod tests {
 
     #[test]
     fn deterministic_1in_1out() {
-        // 1 input, 1 output with matching amounts → exactly 1 interpretation
+        // 1 input, 1 output with matching amounts -> exactly 1 interpretation
         let result = compute_entropy(&[100_000], &[100_000]).unwrap();
         assert_eq!(result.interpretations, 1);
         assert_eq!(result.entropy_bits, 0.0);
@@ -300,7 +303,7 @@ mod tests {
 
     #[test]
     fn no_valid_interpretation() {
-        // Amounts don't balance → 0 interpretations
+        // Amounts don't balance -> 0 interpretations
         let result = compute_entropy(&[100_000], &[200_000]).unwrap();
         assert_eq!(result.interpretations, 0);
         assert_eq!(result.entropy_bits, 0.0);
@@ -309,8 +312,8 @@ mod tests {
 
     #[test]
     fn simple_2in_2out_distinct() {
-        // 2 inputs (30k, 70k), 2 outputs (30k, 70k) → 1 interpretation
-        // (30k→30k, 70k→70k is the only valid assignment)
+        // 2 inputs (30k, 70k), 2 outputs (30k, 70k) -> 1 interpretation
+        // (30k->30k, 70k->70k is the only valid assignment)
         let result = compute_entropy(&[30_000, 70_000], &[30_000, 70_000]).unwrap();
         assert_eq!(result.interpretations, 1);
         assert_eq!(result.privacy_grade, 'F');
@@ -318,7 +321,7 @@ mod tests {
 
     #[test]
     fn equal_value_2in_2out_ambiguous() {
-        // 2 inputs (50k, 50k), 2 outputs (50k, 50k) → 2 interpretations
+        // 2 inputs (50k, 50k), 2 outputs (50k, 50k) -> 2 interpretations
         // (either input can go to either output)
         let result = compute_entropy(&[50_000, 50_000], &[50_000, 50_000]).unwrap();
         assert_eq!(result.interpretations, 2);
@@ -330,18 +333,18 @@ mod tests {
 
     #[test]
     fn coinjoin_pattern_high_entropy() {
-        // 3 inputs (100k each), 3 outputs (100k each) → many interpretations
+        // 3 inputs (100k each), 3 outputs (100k each) -> many interpretations
         let result =
             compute_entropy(&[100_000, 100_000, 100_000], &[100_000, 100_000, 100_000]).unwrap();
         // 3! = 6 interpretations (any permutation works)
         assert_eq!(result.interpretations, 6);
-        assert!((result.entropy_bits - 2.585).abs() < 0.01); // log2(6) ≈ 2.585
+        assert!((result.entropy_bits - 2.585).abs() < 0.01); // log2(6) ~= 2.585
         assert_eq!(result.privacy_grade, 'C');
     }
 
     #[test]
     fn too_complex_bails_out() {
-        // 16 inputs + outputs → too complex
+        // 16 inputs + outputs -> too complex
         let inputs: Vec<u64> = (1..=8).map(|i| i * 10_000).collect();
         let outputs: Vec<u64> = (1..=8).map(|i| i * 10_000).collect();
         let result = compute_entropy(&inputs, &outputs).unwrap();

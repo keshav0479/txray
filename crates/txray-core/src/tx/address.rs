@@ -129,7 +129,7 @@ mod tests {
 
     #[test]
     fn test_derive_p2pkh_address() {
-        // P2PKH: 76a914{20}88ac → address starts with "1"
+        // P2PKH: 76a914{20}88ac -> address starts with "1"
         let mut script = vec![0x76, 0xa9, 0x14];
         script.extend_from_slice(&[0x89; 20]);
         script.push(0x88);
@@ -141,7 +141,7 @@ mod tests {
 
     #[test]
     fn test_derive_p2sh_address() {
-        // P2SH: a914{20}87 → address starts with "3"
+        // P2SH: a914{20}87 -> address starts with "3"
         let mut script = vec![0xa9, 0x14];
         script.extend_from_slice(&[0xAB; 20]);
         script.push(0x87);
@@ -152,7 +152,7 @@ mod tests {
 
     #[test]
     fn test_derive_p2wpkh_address() {
-        // P2WPKH: 0014{20} → bc1q...
+        // P2WPKH: 0014{20} -> bc1q...
         let mut script = vec![0x00, 0x14];
         script.extend_from_slice(&[0xCC; 20]);
         let addr = derive_address(&script, "p2wpkh");
@@ -162,7 +162,7 @@ mod tests {
 
     #[test]
     fn test_derive_p2wsh_address() {
-        // P2WSH: 0020{32} → bc1q...
+        // P2WSH: 0020{32} -> bc1q...
         let mut script = vec![0x00, 0x20];
         script.extend_from_slice(&[0xDD; 32]);
         let addr = derive_address(&script, "p2wsh");
@@ -172,7 +172,7 @@ mod tests {
 
     #[test]
     fn test_derive_p2tr_address() {
-        // P2TR: 5120{32} → bech32m address for witness v1
+        // P2TR: 5120{32} -> bech32m address for witness v1
         let mut script = vec![0x51, 0x20];
         script.extend_from_slice(&[0xEE; 32]);
         let addr = derive_address(&script, "p2tr");
@@ -218,7 +218,7 @@ mod tests {
 
     #[test]
     fn test_p2pkh_address_deterministic() {
-        // Same script → same address every time
+        // Same script -> same address every time
         let mut script = vec![0x76, 0xa9, 0x14];
         script.extend_from_slice(&[0x00; 20]);
         script.push(0x88);

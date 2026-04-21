@@ -42,7 +42,7 @@ mod tests {
     fn test_merkle_single_tx() {
         let txid = [0xABu8; 32];
         let root = compute_merkle_root(&[txid]);
-        // Single tx → root IS the txid itself
+        // Single tx -> root IS the txid itself
         assert_eq!(root, txid);
     }
 

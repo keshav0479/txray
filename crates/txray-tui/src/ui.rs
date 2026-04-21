@@ -103,7 +103,7 @@ fn draw_body(frame: &mut Frame, app: &App, area: Rect) {
     }
 }
 
-// ─── Dashboard ──────────────────────────────────────────────────────────────
+// --------- Dashboard ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 fn draw_dashboard(frame: &mut Frame, app: &App, area: Rect) {
     let rows = Layout::default()
@@ -466,7 +466,7 @@ fn draw_io_list_panel(frame: &mut Frame, app: &App, area: Rect) {
     }
 }
 
-// ─── Tx Detail view ─────────────────────────────────────────────────────────
+// --------- Tx Detail view ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 fn draw_tx_detail(frame: &mut Frame, app: &App, area: Rect) {
     if let Some(tx) = app.tx_analysis() {
@@ -571,7 +571,7 @@ fn draw_tx_detail(frame: &mut Frame, app: &App, area: Rect) {
     }
 }
 
-// ─── Heuristics view ────────────────────────────────────────────────────────
+// --------- Heuristics view ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 fn draw_heuristics(frame: &mut Frame, app: &App, area: Rect) {
     if let Some(tx) = app.tx_analysis() {
@@ -973,7 +973,7 @@ fn heuristic_line(label: &str, value: &str, color: ratatui::style::Color) -> Lin
     ])
 }
 
-// ─── Famous Blocks ──────────────────────────────────────────────────────────
+// --------- Famous Blocks ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 fn draw_famous_blocks(frame: &mut Frame, app: &App, area: Rect) {
     let blocks = txray_corpus::FAMOUS_BLOCKS;
@@ -995,12 +995,12 @@ fn draw_famous_blocks(frame: &mut Frame, app: &App, area: Rect) {
     for (i, block) in blocks.iter().enumerate() {
         let marker = if i == app.famous_selected { ">" } else { " " };
         let icon = match block.height {
-            0 => "◉",
-            170 => "→",
-            57043 => "🍕",
-            481824 => "⚡",
-            709635 => "◆",
-            _ => "•",
+            0 => "*",
+            170 => "->",
+            57043 => "Pizza",
+            481824 => "Lightning",
+            709635 => "Diamond",
+            _ => "-",
         };
         let style = if i == app.famous_selected {
             Style::default()
@@ -1178,7 +1178,7 @@ fn draw_famous_blocks(frame: &mut Frame, app: &App, area: Rect) {
     frame.render_widget(fetched_panel, rows[1]);
 }
 
-// ─── Script Debugger ───────────────────────────────────────────────────────
+// --------- Script Debugger ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 fn draw_script_debugger(frame: &mut Frame, app: &App, area: Rect) {
     let dbg = match &app.debugger {
@@ -1463,7 +1463,7 @@ fn draw_debug_info(frame: &mut Frame, dbg: &crate::app::DebuggerState, area: Rec
     frame.render_widget(panel, area);
 }
 
-// ─── Common widgets ─────────────────────────────────────────────────────────
+// --------- Common widgets ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 fn draw_placeholder(frame: &mut Frame, title: &str, message: &str, area: Rect) {
     let panel = Paragraph::new(message)

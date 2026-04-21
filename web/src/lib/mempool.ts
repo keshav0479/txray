@@ -197,7 +197,7 @@ export function fetchBlockHash(height: number): Promise<string> {
   return fetchText(`/block-height/${height}`);
 }
 
-// fetch block metadata by height (two-step: height → hash → block)
+// fetch block metadata by height (two-step: height -> hash -> block)
 export async function fetchBlockByHeight(
   height: number,
 ): Promise<MempoolBlock> {

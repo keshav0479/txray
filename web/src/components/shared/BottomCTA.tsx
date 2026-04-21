@@ -26,9 +26,6 @@ export function BottomCTA({
 }: BottomCTAProps) {
   const colors = THEMES[theme];
 
-  // Build button classes based on theme
-  const buttonBgClass = `bg-${colors.tw}-600 hover:bg-${colors.tw}-500`;
-
   return (
     <section className="relative z-10 w-full max-w-2xl mx-auto px-6 py-24 text-center">
       <motion.div

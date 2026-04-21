@@ -6,16 +6,16 @@ import type { TxInput, TxOutput, HeuristicResult } from "@/lib/sherlockTypes";
 
 /**
  * activeCard values:
- *   "overview"          → full graph, all particles
- *   "cioh"              → highlight all inputs (same owner bracket)
- *   "change_detection"  → highlight likely change output, dim others
- *   "address_reuse"     → highlight matching address nodes
- *   "coinjoin"          → highlight equal-value outputs
- *   "consolidation"     → highlight many inputs, few outputs
- *   "self_transfer"     → highlight all nodes with matching script type
- *   "round_number_payment" → highlight round-number output
- *   "op_return"         → highlight OP_RETURN output
- *   "classification"    → pulse central engine with classification color
+ *   "overview"          -> full graph, all particles
+ *   "cioh"              -> highlight all inputs (same owner bracket)
+ *   "change_detection"  -> highlight likely change output, dim others
+ *   "address_reuse"     -> highlight matching address nodes
+ *   "coinjoin"          -> highlight equal-value outputs
+ *   "consolidation"     -> highlight many inputs, few outputs
+ *   "self_transfer"     -> highlight all nodes with matching script type
+ *   "round_number_payment" -> highlight round-number output
+ *   "op_return"         -> highlight OP_RETURN output
+ *   "classification"    -> pulse central engine with classification color
  */
 
 interface Props {
@@ -78,7 +78,7 @@ export function TransactionFlowGraph({
 
   const trunc = (addr: string | null) => {
     if (!addr) return "Unknown";
-    return addr.length <= 14 ? addr : addr.slice(0, 8) + "…" + addr.slice(-5);
+    return addr.length <= 14 ? addr : addr.slice(0, 8) + "..." + addr.slice(-5);
   };
 
   // Heuristic-specific data
@@ -423,7 +423,7 @@ export function TransactionFlowGraph({
               >
                 {inp.script_type}
               </text>
-              {/* ── Inline heuristic badge ── */}
+              {/* ------ Inline heuristic badge ------ */}
               {activeCard === "cioh" && (
                 <>
                   <rect
@@ -582,7 +582,7 @@ export function TransactionFlowGraph({
               >
                 {out.script_type}
               </text>
-              {/* ── Inline heuristic badge ── */}
+              {/* ------ Inline heuristic badge ------ */}
               {activeCard === "change_detection" && i === changeIdx && (
                 <>
                   <rect

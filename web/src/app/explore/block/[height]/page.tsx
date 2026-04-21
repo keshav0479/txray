@@ -22,11 +22,9 @@ export default function BlockExplorePage({
   const [selectedTx, setSelectedTx] = useState<AnalyzedTx | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [blockHeight, setBlockHeight] = useState<string | null>(null);
 
   useEffect(() => {
     params.then(async (p) => {
-      setBlockHeight(p.height);
       try {
         const start = Date.now();
         const res = await fetch(`/api/block/${p.height}`);
@@ -148,7 +146,7 @@ export default function BlockExplorePage({
           blockData={blockData}
           onSelectTx={(tx) => setSelectedTx(tx)}
           onReset={() => router.push("/")}
-          resetLabel="← Back to Search"
+          resetLabel="-> Back to Search"
         />
       </div>
 

@@ -262,7 +262,7 @@ export default function BuildPage() {
             onClick={() => router.push("/build")}
             className="px-6 py-2 rounded-full bg-white text-black font-semibold text-sm hover:bg-zinc-200 transition-colors"
           >
-            ← Try Again
+            {"->"} Try Again
           </button>
         </div>
       </div>
@@ -355,7 +355,7 @@ export default function BuildPage() {
                   <Tooltip
                     term="UTXOs"
                     definition="Unspent Transaction Outputs - the individual coins your wallet owns. Each has a specific amount and can only be spent whole."
-                    analogy="Like having specific bills in your wallet - a ₹500 note and a ₹100 note, not just a ₹600 balance."
+                    analogy="Like having specific bills in your wallet - a Rs 500 note and a Rs 100 note, not just a Rs 600 balance."
                   >
                     UTXOs
                   </Tooltip>
@@ -445,7 +445,7 @@ export default function BuildPage() {
                     <Tooltip
                       term="change"
                       definition="Leftover value from your inputs that gets sent back to your own wallet."
-                      analogy="Like paying ₹500 for a ₹350 item - the ₹150 you get back is your change."
+                      analogy="Like paying Rs 500 for a Rs 350 item - the Rs 150 you get back is your change."
                     >
                       change
                     </Tooltip>{" "}
@@ -469,7 +469,7 @@ export default function BuildPage() {
                           <Tooltip
                             term="change"
                             definition="Leftover value from your inputs that gets sent back to your own wallet."
-                            analogy="Like paying ₹500 for a ₹350 item - the ₹150 you get back is your change."
+                            analogy="Like paying Rs 500 for a Rs 350 item - the Rs 150 you get back is your change."
                           >
                             change
                           </Tooltip>{" "}
@@ -480,7 +480,7 @@ export default function BuildPage() {
                   </>
                 )}
                 <p className="text-sm text-zinc-500">
-                  Total in: {totalInputBtc} BTC → Total out: {totalOutputBtc}{" "}
+                  Total in: {totalInputBtc} BTC {"->"} Total out: {totalOutputBtc}{" "}
                   BTC + {feeBtc} BTC fee
                 </p>
               </StoryCard>
@@ -795,7 +795,7 @@ export default function BuildPage() {
                         className="flex items-center justify-between px-5 py-3 hover:bg-white/5 transition-colors"
                       >
                         <div className="flex items-center gap-3 min-w-0">
-                          <span className="text-emerald-400 shrink-0">●</span>
+                          <span className="text-emerald-400 shrink-0">*</span>
                           <div className="min-w-0">
                             <p className="text-sm text-white font-mono truncate">
                               {input.txid.slice(0, 20)}...:{input.vout}
@@ -825,12 +825,12 @@ export default function BuildPage() {
                                   : "text-violet-400"
                               }
                             >
-                              ●
+                              *
                             </span>
                             <div className="min-w-0">
                               <p className="text-sm text-white">
                                 {isChange
-                                  ? "↩ Change Output"
+                                  ? "Change Output"
                                   : `Payment #${i + 1}`}
                               </p>
                               <p className="text-xs text-zinc-500 uppercase">

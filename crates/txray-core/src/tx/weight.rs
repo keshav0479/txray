@@ -117,7 +117,7 @@ mod tests {
 
     #[test]
     fn test_vbytes_ceiling() {
-        // weight = 5 → vbytes = ceil(5/4) = 2
+        // weight = 5 -> vbytes = ceil(5/4) = 2
         let tx = make_tx(false, 1, 1);
         let info = compute_weight_info(&tx);
         // weight = 1*3 + 1 = 4, vbytes = 1

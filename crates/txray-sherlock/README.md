@@ -9,7 +9,7 @@ The "Sherlock" tool. Runs every txray privacy heuristic over a single transactio
 - Applies eight heuristics: common-input-ownership, change detection, address reuse, equal-output CoinJoin, consolidation, peel chain, …
 - Computes Boltzmann mixing entropy
 - Detects wallet fingerprints (Bitcoin Core, Electrum, Wasabi, Samourai, …)
-- Rolls per-tx findings into a 1–10 privacy score and an `AnalysisSummary`
+- Rolls per-tx findings into a 1 to 10 privacy score and an `AnalysisSummary`
 - Generates concrete `advise` output ("use a different wallet for change", "consolidate during low-fee windows", …)
 
 ## Public API

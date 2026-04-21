@@ -105,7 +105,7 @@ mod tests {
 
     #[test]
     fn test_rbf_mixed_inputs() {
-        // One signaling, one not → RBF true (any input suffices)
+        // One signaling, one not -> RBF true (any input suffices)
         let info = analyze_timelock(2, 0, &[0xFFFFFFFF, 0x00000001]);
         assert!(info.rbf_signaling);
     }
@@ -164,7 +164,7 @@ mod tests {
 
     #[test]
     fn test_relative_timelock_blocks() {
-        // Version 2, bit 31 clear, bit 22 clear → blocks
+        // Version 2, bit 31 clear, bit 22 clear -> blocks
         let rt = analyze_relative_timelock(2, 0x00000007);
         assert!(rt.enabled);
         assert_eq!(rt.timelock_type, Some("blocks"));
@@ -173,7 +173,7 @@ mod tests {
 
     #[test]
     fn test_relative_timelock_time() {
-        // Version 2, bit 31 clear, bit 22 set → time (value × 512)
+        // Version 2, bit 31 clear, bit 22 set -> time (value × 512)
         let sequence = 0x00400003; // bit 22 set, value = 3
         let rt = analyze_relative_timelock(2, sequence);
         assert!(rt.enabled);
@@ -183,14 +183,14 @@ mod tests {
 
     #[test]
     fn test_relative_timelock_ffffffff_disabled() {
-        // 0xFFFFFFFF has bit 31 set → disabled
+        // 0xFFFFFFFF has bit 31 set -> disabled
         let rt = analyze_relative_timelock(2, 0xFFFFFFFF);
         assert!(!rt.enabled);
     }
 
     #[test]
     fn test_relative_timelock_fffffffd_blocks() {
-        // 0xFFFFFFFD: bit 31 set → disabled
+        // 0xFFFFFFFD: bit 31 set -> disabled
         let rt = analyze_relative_timelock(2, 0xFFFFFFFD);
         assert!(!rt.enabled);
     }

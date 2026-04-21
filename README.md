@@ -6,17 +6,19 @@
   <a href="https://github.com/keshav0479/txray/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/keshav0479/txray/ci.yml?branch=main&style=for-the-badge&labelColor=0B0E14&color=F7931A&label=CI" alt="CI" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-F7931A?style=for-the-badge&labelColor=0B0E14" alt="MIT" /></a>
   <img src="https://img.shields.io/badge/rust-1.90%2B-F7931A?style=for-the-badge&labelColor=0B0E14&logo=rust&logoColor=F7931A" alt="Rust 1.90+" />
-  <img src="https://img.shields.io/badge/next.js-15-FAFAF9?style=for-the-badge&labelColor=0B0E14&logo=nextdotjs&logoColor=FAFAF9" alt="Next.js 15" />
+  <img src="https://img.shields.io/badge/next.js-16-FAFAF9?style=for-the-badge&labelColor=0B0E14&logo=nextdotjs&logoColor=FAFAF9" alt="Next.js 16" />
   <a href="https://github.com/keshav0479/txray/pkgs/container/txray"><img src="https://img.shields.io/badge/ghcr-multi--arch-00E5FF?style=for-the-badge&labelColor=0B0E14&logo=docker&logoColor=00E5FF" alt="ghcr image" /></a>
 </p>
 
 <br/>
 
-> Bitcoin block explorers tell you **what** happened. txray tells you **the story**: who paid whom, what the script actually does, how private the transaction really is, and how to build a better one yourself. It's a Rust workspace plus a Next.js front end you can run with one command.
+> Bitcoin block explorers are great at showing raw facts. txray is built for the moment after that, when you want to understand what a transaction is doing, why it looks the way it does, and what privacy or fee tradeoffs are hiding inside it.
+
+txray is a Rust workspace with a Next.js web app on top. The browser, CLI, and TUI all lean on the same Rust code, so the answers stay consistent whether you are learning, debugging, or preparing a demo.
 
 <br/>
 
-## Three tools, one journey
+## Three Tools, One Flow
 
 <table>
 <tr>
@@ -25,7 +27,7 @@
 #### 🔵 Lens
 <sub>**DECODE**</sub>
 
-Every input, output, script, and byte. The Money Flow graph traces value across the chain.
+Open a transaction or block and see the structure in plain language. Lens parses inputs, outputs, scripts, fees, weights, warnings, and the money-flow graph.
 
 </td>
 <td width="33%" valign="top">
@@ -33,7 +35,7 @@ Every input, output, script, and byte. The Money Flow graph traces value across 
 #### 🟡 Sherlock
 <sub>**DETECT**</sub>
 
-Privacy scored 1 to 10. Heuristics, Boltzmann entropy, wallet fingerprints, concrete advice.
+Look for privacy leaks without pretending heuristics are magic. Sherlock explains clustering signals, wallet fingerprints, entropy, and practical fixes.
 
 </td>
 <td width="33%" valign="top">
@@ -41,7 +43,7 @@ Privacy scored 1 to 10. Heuristics, Boltzmann entropy, wallet fingerprints, conc
 #### 🟢 Smith
 <sub>**FORGE**</sub>
 
-Raw transactions with smart coin selection, fee estimation, and a clear walkthrough.
+Build unsigned Bitcoin transactions from fixtures or addresses. Smith walks through coin selection, fee estimation, dust handling, RBF, locktime, and PSBT output.
 
 </td>
 </tr>
@@ -53,7 +55,7 @@ Raw transactions with smart coin selection, fee estimation, and a clear walkthro
 
 <br/>
 
-## What it looks like
+## What It Looks Like
 
 <table align="center">
 <tr>
@@ -77,18 +79,18 @@ Raw transactions with smart coin selection, fee estimation, and a clear walkthro
   <img src="assets/architecture.svg" alt="txray architecture" width="82%" />
 </p>
 
-<sub align="center">A modular Rust workspace fronted by a Next.js app. Every web action shells out to the same <code>txray</code> CLI, so the browser and the terminal share one source of truth.</sub>
+<sub align="center">The web app is intentionally thin. It calls the same <code>txray</code> CLI used in the terminal, which keeps parsing, heuristics, and transaction-building behavior in one place.</sub>
 
 <br/>
 
-## Run it
+## Run It
 
 <table>
 <tr>
 <td width="50%" valign="top">
 
 #### Try it
-<sub>One command. Docker does the rest.</sub>
+<sub>The easiest way to try the full web app.</sub>
 
 ```bash
 docker compose up -d --build
@@ -100,14 +102,14 @@ Then open [localhost:3000](http://localhost:3000).
 <td width="50%" valign="top">
 
 #### Hack on it
-<sub>Native build, hot reload.</sub>
+<sub>Best when you want to change Rust or web code.</sub>
 
 ```bash
 cargo run -p txray-cli -- famous pizza
 cd web && npm install && npm run dev
 ```
 
-Web at [localhost:3000](http://localhost:3000), CLI in your shell.
+The web app runs at [localhost:3000](http://localhost:3000). The CLI stays available from your shell.
 
 </td>
 </tr>
@@ -150,7 +152,7 @@ Honors `TXRAY_MEMPOOL_API` and `TXRAY_ESPLORA_API` env vars. Point it at your ow
 #### Parse, analyze, build, explain
 
 ```bash
-txray parse tx fixture.json      # decode raw tx → structured JSON
+txray parse tx fixture.json      # decode raw tx to structured JSON
 txray analyze blk.dat            # heuristics + privacy score on a block file
 txray build fixture.json         # construct PSBT with coin selection
 txray explain fixture.json       # plain-English walkthrough
@@ -186,7 +188,7 @@ cargo run -p txray-tui -- path/to/fixture.json
 ```
 
 Tabs: Dashboard · Tx Detail · Heuristics · Famous Blocks · Script Debugger.
-Navigate with `Tab`, `Shift+Tab`, or jump directly with `1`–`5`.
+Navigate with `Tab`, `Shift+Tab`, or jump directly with `1` to `5`.
 
 </details>
 
@@ -195,7 +197,7 @@ Navigate with `Tab`, `Shift+Tab`, or jump directly with `1`–`5`.
 
 <br/>
 
-Once a release tag is pushed, GitHub Actions builds a multi-arch image and publishes it to [GHCR](https://github.com/keshav0479/txray/pkgs/container/txray). On the VM you don't have to compile anything:
+Once a release tag is pushed, GitHub Actions builds a multi-arch image and publishes it to [GHCR](https://github.com/keshav0479/txray/pkgs/container/txray). On the VM, you do not have to compile anything:
 
 ```bash
 # one-time setup
@@ -207,7 +209,7 @@ cp .env.example .env
 docker compose pull && docker compose up -d
 ```
 
-To upgrade later: `docker compose pull && docker compose up -d`. Rollback to a specific version with `IMAGE_TAG=v0.1.2 docker compose up -d`.
+To upgrade later, run `docker compose pull && docker compose up -d`. To roll back, pin an image tag with `IMAGE_TAG=v0.1.2 docker compose up -d`.
 
 </details>
 
@@ -215,13 +217,15 @@ To upgrade later: `docker compose pull && docker compose up -d`. Rollback to a s
 
 ## Configuration
 
-Copy [.env.example](.env.example) to `.env`. The relevant knobs:
+Copy [.env.example](.env.example) to `.env`. These are the knobs most deployments care about:
 
 | Variable | Default | What it does |
 |---|---|---|
 | `TXRAY_BIN` | `/usr/local/bin/txray` | Path to the CLI used by the web layer. Set automatically inside Docker. |
 | `TXRAY_MEMPOOL_API` | `https://mempool.space/api` | Primary Bitcoin data source. Point at your own mempool/Esplora to self-host. |
 | `TXRAY_ESPLORA_API` | `https://blockstream.info/api` | Fallback source. txray walks here if the primary fails. |
+| `TXRAY_DATA_DIR` | OS temp directory + `/txray` | Writable runtime data directory for generated analysis results. |
+| `TXRAY_TRUST_PROXY_HEADERS` | `false` | Set to `true` only behind a reverse proxy that overwrites `X-Forwarded-For`, `X-Real-IP`, or `CF-Connecting-IP`. |
 | `PORT` / `HOSTNAME` | `3000` / `0.0.0.0` | Where the Next.js server binds. |
 
 <br/>

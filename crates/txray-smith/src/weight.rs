@@ -4,7 +4,7 @@
 //! via `classify_script()`. The fixture's `script_type` string is ONLY for display.
 //! See README line 146: "script_pubkey_hex is authoritative."
 
-// ─── CompactSize ────────────────────────────────────────────────────────────
+// --------- CompactSize ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 /// Returns the byte length of a CompactSize/varint encoding for `n`.
 pub fn compact_size(n: usize) -> usize {
@@ -19,7 +19,7 @@ pub fn compact_size(n: usize) -> usize {
     }
 }
 
-// ─── Script classification ──────────────────────────────────────────────────
+// --------- Script classification ------------------------------------------------------------------------------------------------------------------------------------------------------
 
 /// Classify a scriptPubKey from its raw bytes.
 /// This is the ONLY source of truth for script type in all weight/PSBT logic.
@@ -57,7 +57,7 @@ pub fn is_segwit_type(effective_type: &str) -> bool {
     )
 }
 
-// ─── Input weight ───────────────────────────────────────────────────────────
+// --------- Input weight ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 /// Input weight constants (Weight Units):
 ///
@@ -82,22 +82,22 @@ pub fn input_weight(effective_type: &str, has_segwit: bool) -> u64 {
         }
         "p2sh-p2wpkh" | "p2sh" => 364, // p2sh treated as nested segwit (conservative)
         "p2wsh" => 418,                // conservative 2-of-3 multisig estimate
-        _ => 592,                      // unknown → worst-case to NEVER under-estimate fee
+        _ => 592,                      // unknown -> worst-case to NEVER under-estimate fee
     }
 }
 
-// ─── Output weight ──────────────────────────────────────────────────────────
+// --------- Output weight ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 /// Output weight derived from actual scriptPubKey hex length.
 /// output_bytes = 8 (value) + compact_size(spk_len) + spk_len
-/// All output bytes are non-witness → weight = bytes × 4.
+/// All output bytes are non-witness -> weight = bytes × 4.
 pub fn output_weight_from_hex(script_pubkey_hex: &str) -> u64 {
-    let spk_len = script_pubkey_hex.len() / 2; // hex chars → bytes
+    let spk_len = script_pubkey_hex.len() / 2; // hex chars -> bytes
     let output_bytes = 8 + compact_size(spk_len) + spk_len;
     (output_bytes as u64) * 4
 }
 
-// ─── Total weight estimation ────────────────────────────────────────────────
+// --------- Total weight estimation ------------------------------------------------------------------------------------------------------------------------------------------------
 
 /// Information about an input for weight estimation.
 #[derive(Clone)]
@@ -167,13 +167,13 @@ pub fn weight_to_vbytes(weight: u64) -> u64 {
     weight.div_ceil(4)
 }
 
-// ─── Tests ──────────────────────────────────────────────────────────────────
+// --------- Tests ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    // ── CompactSize ──
+    // ------ CompactSize ------
 
     #[test]
     fn test_compact_size() {
@@ -184,18 +184,18 @@ mod tests {
         assert_eq!(compact_size(65536), 5);
     }
 
-    // ── classify_script ──
+    // ------ classify_script ------
 
     #[test]
     fn test_classify_p2wpkh() {
-        // OP_0 OP_PUSH20 <20-byte-hash> → 0014{20 bytes}
+        // OP_0 OP_PUSH20 <20-byte-hash> -> 0014{20 bytes}
         let spk = hex::decode("0014aabbccddee0011223344556677889900aabbccdd").unwrap();
         assert_eq!(classify_script(&spk), "p2wpkh");
     }
 
     #[test]
     fn test_classify_p2tr() {
-        // OP_1 OP_PUSH32 <32-byte-key> → 5120{32 bytes}
+        // OP_1 OP_PUSH32 <32-byte-key> -> 5120{32 bytes}
         let spk =
             hex::decode("5120aabbccddee001122334455667788990011223344556677889900aabbccddee00")
                 .unwrap();
@@ -218,7 +218,7 @@ mod tests {
 
     #[test]
     fn test_classify_p2wsh() {
-        // OP_0 OP_PUSH32 <32-byte-hash> → 0020{32 bytes}
+        // OP_0 OP_PUSH32 <32-byte-hash> -> 0020{32 bytes}
         let spk =
             hex::decode("0020aabbccddee001122334455667788990011223344556677889900aabbccddee00")
                 .unwrap();
@@ -231,7 +231,7 @@ mod tests {
         assert_eq!(classify_script(&spk), "unknown");
     }
 
-    // ── resolve_input_type ──
+    // ------ resolve_input_type ------
 
     #[test]
     fn test_resolve_input_type_from_hex() {
@@ -240,11 +240,11 @@ mod tests {
             resolve_input_type("0014aabbccddee0011223344556677889900aabbccdd"),
             "p2wpkh"
         );
-        // Unknown → returns "unknown" (never falls back to fixture string)
+        // Unknown -> returns "unknown" (never falls back to fixture string)
         assert_eq!(resolve_input_type("deadbeef"), "unknown");
     }
 
-    // ── Input weights ──
+    // ------ Input weights ------
 
     #[test]
     fn test_input_weight_p2wpkh() {
@@ -279,11 +279,11 @@ mod tests {
         assert_eq!(input_weight("mystery_type", false), 592);
     }
 
-    // ── Output weight ──
+    // ------ Output weight ------
 
     #[test]
     fn test_output_weight_p2wpkh() {
-        // p2wpkh spk = 22 bytes → output = 8 + 1 + 22 = 31 bytes → 124 WU
+        // p2wpkh spk = 22 bytes -> output = 8 + 1 + 22 = 31 bytes -> 124 WU
         assert_eq!(
             output_weight_from_hex("0014aabbccddee0011223344556677889900aabbccdd"),
             124
@@ -292,7 +292,7 @@ mod tests {
 
     #[test]
     fn test_output_weight_p2tr() {
-        // p2tr spk = 34 bytes → output = 8 + 1 + 34 = 43 bytes → 172 WU
+        // p2tr spk = 34 bytes -> output = 8 + 1 + 34 = 43 bytes -> 172 WU
         assert_eq!(
             output_weight_from_hex(
                 "5120aabbccddee001122334455667788990011223344556677889900aabbccddee00"
@@ -303,14 +303,14 @@ mod tests {
 
     #[test]
     fn test_output_weight_p2pkh() {
-        // p2pkh spk = 25 bytes → output = 8 + 1 + 25 = 34 bytes → 136 WU
+        // p2pkh spk = 25 bytes -> output = 8 + 1 + 25 = 34 bytes -> 136 WU
         assert_eq!(
             output_weight_from_hex("76a914aabbccddee0011223344556677889900aabbccdd88ac"),
             136
         );
     }
 
-    // ── Total weight ──
+    // ------ Total weight ------
 
     #[test]
     fn test_estimate_weight_1in_2out_p2wpkh() {
@@ -318,7 +318,7 @@ mod tests {
         // Overhead: 16 (version) + 2 (marker/flag) + 1×4 (in_count) + 1×4 (out_count) + 16 (locktime) = 42
         // Input: 272
         // Outputs: 124 + 124 = 248
-        // Total: 42 + 272 + 248 = 562 WU → ceil(562/4) = 141 vbytes
+        // Total: 42 + 272 + 248 = 562 WU -> ceil(562/4) = 141 vbytes
         let inputs = vec![InputInfo {
             effective_type: "p2wpkh".to_string(),
         }];
@@ -337,7 +337,7 @@ mod tests {
 
     #[test]
     fn test_estimate_weight_mixed_p2pkh_p2wpkh() {
-        // 1 p2pkh + 1 p2wpkh input (mixed → segwit tx, p2pkh gets +1 WU)
+        // 1 p2pkh + 1 p2wpkh input (mixed -> segwit tx, p2pkh gets +1 WU)
         // Overhead: 16 + 2 + 4 + 4 + 16 = 42
         // Inputs: 593 (p2pkh mixed) + 272 (p2wpkh) = 865
         // Output: 124 (p2wpkh)
@@ -359,7 +359,7 @@ mod tests {
 
     #[test]
     fn test_estimate_weight_large_varint() {
-        // With 253 outputs, compact_size grows from 1 to 3 bytes → adds 8 WU
+        // With 253 outputs, compact_size grows from 1 to 3 bytes -> adds 8 WU
         let inputs = vec![InputInfo {
             effective_type: "p2wpkh".to_string(),
         }];
@@ -370,14 +370,14 @@ mod tests {
             .collect();
 
         let weight = estimate_weight(&inputs, &outputs);
-        // Overhead: 16 + 2 + 1×4 + 3×4 (253 outputs → 3-byte varint) + 16 = 50
+        // Overhead: 16 + 2 + 1×4 + 3×4 (253 outputs -> 3-byte varint) + 16 = 50
         // Inputs: 272
         // Outputs: 253 × 124 = 31372
         // Total: 50 + 272 + 31372 = 31694
         assert_eq!(weight, 31694);
     }
 
-    // ── vbytes ──
+    // ------ vbytes ------
 
     #[test]
     fn test_weight_to_vbytes_ceil() {

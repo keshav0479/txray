@@ -2,7 +2,6 @@
 
 import { useEffect, useCallback } from "react";
 import { Focus } from "lucide-react";
-import { AudienceSelector } from "@/components/docs/DocsAudience";
 import { DocsThemeToggle } from "@/components/docs/DocsThemeToggle";
 
 /**

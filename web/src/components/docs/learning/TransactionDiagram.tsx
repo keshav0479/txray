@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { Play, Pause, RotateCcw, ChevronRight } from "lucide-react";
 
 interface UTXOBox {
@@ -52,16 +52,16 @@ export function TransactionDiagram({
   };
 
   // Auto-advance steps
-  useState(() => {
+  useEffect(() => {
     if (isPlaying) {
       const timer = setInterval(() => {
         setStep((s) => (s < steps.length - 1 ? s + 1 : 0));
       }, 2000);
       return () => clearInterval(timer);
     }
-  });
+  }, [isPlaying, steps.length]);
 
-  const getInputStyle = (index: number) => {
+  const getInputStyle = () => {
     if (step === 0)
       return "border-[var(--docs-panel-border)] bg-[var(--docs-panel)]";
     if (step >= 1)
@@ -69,7 +69,7 @@ export function TransactionDiagram({
     return "border-[var(--docs-panel-border)] bg-[var(--docs-panel)]";
   };
 
-  const getOutputStyle = (index: number) => {
+  const getOutputStyle = () => {
     if (step < 2)
       return "border-[var(--docs-panel-border)] bg-[var(--docs-panel)] opacity-40";
     if (step >= 2)
@@ -125,7 +125,7 @@ export function TransactionDiagram({
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className={`p-3 rounded-xl border transition-all duration-300 ${getInputStyle(i)}`}
+                className={`p-3 rounded-xl border transition-all duration-300 ${getInputStyle()}`}
               >
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-mono text-[var(--docs-text)]">
@@ -181,7 +181,7 @@ export function TransactionDiagram({
                   scale: step >= 3 ? [1, 1.02, 1] : 1,
                 }}
                 transition={{ delay: i * 0.1 }}
-                className={`p-3 rounded-xl border transition-all duration-300 ${getOutputStyle(i)}`}
+                className={`p-3 rounded-xl border transition-all duration-300 ${getOutputStyle()}`}
               >
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-mono text-[var(--docs-text)]">

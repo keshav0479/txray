@@ -3,7 +3,6 @@ import { access, constants, mkdtemp, rm, writeFile } from "fs/promises";
 import os from "os";
 import path from "path";
 import {
-  getWorkspaceRoot,
   parseJsonFromCliOutput,
   runTxray,
 } from "@/lib/server/txrayCli";
@@ -38,8 +37,15 @@ async function resolveDemoFixturePaths(
   const fixture = DEMO_FIXTURES[id];
   if (!fixture) return null;
 
-  const workspaceRoot = getWorkspaceRoot();
-  const blocksCandidateDirs = [path.join(workspaceRoot, "fixtures", "blocks")];
+  const blocksCandidateDirs = [
+    path.join(
+      /* turbopackIgnore: true */ process.cwd(),
+      "public",
+      "fixtures",
+      "blocks",
+    ),
+    path.join(/* turbopackIgnore: true */ process.cwd(), "fixtures", "blocks"),
+  ];
 
   for (const dir of blocksCandidateDirs) {
     const blkPath = path.join(dir, fixture.blk);

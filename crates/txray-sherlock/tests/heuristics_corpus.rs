@@ -50,7 +50,7 @@ fn fee_stats_unsorted_input() {
 
 #[test]
 fn analyze_block_file_missing_path_returns_file_not_found() {
-    // Every path is missing → the function must return an error rather
+    // Every path is missing -> the function must return an error rather
     // than panicking. This guards against future refactors that forget
     // the existence check.
     let res = analyze_block_file("/no/such/blk.dat", "/no/such/rev.dat", "/no/such/xor.dat");

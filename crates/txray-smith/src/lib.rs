@@ -28,7 +28,7 @@ pub use transaction::{resolve_rbf_locktime, TxParams};
 /// Build a PSBT from a fixture JSON string.
 /// Returns the report as a pretty-printed JSON string.
 pub fn build_psbt_from_fixture(json_str: &str) -> Result<String, BuilderError> {
-    // 1. Parse JSON → Fixture
+    // 1. Parse JSON -> Fixture
     let fixture = fixture::parse_fixture(json_str)?;
 
     // 2. Validate fixture

@@ -3,13 +3,7 @@
  * transaction hex. Used when the user pastes raw hex without prevout info.
  */
 
-// Ordered list of upstream APIs. The first one is tried, and on any failure
-// (network error or non-2xx) the next one is used. Configurable via env so
-// self-hosters can point at their own Esplora/mempool instance.
-const SOURCES: string[] = [
-  process.env.TXRAY_MEMPOOL_API ?? "https://mempool.space/api",
-  process.env.TXRAY_ESPLORA_API ?? "https://blockstream.info/api",
-].filter((u, i, arr) => u && arr.indexOf(u) === i);
+import { getApiSources } from "./config";
 
 interface InputRef {
   txid: string;
@@ -120,7 +114,7 @@ export async function fetchPrevouts(inputs: InputRef[]): Promise<Prevout[]> {
   // Fetch each unique parent tx, walking the source list on failure.
   const fetchPromises = Array.from(txidSet).map(async (txid) => {
     let lastErr: unknown = null;
-    for (const base of SOURCES) {
+    for (const base of getApiSources()) {
       try {
         const res = await fetch(`${base}/tx/${txid}`);
         if (!res.ok) {

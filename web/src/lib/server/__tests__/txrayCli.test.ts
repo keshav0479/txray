@@ -1,5 +1,9 @@
-import { describe, expect, it } from "vitest";
-import { parseJsonFromCliOutput } from "../txrayCli";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { getWorkspaceRoot, parseJsonFromCliOutput } from "../txrayCli";
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe("parseJsonFromCliOutput", () => {
   it("extracts a plain JSON object", () => {
@@ -33,5 +37,17 @@ describe("parseJsonFromCliOutput", () => {
   it("picks the outermost braces, not the inner ones", () => {
     const out = 'prelude {"outer":{"inner":1}} trailing';
     expect(parseJsonFromCliOutput(out)).toEqual({ outer: { inner: 1 } });
+  });
+});
+
+describe("getWorkspaceRoot", () => {
+  it("walks up from the local web directory in development", () => {
+    vi.spyOn(process, "cwd").mockReturnValue("/repo/txray/web");
+    expect(getWorkspaceRoot()).toBe("/repo/txray");
+  });
+
+  it("keeps the standalone runtime cwd instead of resolving to /", () => {
+    vi.spyOn(process, "cwd").mockReturnValue("/app");
+    expect(getWorkspaceRoot()).toBe("/app");
   });
 });

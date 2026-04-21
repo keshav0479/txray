@@ -6,11 +6,11 @@ const AMBER = "#f59e0b";
 const AMBER_DIM = "#fbbf24";
 const AMBER_BG = "rgba(245,158,11,0.08)";
 
-/* ─────────────────────────────────────────────
+/* ---------------------------------------------------------------------------------------------------------------------------------------
    LensMini - Transaction flow with scanning lens
-   Shows: inputs → core → outputs with smooth CSS-driven pulses
-   Math: 0.50 + 0.30 + 0.20 = 1.00 → 0.85 + 0.14 (implicit fee: 0.01)
-───────────────────────────────────────────── */
+   Shows: inputs -> core -> outputs with smooth CSS-driven pulses
+   Math: 0.50 + 0.30 + 0.20 = 1.00 -> 0.85 + 0.14 (implicit fee: 0.01)
+--------------------------------------------------------------------------------------------------------------------------------------- */
 export function LensMini() {
   // Y positions for nodes
   const inputs = [24, 52, 80];
@@ -149,7 +149,7 @@ export function LensMini() {
             fill={AMBER}
             opacity="0.85"
           >
-            {["0.50₿", "0.30₿", "0.20₿"][i]}
+            {["0.50 BTC", "0.30 BTC", "0.20 BTC"][i]}
           </text>
         </g>
       ))}
@@ -176,7 +176,7 @@ export function LensMini() {
             fill={AMBER_DIM}
             opacity="0.85"
           >
-            {["0.85₿", "0.14₿"][i]}
+            {["0.85BTC", "0.14BTC"][i]}
           </text>
         </g>
       ))}
@@ -245,10 +245,10 @@ export function LensMini() {
   );
 }
 
-/* ─────────────────────────────────────────────
+/* ---------------------------------------------------------------------------------------------------------------------------------------
    SherlockMini - Fingerprint scan with heuristic callouts
    Shows: A fingerprint being scanned with detection labels
-───────────────────────────────────────────── */
+--------------------------------------------------------------------------------------------------------------------------------------- */
 export function SherlockMini() {
   return (
     <svg
@@ -478,9 +478,9 @@ export function SherlockMini() {
   );
 }
 
-/* ─────────────────────────────────────────────
-   SmithMini - Smart coin selection → PSBT output
-───────────────────────────────────────────── */
+/* ---------------------------------------------------------------------------------------------------------------------------------------
+   SmithMini - Smart coin selection -> PSBT output
+--------------------------------------------------------------------------------------------------------------------------------------- */
 export function SmithMini() {
   // UTXO rows: amount, whether selected (for styling), and stagger delay
   const utxos = [
@@ -523,7 +523,7 @@ export function SmithMini() {
         </linearGradient>
       </defs>
 
-      {/* ── Left panel: UTXO selector list ── */}
+      {/* ------ Left panel: UTXO selector list ------ */}
       <rect
         x="8"
         y="6"
@@ -558,7 +558,7 @@ export function SmithMini() {
       {utxos.map((u, i) => {
         const y = startY + i * ROW_H + 11;
         const isSelected = u.selected;
-        // Build times arrays: wait → appear → hold → fade
+        // Build times arrays: wait -> appear -> hold -> fade
         const t0 = u.delay / (CYCLE * 0.6); // staggered start
         const t1 = t0 + 0.08; // snap in
         return (
@@ -655,7 +655,7 @@ export function SmithMini() {
               opacity={isSelected ? 0.9 : 0.25}
               fontWeight={isSelected ? "bold" : "normal"}
             >
-              {u.amt} ₿
+              {u.amt} BTC
             </text>
 
             {/* Small bar showing relative size */}
@@ -676,7 +676,7 @@ export function SmithMini() {
         );
       })}
 
-      {/* ── Center: animated connection particles using pure CSS offset-path ── */}
+      {/* ------ Center: animated connection particles using pure CSS offset-path ------ */}
       {[0, 1, 2].map((i) => {
         // We only draw paths for the 3 selected rows (indices 0, 1, 3). So adjust map to those rows.
         const rowIdx = i === 2 ? 3 : i;
@@ -720,7 +720,7 @@ export function SmithMini() {
         );
       })}
 
-      {/* ── Right panel: PSBT output ── */}
+      {/* ------ Right panel: PSBT output ------ */}
       <motion.g
         animate={{ opacity: [0, 0, 1, 1, 0, 0] }}
         transition={{

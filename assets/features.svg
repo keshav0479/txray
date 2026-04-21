@@ -54,7 +54,7 @@
     <!-- PARSE -->
     <g transform="translate(0 220)">
       <text x="60" y="6" fill="#A8A29E" font-weight="700" letter-spacing="2">PARSE</text>
-      <text x="60" y="24" fill="#3F3F3F" font-size="10">→ raw bytes to structured tx</text>
+      <text x="60" y="24" fill="#3F3F3F" font-size="10">-> raw bytes to structured tx</text>
       <g transform="translate(330 0)">
         <circle cx="0" cy="0" r="6" fill="#3B82F6" filter="url(#fglow)" />
         <text x="14" y="4" fill="#FAFAF9" font-family="'Inter',sans-serif">scripts, witnesses, weights</text>
@@ -72,7 +72,7 @@
     <!-- ANALYZE -->
     <g transform="translate(0 290)">
       <text x="60" y="6" fill="#A8A29E" font-weight="700" letter-spacing="2">ANALYZE</text>
-      <text x="60" y="24" fill="#3F3F3F" font-size="10">→ flag intent and structure</text>
+      <text x="60" y="24" fill="#3F3F3F" font-size="10">-> flag intent and structure</text>
       <g transform="translate(330 0)">
         <circle cx="0" cy="0" r="6" fill="#3B82F6" filter="url(#fglow)" />
         <text x="14" y="4" fill="#FAFAF9" font-family="'Inter',sans-serif">script class, address derive</text>
@@ -90,14 +90,14 @@
     <!-- VISUALIZE -->
     <g transform="translate(0 360)">
       <text x="60" y="6" fill="#A8A29E" font-weight="700" letter-spacing="2">VISUALIZE</text>
-      <text x="60" y="24" fill="#3F3F3F" font-size="10">→ make it legible</text>
+      <text x="60" y="24" fill="#3F3F3F" font-size="10">-> make it legible</text>
       <g transform="translate(330 0)">
         <circle cx="0" cy="0" r="6" fill="#3B82F6" filter="url(#fglow)" />
         <text x="14" y="4" fill="#FAFAF9" font-family="'Inter',sans-serif">money-flow graph</text>
       </g>
       <g transform="translate(560 0)">
         <circle cx="0" cy="0" r="6" fill="#D4A546" filter="url(#fglow)" />
-        <text x="14" y="4" fill="#FAFAF9" font-family="'Inter',sans-serif">privacy score 1–10</text>
+        <text x="14" y="4" fill="#FAFAF9" font-family="'Inter',sans-serif">privacy score 1 to 10</text>
       </g>
       <g transform="translate(790 0)">
         <circle cx="0" cy="0" r="6" fill="#10B981" filter="url(#fglow)" />
@@ -108,7 +108,7 @@
     <!-- EXPLAIN -->
     <g transform="translate(0 430)">
       <text x="60" y="6" fill="#A8A29E" font-weight="700" letter-spacing="2">EXPLAIN</text>
-      <text x="60" y="24" fill="#3F3F3F" font-size="10">→ teach as it works</text>
+      <text x="60" y="24" fill="#3F3F3F" font-size="10">-> teach as it works</text>
       <g transform="translate(330 0)">
         <circle cx="0" cy="0" r="6" fill="#3B82F6" filter="url(#fglow)" />
         <text x="14" y="4" fill="#FAFAF9" font-family="'Inter',sans-serif">script step debugger</text>

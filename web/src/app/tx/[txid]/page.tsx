@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   AlertTriangle,
@@ -104,7 +104,6 @@ export default function UnifiedTxPage({
 }: {
   params: Promise<{ txid: string }>;
 }) {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [txid, setTxid] = useState("");
   const [data, setData] = useState<ApiResponse | null>(null);
@@ -425,7 +424,7 @@ function PrivacyTab({ privacy }: { privacy: PrivacyData }) {
               <ul className="space-y-1.5">
                 {advice.recommendations.map((rec, i) => (
                   <li key={i} className="text-sm text-zinc-400 flex gap-2 leading-relaxed">
-                    <span className="text-sherlock-400 shrink-0">→</span>
+                    <span className="text-sherlock-400 shrink-0">{"->"}</span>
                     {rec}
                   </li>
                 ))}

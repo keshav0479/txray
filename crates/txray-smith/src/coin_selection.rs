@@ -73,7 +73,7 @@ pub fn select_coins(fixture: &Fixture) -> Result<CoinSelectionResult, BuilderErr
     let mut best_with_change: Option<CoinSelectionResult> = None;
     let mut best_send_all: Option<CoinSelectionResult> = None;
 
-    // ── Helper: try a specific set of UTXO indices ─────────────────────────
+    // ------ Helper: try a specific set of UTXO indices ---------------------------------------------------------------------------
     let try_subset = |indices: &[usize],
                       best_change: &mut Option<CoinSelectionResult>,
                       best_sendall: &mut Option<CoinSelectionResult>| {
@@ -161,7 +161,7 @@ pub fn select_coins(fixture: &Fixture) -> Result<CoinSelectionResult, BuilderErr
         }
     };
 
-    // ── Strategy 1: Prefix by value descending ──────────────────────────────
+    // ------ Strategy 1: Prefix by value descending ------------------------------------------------------------------------------------------
 
     let mut by_value: Vec<usize> = (0..fixture.utxos.len()).collect();
     by_value.sort_by(|&a, &b| {
@@ -178,7 +178,7 @@ pub fn select_coins(fixture: &Fixture) -> Result<CoinSelectionResult, BuilderErr
         }
     }
 
-    // ── Strategy 2: Prefix by effective value (value - fee cost) ────────────
+    // ------ Strategy 2: Prefix by effective value (value - fee cost) ------------------------------------
     // This handles the case where lighter-weight UTXOs are more fee-efficient
 
     if best_with_change.is_none() {
@@ -202,7 +202,7 @@ pub fn select_coins(fixture: &Fixture) -> Result<CoinSelectionResult, BuilderErr
         }
     }
 
-    // ── Strategy 3: Individual UTXO scan ────────────────────────────────────
+    // ------ Strategy 3: Individual UTXO scan ------------------------------------------------------------------------------------------------------------
     // Try every single UTXO individually (catches cases where the largest
     // by value is too heavy but a smaller lighter UTXO works)
 
@@ -215,7 +215,7 @@ pub fn select_coins(fixture: &Fixture) -> Result<CoinSelectionResult, BuilderErr
         }
     }
 
-    // ── Strategy 4: Pairwise combinations (for small max_inputs) ────────────
+    // ------ Strategy 4: Pairwise combinations (for small max_inputs) ------------------------------------
     // When max_inputs >= 2, try all pairs if no with-change found yet
 
     if best_with_change.is_none() && max_n >= 2 {
@@ -230,7 +230,7 @@ pub fn select_coins(fixture: &Fixture) -> Result<CoinSelectionResult, BuilderErr
         }
     }
 
-    // ── Strategy 5: Triples (for max_inputs >= 3 and small pools) ───────────
+    // ------ Strategy 5: Triples (for max_inputs >= 3 and small pools) ---------------------------------
 
     if best_with_change.is_none() && max_n >= 3 {
         let n_utxos = fixture.utxos.len().min(30); // cap to avoid O(n^3) explosion
@@ -246,7 +246,7 @@ pub fn select_coins(fixture: &Fixture) -> Result<CoinSelectionResult, BuilderErr
         }
     }
 
-    // ── Return best solution ────────────────────────────────────────────────
+    // ------ Return best solution ------------------------------------------------------------------------------------------------------------------------------------------------
 
     // Prefer with-change over send-all
     if let Some(result) = best_with_change {
@@ -263,12 +263,12 @@ pub fn select_coins(fixture: &Fixture) -> Result<CoinSelectionResult, BuilderErr
     )))
 }
 
-/// ceil(a * b) for u64 * f64 → u64
+/// ceil(a * b) for u64 * f64 -> u64
 fn ceil_mul(a: u64, b: f64) -> u64 {
     (a as f64 * b).ceil() as u64
 }
 
-// ─── Tests ──────────────────────────────────────────────────────────────────
+// --------- Tests ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #[cfg(test)]
 mod tests {
@@ -404,9 +404,9 @@ mod tests {
     #[test]
     fn test_select_send_all() {
         // UTXO value close to payment + fee, with change below dust threshold.
-        // 1 p2wpkh in, 1 p2wpkh out: ~110 vbytes at rate 1.0 → fee ~110 sats
-        // With change: leftover ≈ 600 - 141 = 459 < 546 (dust) → can't use change
-        // Without change: leftover = 600 ≥ 110 (fee) → send-all
+        // 1 p2wpkh in, 1 p2wpkh out: ~110 vbytes at rate 1.0 -> fee ~110 sats
+        // With change: leftover about 600 - 141 = 459 < 546 (dust) -> can't use change
+        // Without change: leftover = 600 >= 110 (fee) -> send-all
         let fixture = make_fixture(&[50_600], 50_000, 1.0, None);
         let result = select_coins(&fixture).unwrap();
         assert!(result.change_value.is_none());
@@ -417,15 +417,15 @@ mod tests {
         );
     }
 
-    // ── Codex stress case: lighter UTXO succeeds when heavier fails ──
+    // ------ Codex stress case: lighter UTXO succeeds when heavier fails ------
 
     #[test]
     fn test_codex_lighter_utxo_preferred() {
         // UTXO A: 118k, unknown script (592 WU) - sorted first by value
         // UTXO B: 115k, p2tr (230 WU) - lighter, should be selected
         // Payment: 100k, fee_rate: 100, max_inputs: 1
-        // With UTXO A: fee would be very high due to 592 WU → may not fit
-        // With UTXO B: fee is lower → should work
+        // With UTXO A: fee would be very high due to 592 WU -> may not fit
+        // With UTXO B: fee is lower -> should work
         let fixture = make_mixed_fixture(
             vec![
                 (118_000, "6a"), // unknown, heavy

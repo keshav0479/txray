@@ -7,7 +7,7 @@ use colored::*;
     name = "txray",
     about = "txray - Parse. Analyze. Build. Learn.",
     version,
-    after_help = "Examples:\n  txray famous                           List all famous blocks\n  txray famous genesis                   Show genesis block details\n  txray fetch --block 170                Fetch Satoshi→Hal Finney block\n  txray parse tx fixture.json            Parse a transaction fixture\n  txray parse block blk.dat rev.dat xor.dat  Parse a block file\n  txray analyze blk.dat rev.dat xor.dat  Run heuristics on a block\n  txray build fixture.json               Build PSBT from fixture"
+    after_help = "Examples:\n  txray famous                           List all famous blocks\n  txray famous genesis                   Show genesis block details\n  txray fetch --block 170                Fetch Satoshi->Hal Finney block\n  txray parse tx fixture.json            Parse a transaction fixture\n  txray parse block blk.dat rev.dat xor.dat  Parse a block file\n  txray analyze blk.dat rev.dat xor.dat  Run heuristics on a block\n  txray build fixture.json               Build PSBT from fixture"
 )]
 struct Cli {
     #[command(subcommand)]
@@ -299,7 +299,7 @@ fn cmd_debug_script(script_hex: &str, script_sig_hex: &str, witness_hex: &str) -
     let steps = txray_core::tx::script_exec::execute_script(&script_pubkey, &script_sig, &witness);
 
     println!("{}", "Script Execution Trace".bold().cyan());
-    println!("{}", "═".repeat(70).dimmed());
+    println!("{}", "---".repeat(70).dimmed());
     println!();
     for step in &steps {
         println!("{}", step);
@@ -419,7 +419,7 @@ async fn cmd_fetch(block: Option<String>, tx: Option<String>, source: &str) -> R
             .await
             .map_err(|e| anyhow::anyhow!("{}", e))?;
 
-        println!("{} {} bytes fetched", "✓".green().bold(), bytes.len());
+        println!("{} {} bytes fetched", "OK".green().bold(), bytes.len());
 
         // Try to parse the block header
         match txray_core::block::parser::parse_raw_block(&bytes) {
@@ -448,18 +448,22 @@ async fn cmd_fetch(block: Option<String>, tx: Option<String>, source: &str) -> R
                 // Check if this is a famous block
                 if let Some(famous) = txray_corpus::find_by_name(&hash[..16]) {
                     println!();
-                    println!("  {} {}", "📚".bold(), famous.name.yellow().bold());
+                    println!("  {} {}", "*".bold(), famous.name.yellow().bold());
                     println!("  {}", famous.description.dimmed());
                 } else if let txray_net::BlockId::Height(h) = &id {
                     if let Some(famous) = txray_corpus::find_by_height(*h) {
                         println!();
-                        println!("  {} {}", "📚".bold(), famous.name.yellow().bold());
+                        println!("  {} {}", "*".bold(), famous.name.yellow().bold());
                         println!("  {}", famous.description.dimmed());
                     }
                 }
             }
             Err(e) => {
-                println!("{} Could not parse block header: {}", "⚠".yellow(), e);
+                println!(
+                    "{} Could not parse block header: {}",
+                    "Warning:".yellow(),
+                    e
+                );
                 println!(
                     "Raw hex (first 160 chars): {}",
                     &hex::encode(&bytes[..bytes.len().min(80)])
@@ -472,7 +476,7 @@ async fn cmd_fetch(block: Option<String>, tx: Option<String>, source: &str) -> R
             .await
             .map_err(|e| anyhow::anyhow!("{}", e))?;
 
-        println!("{} {} bytes fetched", "✓".green().bold(), bytes.len());
+        println!("{} {} bytes fetched", "OK".green().bold(), bytes.len());
 
         match txray_core::tx::parser::parse_raw_tx(&bytes) {
             Ok(parsed) => {
@@ -492,7 +496,7 @@ async fn cmd_fetch(block: Option<String>, tx: Option<String>, source: &str) -> R
                 println!("  {} {}", "Locktime:".dimmed(), parsed.locktime);
             }
             Err(e) => {
-                println!("{} Could not parse transaction: {}", "⚠".yellow(), e);
+                println!("{} Could not parse transaction: {}", "Warning:".yellow(), e);
             }
         }
     } else {
@@ -505,13 +509,13 @@ async fn cmd_fetch(block: Option<String>, tx: Option<String>, source: &str) -> R
 fn cmd_famous(query: Option<&str>) -> Result<()> {
     match query {
         None => {
-            println!("{}", "📚 Famous Bitcoin Blocks".bold().cyan());
-            println!("{}", "═".repeat(50).dimmed());
+            println!("{}", "* Famous Bitcoin Blocks".bold().cyan());
+            println!("{}", "---".repeat(50).dimmed());
             println!();
             for block in txray_corpus::list_famous() {
                 println!(
                     "  {} {:>9}  {}",
-                    "▸".cyan(),
+                    ">".cyan(),
                     format!("#{}", block.height).yellow(),
                     block.name.bold()
                 );
@@ -535,8 +539,8 @@ fn cmd_famous(query: Option<&str>) -> Result<()> {
             match found {
                 Some(block) => {
                     println!();
-                    println!("{} {}", "📚".bold(), block.name.bold().cyan());
-                    println!("{}", "─".repeat(50).dimmed());
+                    println!("{} {}", "*".bold(), block.name.bold().cyan());
+                    println!("{}", "---".repeat(50).dimmed());
                     println!(
                         "  {} #{}",
                         "Height:".dimmed(),
@@ -551,7 +555,7 @@ fn cmd_famous(query: Option<&str>) -> Result<()> {
                     println!();
                     println!("  {}", "What to look for:".bold());
                     for item in block.what_to_look_for {
-                        println!("    {} {}", "•".cyan(), item);
+                        println!("    {} {}", "-".cyan(), item);
                     }
                     println!();
                     println!(
@@ -562,7 +566,7 @@ fn cmd_famous(query: Option<&str>) -> Result<()> {
                     println!();
                 }
                 None => {
-                    println!("{} No famous block matching '{}'", "✗".red().bold(), q);
+                    println!("{} No famous block matching '{}'", "NO".red().bold(), q);
                     println!(
                         "  {}",
                         "Try: genesis, pizza, segwit, taproot, coinjoin".dimmed()

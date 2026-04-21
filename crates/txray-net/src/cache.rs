@@ -4,6 +4,20 @@ use std::path::PathBuf;
 
 /// Returns the cache directory: ~/.txray/cache/
 fn cache_dir() -> PathBuf {
+    if let Ok(dir) = std::env::var("TXRAY_CACHE_DIR") {
+        return PathBuf::from(dir);
+    }
+
+    default_cache_dir()
+}
+
+#[cfg(test)]
+fn default_cache_dir() -> PathBuf {
+    std::env::temp_dir().join("txray-test-cache")
+}
+
+#[cfg(not(test))]
+fn default_cache_dir() -> PathBuf {
     let home = std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string());
     PathBuf::from(home).join(".txray").join("cache")
 }
@@ -50,10 +64,7 @@ mod tests {
     fn cache_dir_contains_txray() {
         let dir = cache_dir();
         let dir_str = dir.to_string_lossy();
-        assert!(
-            dir_str.contains(".txray"),
-            "cache dir should contain .txray"
-        );
+        assert!(dir_str.contains("txray"), "cache dir should contain txray");
         assert!(
             dir_str.ends_with("cache"),
             "cache dir should end with cache"

@@ -4,10 +4,9 @@ import os from "os";
 import path from "path";
 import { parseJsonFromCliOutput, runTxray } from "@/lib/server/txrayCli";
 import { checkLightLimit } from "@/lib/server/rateLimit";
+import { getPrimaryApiBase } from "@/lib/server/config";
 
 export const runtime = "nodejs";
-
-const MEMPOOL_BASE = "https://mempool.space/api";
 
 interface MempoolVin {
   txid: string;
@@ -102,10 +101,11 @@ export async function GET(
   let tmpDir: string | null = null;
 
   try {
+    const mempoolBase = getPrimaryApiBase();
     // Fetch tx data and hex from mempool.space in parallel
     const [txRes, hexRes] = await Promise.all([
-      fetch(`${MEMPOOL_BASE}/tx/${txid}`),
-      fetch(`${MEMPOOL_BASE}/tx/${txid}/hex`),
+      fetch(`${mempoolBase}/tx/${txid}`),
+      fetch(`${mempoolBase}/tx/${txid}/hex`),
     ]);
 
     if (!txRes.ok) {

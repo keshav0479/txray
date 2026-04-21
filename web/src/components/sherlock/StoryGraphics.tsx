@@ -5,13 +5,13 @@ import { motion } from "framer-motion";
 const BLUE = "#3b82f6";
 const BLUE_DIM = "#60a5fa";
 
-/* ─────────────────────────────────────────────
+/* ---------------------------------------------------------------------------------------------------------------------------------------
    Helper: strokeDasharray / strokeDashoffset
    trick - we pass the total path length so the
    draw animation works for any element.
-───────────────────────────────────────────── */
+--------------------------------------------------------------------------------------------------------------------------------------- */
 
-// ─── Card 1: AnimatedTrail ───────────────────────────────────────────────────
+// --------- Card 1: AnimatedTrail ---------------------------------------------------------------------------------------------------------------------------------------------------------
 export function AnimatedTrail({ isPlaying }: { isPlaying: boolean }) {
   // Scrolling hex lines - 8 rows, repeated for seamless scroll
   const hexLines = [
@@ -61,7 +61,7 @@ export function AnimatedTrail({ isPlaying }: { isPlaying: boolean }) {
       <rect width="280" height="160" fill="transparent" />
       <rect width="280" height="160" fill="url(#gridBlue)" />
 
-      {/* ── Scrolling hex text column (very faint) ── */}
+      {/* ------ Scrolling hex text column (very faint) ------ */}
       <clipPath id="trail-hex-clip">
         <rect x="0" y="0" width="85" height="160" />
       </clipPath>
@@ -96,7 +96,7 @@ export function AnimatedTrail({ isPlaying }: { isPlaying: boolean }) {
         )}
       </g>
 
-      {/* ── Chain blocks ── */}
+      {/* ------ Chain blocks ------ */}
       {/* Block 1 */}
       <motion.g
         initial={{ opacity: 0, scale: 0.9, y: 5 }}
@@ -288,7 +288,7 @@ export function AnimatedTrail({ isPlaying }: { isPlaying: boolean }) {
         </text>
       </motion.g>
 
-      {/* ── Magnifying glass sweeping left → right ── */}
+      {/* ------ Magnifying glass sweeping left -> right ------ */}
       <motion.g
         initial={{ x: -60 }}
         animate={isPlaying ? { x: [null, -40, 320] } : { x: -60 }}
@@ -340,7 +340,7 @@ export function AnimatedTrail({ isPlaying }: { isPlaying: boolean }) {
   );
 }
 
-// ─── Card 2: AnimatedCIOH ────────────────────────────────────────────────────
+// --------- Card 2: AnimatedCIOH ------------------------------------------------------------------------------------------------------------------------------------------------------------
 export function AnimatedCIOH({ isPlaying }: { isPlaying: boolean }) {
   const coins = [
     { cx: 30, cy: 30 },
@@ -389,7 +389,7 @@ export function AnimatedCIOH({ isPlaying }: { isPlaying: boolean }) {
       <rect width="280" height="160" fill="transparent" />
       <rect width="280" height="160" fill="url(#gridBlue)" />
 
-      {/* ── Input coins ── */}
+      {/* ------ Input coins ------ */}
       {coins.map((coin, i) => (
         <motion.g
           key={`coin-${i}`}
@@ -419,12 +419,12 @@ export function AnimatedCIOH({ isPlaying }: { isPlaying: boolean }) {
             fill={BLUE}
             fontWeight="bold"
           >
-            ₿
+            BTC
           </text>
         </motion.g>
       ))}
 
-      {/* ── Arrow lines (drawn smoothly) ── */}
+      {/* ------ Arrow lines (drawn smoothly) ------ */}
       {arrowPaths.map((d, i) => (
         <motion.path
           key={`arrow-${i}`}
@@ -465,7 +465,7 @@ export function AnimatedCIOH({ isPlaying }: { isPlaying: boolean }) {
         />
       </motion.g>
 
-      {/* ── Wallet rectangle ── */}
+      {/* ------ Wallet rectangle ------ */}
       <motion.rect
         x="190"
         y="65"
@@ -523,7 +523,7 @@ export function AnimatedCIOH({ isPlaying }: { isPlaying: boolean }) {
         }
       />
 
-      {/* ── Lock / keyhole icon snapping shut ── */}
+      {/* ------ Lock / keyhole icon snapping shut ------ */}
       <motion.g
         initial={{ scale: 0, opacity: 0, y: -10 }}
         animate={
@@ -559,7 +559,7 @@ export function AnimatedCIOH({ isPlaying }: { isPlaying: boolean }) {
         <line x1="220" y1="52" x2="220" y2="54" stroke={BLUE} strokeWidth="2" />
       </motion.g>
 
-      {/* ── "SAME OWNER" label ── */}
+      {/* ------ "SAME OWNER" label ------ */}
       <motion.text
         x="220"
         y="136"
@@ -582,7 +582,7 @@ export function AnimatedCIOH({ isPlaying }: { isPlaying: boolean }) {
   );
 }
 
-// ─── Card 3: AnimatedChange ──────────────────────────────────────────────────
+// --------- Card 3: AnimatedChange ------------------------------------------------------------------------------------------------------------------------------------------------------
 export function AnimatedChange({ isPlaying }: { isPlaying: boolean }) {
   const hexLines = [
     "script_pubkey: OP_DUP OP_HASH160...",
@@ -631,7 +631,7 @@ export function AnimatedChange({ isPlaying }: { isPlaying: boolean }) {
       <rect width="280" height="160" fill="transparent" />
       <rect width="280" height="160" fill="url(#gridBlue)" />
 
-      {/* ── Background Scrolling Hex (Diagnostic Output) ── */}
+      {/* ------ Background Scrolling Hex (Diagnostic Output) ------ */}
       <g clipPath="url(#change-hex-clip)" opacity="0.15">
         {[0, 1].map((copy) =>
           hexLines.map((line, j) => (
@@ -657,7 +657,7 @@ export function AnimatedChange({ isPlaying }: { isPlaying: boolean }) {
         )}
       </g>
 
-      {/* ── Base Connection Lines (Faint Pipes) ── */}
+      {/* ------ Base Connection Lines (Faint Pipes) ------ */}
       <line
         x1="40"
         y1="80"
@@ -682,7 +682,7 @@ export function AnimatedChange({ isPlaying }: { isPlaying: boolean }) {
         strokeDasharray="4 2"
       />
 
-      {/* ── Animated Data Pulses ── */}
+      {/* ------ Animated Data Pulses ------ */}
       <motion.line
         x1="40"
         y1="80"
@@ -742,7 +742,7 @@ export function AnimatedChange({ isPlaying }: { isPlaying: boolean }) {
         filter="url(#blueGlowHeavy)"
       />
 
-      {/* ── Input Node ── */}
+      {/* ------ Input Node ------ */}
       <circle
         cx="30"
         cy="80"
@@ -759,10 +759,10 @@ export function AnimatedChange({ isPlaying }: { isPlaying: boolean }) {
         fill={BLUE}
         fontWeight="bold"
       >
-        ₿
+        BTC
       </text>
 
-      {/* ── Tx Splitter Node (Center) ── */}
+      {/* ------ Tx Splitter Node (Center) ------ */}
       <motion.g
         style={{ transformOrigin: "100px 80px" }}
         initial={{ scale: 1 }}
@@ -797,7 +797,7 @@ export function AnimatedChange({ isPlaying }: { isPlaying: boolean }) {
         </text>
       </motion.g>
 
-      {/* ── Payment Output Node (Top) ── */}
+      {/* ------ Payment Output Node (Top) ------ */}
       <motion.g
         style={{ transformOrigin: "200px 40px" }}
         initial={{ scale: 0.9, opacity: 0.5 }}
@@ -830,7 +830,7 @@ export function AnimatedChange({ isPlaying }: { isPlaying: boolean }) {
           strokeWidth="1"
         />
         <text x="200" y="43" textAnchor="middle" fontSize="8" fill={BLUE_DIM}>
-          ₿
+          BTC
         </text>
         <text
           x="200"
@@ -845,7 +845,7 @@ export function AnimatedChange({ isPlaying }: { isPlaying: boolean }) {
         </text>
       </motion.g>
 
-      {/* ── Change Output Node (Bottom) ── */}
+      {/* ------ Change Output Node (Bottom) ------ */}
       <motion.g
         style={{ transformOrigin: "200px 120px" }}
         initial={{ scale: 0.9, opacity: 0.5 }}
@@ -889,7 +889,7 @@ export function AnimatedChange({ isPlaying }: { isPlaying: boolean }) {
           fill={BLUE}
           fontWeight="bold"
         >
-          ↺
+          {">>"}
         </text>
         <text
           x="200"
@@ -905,7 +905,7 @@ export function AnimatedChange({ isPlaying }: { isPlaying: boolean }) {
         </text>
       </motion.g>
 
-      {/* ── Sherlock Scanner Over Change Output ── */}
+      {/* ------ Sherlock Scanner Over Change Output ------ */}
       <motion.g
         initial={{ opacity: 0 }}
         animate={isPlaying ? { opacity: [0, 0, 1, 1, 0, 0] } : {}}
@@ -1002,7 +1002,7 @@ export function AnimatedChange({ isPlaying }: { isPlaying: boolean }) {
   );
 }
 
-// ─── Card 4: AnimatedDots ────────────────────────────────────────────────────
+// --------- Card 4: AnimatedDots ------------------------------------------------------------------------------------------------------------------------------------------------------------
 const DOT_NODES = [
   { x: 40, y: 30 },
   { x: 130, y: 20 },
@@ -1074,7 +1074,7 @@ export function AnimatedDots({ isPlaying }: { isPlaying: boolean }) {
       <rect width="280" height="160" fill="transparent" />
       <rect width="280" height="160" fill="url(#gridBlue)" />
 
-      {/* ── Diagnostic Background Text ── */}
+      {/* ------ Diagnostic Background Text ------ */}
       <motion.g
         opacity="0.15"
         initial={{ y: 0 }}
@@ -1130,7 +1130,7 @@ export function AnimatedDots({ isPlaying }: { isPlaying: boolean }) {
         ))}
       </motion.g>
 
-      {/* ── Network Edges ── */}
+      {/* ------ Network Edges ------ */}
       {EDGES.map(([a, b], i) => {
         const na = ENHANCED_NODES[a];
         const nb = ENHANCED_NODES[b];
@@ -1174,7 +1174,7 @@ export function AnimatedDots({ isPlaying }: { isPlaying: boolean }) {
         );
       })}
 
-      {/* ── Network Nodes ── */}
+      {/* ------ Network Nodes ------ */}
       {ENHANCED_NODES.map((node, i) => {
         // We'll make the nodes pulse when the scanner passes over them
         // Approximate timing based on the scanner array
@@ -1274,7 +1274,7 @@ export function AnimatedDots({ isPlaying }: { isPlaying: boolean }) {
         );
       })}
 
-      {/* ── High-Tech Scanner Reticle ── */}
+      {/* ------ High-Tech Scanner Reticle ------ */}
       <motion.g
         initial={{ x: 40, y: 30 }}
         animate={isPlaying ? { x: scannerX, y: scannerY } : { x: 40, y: 30 }}

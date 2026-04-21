@@ -28,9 +28,9 @@ pub struct TxParams {
 ///    - Else if `rbf == true` and `current_height` exists, use current_height (anti-fee-sniping).
 ///    - Else 0.
 /// 2. Determine nSequence:
-///    - If `rbf == true` → 0xFFFFFFFD (enables RBF).
-///    - Else if nLockTime != 0 → 0xFFFFFFFE (enables locktime without RBF).
-///    - Else → 0xFFFFFFFF (final, no RBF, no locktime).
+///    - If `rbf == true` -> 0xFFFFFFFD (enables RBF).
+///    - Else if nLockTime != 0 -> 0xFFFFFFFE (enables locktime without RBF).
+///    - Else -> 0xFFFFFFFF (final, no RBF, no locktime).
 /// 3. Derive report fields:
 ///    - `rbf_signaling`: true if nSequence <= 0xFFFFFFFD.
 ///    - `locktime_type`: "none" if 0, "block_height" if < 500_000_000, "unix_timestamp" otherwise.
@@ -72,7 +72,7 @@ pub fn resolve_rbf_locktime(fixture: &Fixture) -> TxParams {
     }
 }
 
-// ─── Tests ──────────────────────────────────────────────────────────────────
+// --------- Tests ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #[cfg(test)]
 mod tests {
@@ -115,7 +115,7 @@ mod tests {
         }
     }
 
-    // ── Row 1: rbf=false/absent, no locktime ──
+    // ------ Row 1: rbf=false/absent, no locktime ------
 
     #[test]
     fn test_rbf_false_no_locktime() {
@@ -136,7 +136,7 @@ mod tests {
         assert!(!params.rbf_signaling);
     }
 
-    // ── Row 2: rbf=false/absent, locktime present ──
+    // ------ Row 2: rbf=false/absent, locktime present ------
 
     #[test]
     fn test_rbf_false_with_locktime_block() {
@@ -158,7 +158,7 @@ mod tests {
         assert_eq!(params.locktime_type, "unix_timestamp");
     }
 
-    // ── Row 3: rbf=true, no locktime, current_height present ──
+    // ------ Row 3: rbf=true, no locktime, current_height present ------
 
     #[test]
     fn test_rbf_true_anti_fee_sniping() {
@@ -170,7 +170,7 @@ mod tests {
         assert_eq!(params.locktime_type, "block_height");
     }
 
-    // ── Row 4: rbf=true, locktime present ──
+    // ------ Row 4: rbf=true, locktime present ------
 
     #[test]
     fn test_rbf_true_with_locktime() {
@@ -190,7 +190,7 @@ mod tests {
         assert_eq!(params.n_lock_time, 900_000); // locktime, not current_height
     }
 
-    // ── Row 5: rbf=true, no locktime, no current_height ──
+    // ------ Row 5: rbf=true, no locktime, no current_height ------
 
     #[test]
     fn test_rbf_true_no_locktime_no_height() {
@@ -202,7 +202,7 @@ mod tests {
         assert_eq!(params.locktime_type, "none");
     }
 
-    // ── Locktime boundary ──
+    // ------ Locktime boundary ------
 
     #[test]
     fn test_locktime_boundary_499999999() {

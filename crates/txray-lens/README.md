@@ -15,10 +15,10 @@ The "Lens" tool. Wraps `txray-core` with a higher-level analysis layer that turn
 
 | Symbol | Purpose |
 |---|---|
-| `analyze_transaction(fixture_path)` | Fixture file → analysis JSON string |
-| `analyze_block(blk, rev, xor)` | Block files → per-tx analysis JSON |
+| `analyze_transaction(fixture_path)` | Fixture file -> analysis JSON string |
+| `analyze_block(blk, rev, xor)` | Block files -> per-tx analysis JSON |
 | `explain` (module) | Human-readable walkthroughs for each script type |
-| `warnings` (module) | Heuristic-free structural warnings (dust, weird sequence, …) |
+| `warnings` (module) | Heuristic-free structural warnings (dust, weird sequence, ...) |
 
 ## Used by
 

@@ -7,7 +7,7 @@ Zero-dependency-on-bitcoin-rs implementation of the byte-level pieces every othe
 ## What it does
 
 - Decodes raw transactions (legacy and segwit) into structured `ParsedTx` values
-- Classifies output scripts (P2PKH, P2SH, P2WPKH, P2WSH, P2TR, OP_RETURN, multisig, …)
+- Classifies output scripts (P2PKH, P2SH, P2WPKH, P2WSH, P2TR, OP_RETURN, multisig, ...)
 - Derives addresses for every standard script type
 - Parses raw `blk*.dat` blocks plus `rev*.dat` UTXO undo files
 - Computes txids, wtxids, weights, and merkle roots
@@ -17,11 +17,11 @@ Zero-dependency-on-bitcoin-rs implementation of the byte-level pieces every othe
 
 | Symbol | Purpose |
 |---|---|
-| `tx::parser::parse_raw_tx` | bytes → `ParsedTx` |
+| `tx::parser::parse_raw_tx` | bytes -> `ParsedTx` |
 | `tx::hash::compute_txid` / `compute_wtxid` | canonical hashing |
 | `tx::weight::compute_weight_info` | virtual size / weight units |
 | `tx::script::classify_output_script` | script class detection |
-| `tx::address::derive_address` | script → address string |
+| `tx::address::derive_address` | script -> address string |
 | `block::parser::parse_raw_block` / `extract_raw_transactions` | block-level decode |
 | `block::merkle::compute_merkle_root` | header verification |
 | `block::undo::parse_undo_file` | UTXO undo parsing |

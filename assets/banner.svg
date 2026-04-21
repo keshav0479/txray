@@ -66,12 +66,12 @@
   <!-- Right-hand status strip -->
   <g transform="translate(900 110)" font-family="'JetBrains Mono','Fira Mono',ui-monospace,monospace" font-size="11" fill="#78716C">
     <text x="0" y="0">$ txray famous pizza</text>
-    <text x="0" y="22" fill="#A8A29E">→ block 57043</text>
-    <text x="0" y="40" fill="#A8A29E">→ 10,000 BTC for two pizzas</text>
-    <text x="0" y="58" fill="#A8A29E">→ privacy score <tspan fill="#F7931A">2 / 10</tspan></text>
+    <text x="0" y="22" fill="#A8A29E">-> block 57043</text>
+    <text x="0" y="40" fill="#A8A29E">-> 10,000 BTC for two pizzas</text>
+    <text x="0" y="58" fill="#A8A29E">-> privacy score <tspan fill="#F7931A">2 / 10</tspan></text>
     <text x="0" y="80">$ txray fingerprint fixture.json</text>
-    <text x="0" y="102" fill="#A8A29E">→ wallet match: <tspan fill="#00E5FF">Bitcoin Core 25+</tspan></text>
-    <text x="0" y="124" fill="#A8A29E">→ change index: <tspan fill="#00FF88">vout 1</tspan></text>
+    <text x="0" y="102" fill="#A8A29E">-> wallet match: <tspan fill="#00E5FF">Bitcoin Core 25+</tspan></text>
+    <text x="0" y="124" fill="#A8A29E">-> change index: <tspan fill="#00FF88">vout 1</tspan></text>
   </g>
 
   <!-- Bottom rule -->

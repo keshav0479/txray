@@ -13,16 +13,16 @@ export function SherlockBackground() {
         dangerouslySetInnerHTML={{
           __html: `
         /*
-          mask-size: 24vw × 56vh  →  center at (12vw, 28vh) from box origin
+          mask-size: 24vw × 56vh  ->  center at (12vw, 28vh) from box origin
           mask-position = (cx - 12vw,  cy - 28vh)
 
-          Torch 1: diagonal TL→BR  - enters top-left, exits bottom-right
-          Torch 2: diagonal BL→TR  - enters bottom-left, exits top-right
-          They cross near screen center → most interesting moment of each cycle.
-          Different durations (18s vs 23s) → phase drifts, never feels looping.
+          Torch 1: diagonal TL->BR  - enters top-left, exits bottom-right
+          Torch 2: diagonal BL->TR  - enters bottom-left, exits top-right
+          They cross near screen center -> most interesting moment of each cycle.
+          Different durations (18s vs 23s) -> phase drifts, never feels looping.
         */
 
-        /* --- Torch 1: TL → BR diagonal ---
+        /* --- Torch 1: TL -> BR diagonal ---
            Speed is controlled by keyframe spacing, no mid-stops.
            0-18%: fast entry  |  18-38%: slows (upper-left zone)
            38-55%: slow drift (investigation zone)  |  55-100%: picks up, exits BR
@@ -36,7 +36,7 @@ export function SherlockBackground() {
           100% { mask-position: 101vw  47vh; -webkit-mask-position: 101vw  47vh; }
         }
 
-        /* --- Torch 2: BL → TR diagonal ---
+        /* --- Torch 2: BL -> TR diagonal ---
            Mirror rhythm: fast entry from bottom-left, slow through mid, exits top-right
         */
         @keyframes torchSweep2 {
@@ -90,7 +90,7 @@ export function SherlockBackground() {
         }}
       />
 
-      {/* LAYER 1a: Torch 1 - diagonal TL→BR, with hesitation */}
+      {/* LAYER 1a: Torch 1 - diagonal TL->BR, with hesitation */}
       <div
         className="absolute inset-0 mask-torch-shared mask-torch-1 opacity-[0.92] mix-blend-screen"
         style={{
@@ -101,7 +101,7 @@ export function SherlockBackground() {
         }}
       />
 
-      {/* LAYER 1b: Torch 2 - diagonal BL→TR, counter-diagonal, out of phase */}
+      {/* LAYER 1b: Torch 2 - diagonal BL->TR, counter-diagonal, out of phase */}
       <div
         className="absolute inset-0 mask-torch-shared mask-torch-2 opacity-[0.80] mix-blend-screen"
         style={{

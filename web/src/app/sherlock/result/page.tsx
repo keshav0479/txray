@@ -213,7 +213,7 @@ export default function SherlockResultPage() {
                 <ul className="space-y-1.5">
                   {advice.recommendations.map((rec, i) => (
                     <li key={i} className="text-sm text-zinc-400 flex gap-2 leading-relaxed">
-                      <span className="text-sherlock-400 shrink-0">→</span>
+                      <span className="text-sherlock-400 shrink-0">{"->"}</span>
                       {rec}
                     </li>
                   ))}

@@ -1,7 +1,7 @@
 //! Privacy Advisor - combined privacy score and recommendation engine.
 //!
 //! Combines heuristic analysis, entropy, and wallet fingerprint signals
-//! into a single 1–10 privacy score with actionable recommendations.
+//! into a single 1 to 10 privacy score with actionable recommendations.
 
 use serde::Serialize;
 
@@ -207,7 +207,7 @@ pub fn advise_transaction(
 impl std::fmt::Display for PrivacyAdvice {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f, "Privacy Advice")?;
-        writeln!(f, "══════════════")?;
+        writeln!(f, "------------------------------------------")?;
         writeln!(f)?;
         writeln!(f, "  Score: {}/10 ({})", self.score, self.grade)?;
         writeln!(f)?;
@@ -215,14 +215,14 @@ impl std::fmt::Display for PrivacyAdvice {
         if !self.issues.is_empty() {
             writeln!(f, "  Issues:")?;
             for issue in &self.issues {
-                writeln!(f, "    ✗ {:?}", issue)?;
+                writeln!(f, "    - {:?}", issue)?;
             }
             writeln!(f)?;
         }
 
         writeln!(f, "  Recommendations:")?;
         for rec in &self.recommendations {
-            writeln!(f, "    → {}", rec)?;
+            writeln!(f, "    -> {}", rec)?;
         }
 
         Ok(())
@@ -326,12 +326,12 @@ mod tests {
             rbf_signaling: true,
             change_position: crate::fingerprint::ChangePosition::Last,
             input_type_consistency: true,
-            likely_wallet: Some("Bitcoin Core (≥0.17)".to_string()),
+            likely_wallet: Some("Bitcoin Core (>=0.17)".to_string()),
             confidence: Confidence::High,
         };
 
         let advice = advise_transaction(&analysis, None, Some(&fp));
-        // address_reuse(-3) + round(-2) + change_high(-2) + wallet_id(-1) = -8 → score=2
+        // address_reuse(-3) + round(-2) + change_high(-2) + wallet_id(-1) = -8 -> score=2
         assert!(advice.score <= 3);
         assert_eq!(advice.grade, "Critical");
         assert!(advice.issues.len() >= 3);
@@ -378,7 +378,7 @@ mod tests {
             rbf_signaling: true,
             change_position: crate::fingerprint::ChangePosition::Last,
             input_type_consistency: false, // mixed inputs too
-            likely_wallet: Some("Bitcoin Core (≥0.17)".to_string()),
+            likely_wallet: Some("Bitcoin Core (>=0.17)".to_string()),
             confidence: Confidence::High,
         };
 

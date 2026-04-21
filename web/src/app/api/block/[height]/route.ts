@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkLightLimit } from "@/lib/server/rateLimit";
-
-const MEMPOOL_BASE = "https://mempool.space/api";
+import { getPrimaryApiBase } from "@/lib/server/config";
 
 // In-memory LRU cache - blocks are immutable once confirmed
 const CACHE_MAX = 25;
@@ -30,6 +29,7 @@ export async function GET(
 
   try {
     const { height: heightOrHash } = await params;
+    const mempoolBase = getPrimaryApiBase();
 
     // Validate: must be a numeric height or a 64-char hex block hash
     if (/^\d+$/.test(heightOrHash)) {
@@ -42,7 +42,7 @@ export async function GET(
       }
     } else if (!/^[0-9a-fA-F]{64}$/.test(heightOrHash)) {
       return NextResponse.json(
-        { error: { message: "Invalid block identifier - must be a height (0–1000000) or 64-char hex hash" } },
+        { error: { message: "Invalid block identifier - must be a height (0 to 1000000) or 64-char hex hash" } },
         { status: 400 },
       );
     }
@@ -59,7 +59,7 @@ export async function GET(
     if (/^\d+$/.test(heightOrHash)) {
       blockHeight = parseInt(heightOrHash, 10);
       const hashRes = await fetch(
-        `${MEMPOOL_BASE}/block-height/${heightOrHash}`,
+        `${mempoolBase}/block-height/${heightOrHash}`,
       );
       if (!hashRes.ok) {
         return NextResponse.json(
@@ -78,7 +78,7 @@ export async function GET(
     }
 
     // Step 2: Fetch block metadata
-    const blockRes = await fetch(`${MEMPOOL_BASE}/block/${blockHash}`);
+    const blockRes = await fetch(`${mempoolBase}/block/${blockHash}`);
     if (!blockRes.ok) {
       return NextResponse.json(
         { error: { message: `Block ${blockHash} not found` } },
@@ -90,13 +90,13 @@ export async function GET(
 
     // Step 3: Fetch all transactions (paginated, 25 per page)
     const txids: string[] = await fetch(
-      `${MEMPOOL_BASE}/block/${blockHash}/txids`,
+      `${mempoolBase}/block/${blockHash}/txids`,
     ).then((r) => r.json());
 
     const allTxs = [];
     for (let i = 0; i < txids.length; i += 25) {
       const batch = await fetch(
-        `${MEMPOOL_BASE}/block/${blockHash}/txs/${i}`,
+        `${mempoolBase}/block/${blockHash}/txs/${i}`,
       ).then((r) => r.json());
       allTxs.push(...batch);
     }

@@ -23,7 +23,7 @@ import { CLASSIFICATION_CONFIG } from "@/lib/sherlockTypes";
 import { TransactionFlowGraph } from "@/components/sherlock/TransactionFlowGraph";
 import { useScrollSpy } from "@/hooks/useScrollSpy";
 
-/* ── Heuristic card content config ── */
+/* ------ Heuristic card content config ------ */
 interface CardConfig {
   id: string;
   icon: React.ReactNode;
@@ -159,7 +159,7 @@ const HEURISTIC_CARDS: CardConfig[] = [
         </p>
       ) : (
         <p>
-          Transaction does not match the consolidation pattern (many inputs →
+          Transaction does not match the consolidation pattern (many inputs {"->"}
           few outputs).
         </p>
       ),
@@ -271,7 +271,7 @@ export default function TxDetailClient({
   if (loading) {
     return (
       <div className="w-full min-h-screen flex items-center justify-center">
-        <div className="text-zinc-500 animate-pulse">Loading transaction…</div>
+        <div className="text-zinc-500 animate-pulse">Loading transaction...</div>
       </div>
     );
   }
@@ -284,7 +284,7 @@ export default function TxDetailClient({
           href={`/sherlock/${stem}`}
           className="text-sm text-brand-400 hover:text-brand-300"
         >
-          ← Back to block
+          {"->"} Back to block
         </Link>
       </div>
     );
@@ -422,7 +422,7 @@ export default function TxDetailClient({
             {/* Triggered heuristic cards */}
             {triggeredKeys.length > 0 && (
               <div className="text-[10px] uppercase tracking-widest text-brand-400 font-bold px-1">
-                ⚠ Triggered Heuristics
+                Warning: Triggered Heuristics
               </div>
             )}
             {triggeredKeys.map((key) => {
@@ -446,7 +446,7 @@ export default function TxDetailClient({
             {/* Clear heuristic cards */}
             {clearKeys.length > 0 && (
               <div className="text-[10px] uppercase tracking-widest text-zinc-600 font-bold px-1">
-                ✓ Clear Heuristics
+                OK Clear Heuristics
               </div>
             )}
             {clearKeys.map((key) => {
@@ -471,7 +471,7 @@ export default function TxDetailClient({
             <div id="classification">
               <StoryCard
                 title="Final Classification"
-                icon={<span className="text-lg">🔍</span>}
+                icon={<span className="text-lg">Class</span>}
                 isActive={activeCardId === "classification"}
                 accent="brand"
               >
@@ -489,7 +489,7 @@ export default function TxDetailClient({
                 <p className="text-sm text-zinc-500 mt-3">
                   TXID:{" "}
                   <span className="font-mono text-zinc-400">
-                    {tx.txid.slice(0, 24)}…
+                    {tx.txid.slice(0, 24)}...
                   </span>
                 </p>
               </StoryCard>
@@ -509,7 +509,7 @@ export default function TxDetailClient({
   );
 }
 
-/* ── Story Card Component ── */
+/* ------ Story Card Component ------ */
 function StoryCard({
   title,
   icon,

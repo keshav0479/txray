@@ -165,7 +165,7 @@ pub fn analyze_transaction(ctx: &TxContext) -> TxAnalysis {
     } else if self_transfer_detected {
         "self_transfer"
     } else if non_op_return_outputs >= 3 {
-        // Batch payment: ≥3 non-OP_RETURN outputs (excluding likely change)
+        // Batch payment: >= 3 non-OP_RETURN outputs (excluding likely change)
         "batch_payment"
     } else if non_op_return_outputs >= 1 {
         "simple_payment"
@@ -352,7 +352,7 @@ fn detect_address_reuse(
 // ============== CoinJoin Detection ==============
 
 fn detect_coinjoin(tx: &RawTransaction, input_addresses: &[Option<String>]) -> bool {
-    // CoinJoin: ≥3 inputs, ≥3 distinct input addresses, ≥3 equal-value outputs
+    // CoinJoin: >=3 inputs, >=3 distinct input addresses, >=3 equal-value outputs
     if tx.inputs.len() < 3 {
         return false;
     }
@@ -374,7 +374,7 @@ fn detect_coinjoin(tx: &RawTransaction, input_addresses: &[Option<String>]) -> b
         }
     }
 
-    // If any output value appears ≥3 times, it's a CoinJoin candidate
+    // If any output value appears >=3 times, it's a CoinJoin candidate
     value_counts.values().any(|&count| count >= 3)
 }
 
@@ -385,7 +385,7 @@ fn detect_consolidation(
     input_script_types: &[String],
     output_script_types: &[String],
 ) -> bool {
-    // Consolidation: ≥3 inputs, ≤2 outputs, same script type inputs
+    // Consolidation: >=3 inputs, <=2 outputs, same script type inputs
     if tx.inputs.len() < 3 || tx.outputs.len() > 2 {
         return false;
     }
@@ -410,7 +410,7 @@ fn detect_self_transfer(
     input_script_types: &[String],
     output_script_types: &[String],
 ) -> bool {
-    // Self-transfer: all outputs match majority input type, ≤3 outputs
+    // Self-transfer: all outputs match majority input type, <=3 outputs
     if tx.outputs.len() > 3 || tx.outputs.is_empty() {
         return false;
     }
@@ -503,7 +503,7 @@ fn classify_op_return_protocol(script: &[u8]) -> &'static str {
 // ============== Round Number Payment ==============
 
 fn detect_round_number_payment(tx: &RawTransaction, output_script_types: &[String]) -> bool {
-    // Any non-OP_RETURN output divisible by ≥100,000 sats (0.001 BTC)
+    // Any non-OP_RETURN output divisible by >=100,000 sats (0.001 BTC)
     tx.outputs
         .iter()
         .zip(output_script_types.iter())
@@ -516,7 +516,7 @@ mod tests {
     use txray_core::block::undo::UndoPrevout;
     use txray_core::tx::parser::{RawTransaction, TxInput, TxOutput};
 
-    // ── Helpers ──
+    // ------ Helpers ------
 
     fn make_tx(inputs: Vec<TxInput>, outputs: Vec<TxOutput>) -> RawTransaction {
         RawTransaction {
@@ -591,7 +591,7 @@ mod tests {
         analyze_transaction(&ctx)
     }
 
-    // ── CIOH ──
+    // ------ CIOH ------
 
     #[test]
     fn cioh_single_input_not_detected() {
@@ -618,7 +618,7 @@ mod tests {
         assert_eq!(r.heuristics["cioh"]["detected"], true);
     }
 
-    // ── Coinbase ──
+    // ------ Coinbase ------
 
     #[test]
     fn coinbase_all_heuristics_false_classification_unknown() {
@@ -641,7 +641,7 @@ mod tests {
         }
     }
 
-    // ── Change Detection ──
+    // ------ Change Detection ------
 
     #[test]
     fn change_detection_script_type_match() {
@@ -667,7 +667,7 @@ mod tests {
 
     #[test]
     fn change_detection_round_number_method() {
-        // Both outputs same script type; one round, one not → non-round is change
+        // Both outputs same script type; one round, one not -> non-round is change
         let tx = make_tx(
             vec![make_input(), make_input()],
             vec![
@@ -688,7 +688,7 @@ mod tests {
 
     #[test]
     fn change_detection_value_analysis_method() {
-        // 2 outputs same type, neither round, different values → smaller is change
+        // 2 outputs same type, neither round, different values -> smaller is change
         let tx = make_tx(
             vec![make_input()],
             vec![
@@ -718,7 +718,7 @@ mod tests {
 
     #[test]
     fn change_detection_equal_values_not_detected() {
-        // 2 outputs with equal values, same type → skip value analysis (could be coinjoin)
+        // 2 outputs with equal values, same type -> skip value analysis (could be coinjoin)
         let tx = make_tx(
             vec![make_input()],
             vec![
@@ -731,11 +731,11 @@ mod tests {
         assert_eq!(r.heuristics["change_detection"]["detected"], false);
     }
 
-    // ── Address Reuse ──
+    // ------ Address Reuse ------
 
     #[test]
     fn address_reuse_detected_when_input_matches_output() {
-        // Same p2wpkh script in input and output → address reuse
+        // Same p2wpkh script in input and output -> address reuse
         let shared = p2wpkh_script(0xAA);
         let tx = make_tx(
             vec![make_input()],
@@ -760,11 +760,11 @@ mod tests {
         assert_eq!(r.heuristics["address_reuse"]["detected"], false);
     }
 
-    // ── CoinJoin ──
+    // ------ CoinJoin ------
 
     #[test]
     fn coinjoin_detected() {
-        // ≥3 inputs, ≥3 distinct addresses, ≥3 equal-value outputs
+        // >=3 inputs, >=3 distinct addresses, >=3 equal-value outputs
         let tx = make_tx(
             vec![make_input(), make_input(), make_input()],
             vec![
@@ -841,11 +841,11 @@ mod tests {
         assert_eq!(r.heuristics["coinjoin"]["detected"], false);
     }
 
-    // ── Consolidation ──
+    // ------ Consolidation ------
 
     #[test]
     fn consolidation_detected() {
-        // ≥3 inputs, ≤2 outputs, same script type
+        // >=3 inputs, <=2 outputs, same script type
         let tx = make_tx(
             vec![make_input(), make_input(), make_input()],
             vec![output(250_000, p2wpkh_script(0xA1))],
@@ -893,11 +893,11 @@ mod tests {
         assert_eq!(r.heuristics["consolidation"]["detected"], false);
     }
 
-    // ── Self-Transfer ──
+    // ------ Self-Transfer ------
 
     #[test]
     fn self_transfer_detected() {
-        // All outputs match majority input type, ≤3 outputs
+        // All outputs match majority input type, <=3 outputs
         let tx = make_tx(
             vec![make_input()],
             vec![
@@ -928,7 +928,7 @@ mod tests {
 
     #[test]
     fn self_transfer_not_detected_mixed_script_types() {
-        // Output type differs from input → not self-transfer
+        // Output type differs from input -> not self-transfer
         let tx = make_tx(
             vec![make_input()],
             vec![
@@ -941,11 +941,11 @@ mod tests {
         assert_eq!(r.heuristics["self_transfer"]["detected"], false);
     }
 
-    // ── Classification Priority ──
+    // ------ Classification Priority ------
 
     #[test]
     fn classification_consolidation_beats_self_transfer() {
-        // 3 inputs same type, 1 output same type → matches both consolidation AND self_transfer
+        // 3 inputs same type, 1 output same type -> matches both consolidation AND self_transfer
         let tx = make_tx(
             vec![make_input(), make_input(), make_input()],
             vec![output(250_000, p2wpkh_script(0xA1))],
@@ -964,7 +964,7 @@ mod tests {
 
     #[test]
     fn classification_batch_payment() {
-        // ≥3 non-OP_RETURN outputs, different types → batch_payment
+        // >=3 non-OP_RETURN outputs, different types -> batch_payment
         let tx = make_tx(
             vec![make_input()],
             vec![
@@ -993,7 +993,7 @@ mod tests {
         assert_eq!(r.classification, "simple_payment");
     }
 
-    // ── OP_RETURN ──
+    // ------ OP_RETURN ------
 
     #[test]
     fn op_return_detected() {
@@ -1045,7 +1045,7 @@ mod tests {
         assert_eq!(r.heuristics["op_return"]["protocol"], "opentimestamps");
     }
 
-    // ── Round Number Payment ──
+    // ------ Round Number Payment ------
 
     #[test]
     fn round_number_detected() {
@@ -1069,7 +1069,7 @@ mod tests {
         assert_eq!(r.heuristics["round_number_payment"]["detected"], false);
     }
 
-    // ── All 8 heuristic IDs present ──
+    // ------ All 8 heuristic IDs present ------
 
     #[test]
     fn all_eight_heuristic_ids_present() {
@@ -1090,7 +1090,7 @@ mod tests {
         assert_eq!(r.heuristics.len(), 8);
     }
 
-    // ── Helper function tests ──
+    // ------ Helper function tests ------
 
     #[test]
     fn is_round_amount_boundary() {

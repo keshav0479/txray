@@ -40,7 +40,7 @@ export function BlockOverview({
   blockData,
   onSelectTx,
   onReset,
-  resetLabel = "← Analyze Another",
+  resetLabel = "-> Analyze Another",
 }: BlockOverviewProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");

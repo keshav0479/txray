@@ -67,7 +67,7 @@ pub fn generate_warnings(
     warnings
 }
 
-// ─── Tests ──────────────────────────────────────────────────────────────────
+// --------- Tests ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #[cfg(test)]
 mod tests {
@@ -137,14 +137,14 @@ mod tests {
 
     #[test]
     fn test_warning_dust_change() {
-        // Change exists but is below 546 sats → DUST_CHANGE
+        // Change exists but is below 546 sats -> DUST_CHANGE
         let warnings = generate_warnings(true, Some(200), 500, 5.0, false);
         assert!(warning_codes(&warnings).contains(&"DUST_CHANGE"));
     }
 
     #[test]
     fn test_warning_dust_change_boundary() {
-        // Change = 546 → NOT dust
+        // Change = 546 -> NOT dust
         let warnings = generate_warnings(true, Some(546), 500, 5.0, false);
         assert!(!warning_codes(&warnings).contains(&"DUST_CHANGE"));
     }

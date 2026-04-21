@@ -295,7 +295,7 @@ fn generate_warnings(
 impl std::fmt::Display for PsbtInspection {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f, "PSBT Inspection")?;
-        writeln!(f, "═══════════════")?;
+        writeln!(f, "---------------------------------------------")?;
         writeln!(f)?;
         writeln!(f, "  Version:    {}", self.version)?;
         writeln!(f, "  Inputs:     {}", self.input_count)?;
@@ -341,15 +341,15 @@ impl std::fmt::Display for PsbtInspection {
             writeln!(f)?;
             writeln!(f, "  Next steps:")?;
             for step in &self.next_steps {
-                writeln!(f, "    → {}", step)?;
+                writeln!(f, "    -> {}", step)?;
             }
         }
 
         if !self.warnings.is_empty() {
             writeln!(f)?;
-            writeln!(f, "  ⚠ Warnings:")?;
+            writeln!(f, "  Warnings:")?;
             for w in &self.warnings {
-                writeln!(f, "    • {}", w)?;
+                writeln!(f, "    - {}", w)?;
             }
         }
 
