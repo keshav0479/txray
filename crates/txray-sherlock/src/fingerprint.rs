@@ -109,10 +109,10 @@ fn check_bip69(tx: &RawTransaction, prevouts: Option<&[UndoPrevout]>) -> bool {
         }
     });
 
-    // For single input/output txs, BIP69 is trivially true - don't count that
-    // as a meaningful signal
+    // For 1-in/1-out txs, BIP69 is trivially true. Don't count that as a
+    // meaningful fingerprint signal.
     let _ = prevouts; // prevouts not needed for ordering check
-    inputs_sorted && outputs_sorted
+    (tx.inputs.len() > 1 || tx.outputs.len() > 1) && inputs_sorted && outputs_sorted
 }
 
 // ============== Low-R Signatures ==============
@@ -608,6 +608,16 @@ mod tests {
                 output(20_000, p2wpkh_script(0xaa)), // 20k first - wrong order
                 output(10_000, p2wpkh_script(0xbb)),
             ],
+            0,
+        );
+        assert!(!check_bip69(&tx, None));
+    }
+
+    #[test]
+    fn bip69_single_input_single_output_not_meaningful() {
+        let tx = make_tx(
+            vec![make_input_with([0x01; 32], 0, 0xffffffff)],
+            vec![output(10_000, p2wpkh_script(0xaa))],
             0,
         );
         assert!(!check_bip69(&tx, None));

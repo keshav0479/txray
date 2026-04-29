@@ -174,12 +174,15 @@ fn count_interpretations(inputs: &[u64], outputs: &[u64]) -> (u64, Vec<Vec<u64>>
 
         for j in 0..outputs.len() {
             // Prune: don't assign if it would exceed the output amount
-            if partial_sums[j] + input_val > outputs[j] {
+            let Some(next_sum) = partial_sums[j].checked_add(input_val) else {
+                continue;
+            };
+            if next_sum > outputs[j] {
                 continue;
             }
 
             assignment[input_idx] = j;
-            partial_sums[j] += input_val;
+            partial_sums[j] = next_sum;
 
             backtrack(
                 input_idx + 1,

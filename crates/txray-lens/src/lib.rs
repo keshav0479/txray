@@ -10,7 +10,7 @@
 pub mod explain;
 pub mod warnings;
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::Path;
 use txray_core::error::TxrayError;
@@ -118,7 +118,7 @@ pub fn analyze_transaction(fixture_path: &str) -> Result<String, TxrayError> {
 
     // 8. Match prevouts to inputs and compute fees
     let mut total_input_sats: u64 = 0;
-    let mut used_keys = Vec::new();
+    let mut used_keys = HashSet::new();
 
     let mut vin_json = Vec::new();
     for (i, input) in parsed.inputs.iter().enumerate() {
@@ -128,8 +128,10 @@ pub fn analyze_transaction(fixture_path: &str) -> Result<String, TxrayError> {
         let prevout_info = prevout_map.get(&key).ok_or_else(|| {
             TxrayError::prevout_missing(format!("No prevout for input {}: {}", i, key))
         })?;
-        used_keys.push(key);
-        total_input_sats += prevout_info.value_sats;
+        used_keys.insert(key);
+        total_input_sats = total_input_sats
+            .checked_add(prevout_info.value_sats)
+            .ok_or_else(|| TxrayError::invalid_fixture("Input value total overflows u64"))?;
 
         // Classify input script type
         let input_script_type = txray_core::tx::script::classify_input_script(
@@ -192,7 +194,7 @@ pub fn analyze_transaction(fixture_path: &str) -> Result<String, TxrayError> {
     if used_keys.len() < prevout_map.len() {
         let unused: Vec<String> = prevout_map
             .keys()
-            .filter(|k| !used_keys.contains(k))
+            .filter(|k| !used_keys.contains(*k))
             .cloned()
             .collect();
         return Err(TxrayError::prevout_extra(format!(
@@ -207,7 +209,9 @@ pub fn analyze_transaction(fixture_path: &str) -> Result<String, TxrayError> {
     let mut output_infos = Vec::new();
 
     for (i, output) in parsed.outputs.iter().enumerate() {
-        total_output_sats += output.value;
+        total_output_sats = total_output_sats
+            .checked_add(output.value)
+            .ok_or_else(|| TxrayError::invalid_fixture("Output value total overflows u64"))?;
 
         let script_type = txray_core::tx::script::classify_output_script(&output.script_pubkey);
         let address = txray_core::tx::address::derive_address(&output.script_pubkey, script_type);
@@ -322,7 +326,8 @@ pub fn analyze_transaction(fixture_path: &str) -> Result<String, TxrayError> {
         "warnings": warnings_json,
     });
 
-    Ok(serde_json::to_string_pretty(&output).unwrap())
+    serde_json::to_string_pretty(&output)
+        .map_err(|e| TxrayError::parse_error(format!("JSON serialization failed: {}", e)))
 }
 
 fn build_relative_timelock_json(
@@ -431,7 +436,10 @@ pub fn analyze_block(blk_path: &str, rev_path: &str, xor_path: &str) -> Result<S
     let bip34_height =
         txray_core::block::coinbase::decode_bip34_height(&coinbase_tx.inputs[0].script_sig)?;
     let coinbase_script_hex = hex::encode(&coinbase_tx.inputs[0].script_sig);
-    let coinbase_total_output: u64 = coinbase_tx.outputs.iter().map(|o| o.value).sum();
+    let coinbase_total_output = coinbase_tx.outputs.iter().try_fold(0u64, |sum, output| {
+        sum.checked_add(output.value)
+            .ok_or_else(|| TxrayError::invalid_block("Coinbase output total overflows u64"))
+    })?;
 
     // 9. Analyze each transaction
     let mut all_tx_json = Vec::new();
@@ -485,7 +493,9 @@ pub fn analyze_block(blk_path: &str, rev_path: &str, xor_path: &str) -> Result<S
                 let undo_tx_idx = tx_idx - 1;
                 let undo_prevout = &undo_prevouts[undo_tx_idx][i];
 
-                total_input_sats += undo_prevout.value_sats;
+                total_input_sats = total_input_sats
+                    .checked_add(undo_prevout.value_sats)
+                    .ok_or_else(|| TxrayError::invalid_block("Input value total overflows u64"))?;
 
                 let prevout_script = &undo_prevout.script_pubkey;
                 let prevout_script_hex = hex::encode(prevout_script);
@@ -545,7 +555,9 @@ pub fn analyze_block(blk_path: &str, rev_path: &str, xor_path: &str) -> Result<S
         let mut output_infos = Vec::new();
 
         for (i, output) in parsed.outputs.iter().enumerate() {
-            total_output_sats += output.value;
+            total_output_sats = total_output_sats
+                .checked_add(output.value)
+                .ok_or_else(|| TxrayError::invalid_block("Output value total overflows u64"))?;
 
             let script_type = txray_core::tx::script::classify_output_script(&output.script_pubkey);
             let address =
@@ -723,5 +735,6 @@ pub fn analyze_block(blk_path: &str, rev_path: &str, xor_path: &str) -> Result<S
         },
     });
 
-    Ok(serde_json::to_string_pretty(&block_output).unwrap())
+    serde_json::to_string_pretty(&block_output)
+        .map_err(|e| TxrayError::parse_error(format!("JSON serialization failed: {}", e)))
 }
