@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { extractInputRefs } from "../prevoutFetcher";
+import { extractInputRefs, fetchPrevouts } from "../prevoutFetcher";
 
 // Genesis coinbase - its input txid is all zeros, so extractInputRefs
 // must filter it out (coinbase inputs have no prevout).
@@ -26,6 +26,30 @@ describe("extractInputRefs", () => {
     // The parent is Satoshi's coinbase from block 9 - txid is well known.
     expect(refs[0].txid).toBe(
       "0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c9",
+    );
+  });
+
+  it("rejects invalid raw hex before trying to fetch prevouts", () => {
+    expect(() => extractInputRefs("abc")).toThrow(/odd length/);
+    expect(() => extractInputRefs("zz")).toThrow(/non-hex/);
+  });
+
+  it("rejects truncated transactions cleanly", () => {
+    expect(() => extractInputRefs(`0100000001${"00".repeat(5)}`)).toThrow(
+      /ended while reading input 0 outpoint/,
+    );
+  });
+});
+
+describe("fetchPrevouts", () => {
+  it("rejects unusually wide fan-out before hitting upstream APIs", async () => {
+    const refs = Array.from({ length: 101 }, (_, index) => ({
+      txid: index.toString(16).padStart(64, "0"),
+      vout: 0,
+    }));
+
+    await expect(fetchPrevouts(refs)).rejects.toThrow(
+      /Too many unique parent transactions/,
     );
   });
 });

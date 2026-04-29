@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { getRateLimitKey } from "../rateLimit";
+import { checkHeavyLimit, checkLightLimit, getRateLimitKey } from "../rateLimit";
 
 afterEach(() => {
   delete process.env.TXRAY_TRUST_PROXY_HEADERS;
@@ -45,5 +45,18 @@ describe("rate limit keys", () => {
     );
 
     expect(key).toBe("direct:vitest");
+  });
+});
+
+describe("rate limit buckets", () => {
+  it("keeps light and heavy endpoint budgets separate", () => {
+    const req = request({ "user-agent": "shared-client" });
+
+    for (let i = 0; i < 120; i += 1) {
+      expect(checkLightLimit(req)).toBeNull();
+    }
+
+    expect(checkLightLimit(req)?.status).toBe(429);
+    expect(checkHeavyLimit(req)).toBeNull();
   });
 });

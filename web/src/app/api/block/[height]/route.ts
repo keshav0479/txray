@@ -34,15 +34,15 @@ export async function GET(
     // Validate: must be a numeric height or a 64-char hex block hash
     if (/^\d+$/.test(heightOrHash)) {
       const h = parseInt(heightOrHash, 10);
-      if (h < 0 || h > 1_000_000 || heightOrHash.length > 7) {
+      if (h < 0 || h >= 10_000_000) {
         return NextResponse.json(
-          { error: { message: "Block height must be between 0 and 1000000" } },
+          { error: { message: "Block height must be between 0 and 9999999" } },
           { status: 400 },
         );
       }
     } else if (!/^[0-9a-fA-F]{64}$/.test(heightOrHash)) {
       return NextResponse.json(
-        { error: { message: "Invalid block identifier - must be a height (0 to 1000000) or 64-char hex hash" } },
+        { error: { message: "Invalid block identifier - must be a height (0 to 9999999) or 64-char hex hash" } },
         { status: 400 },
       );
     }
@@ -89,15 +89,29 @@ export async function GET(
     if (blockHeight === null) blockHeight = block.height;
 
     // Step 3: Fetch all transactions (paginated, 25 per page)
-    const txids: string[] = await fetch(
+    const txidsRes = await fetch(
       `${mempoolBase}/block/${blockHash}/txids`,
-    ).then((r) => r.json());
+    );
+    if (!txidsRes.ok) {
+      return NextResponse.json(
+        { error: { message: "Failed to fetch block transaction IDs" } },
+        { status: 502 },
+      );
+    }
+    const txids = (await txidsRes.json()) as string[];
 
     const allTxs = [];
     for (let i = 0; i < txids.length; i += 25) {
-      const batch = await fetch(
+      const batchRes = await fetch(
         `${mempoolBase}/block/${blockHash}/txs/${i}`,
-      ).then((r) => r.json());
+      );
+      if (!batchRes.ok) {
+        return NextResponse.json(
+          { error: { message: `Failed to fetch block transactions at index ${i}` } },
+          { status: 502 },
+        );
+      }
+      const batch = await batchRes.json();
       allTxs.push(...batch);
     }
 

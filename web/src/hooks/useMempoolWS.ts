@@ -3,7 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { fetchBlockByHeight, fetchFees, fetchTipHeight } from "@/lib/mempool";
 
-const MEMPOOL_WS_URL = "wss://mempool.space/api/v1/ws";
+const MEMPOOL_WS_URL =
+  process.env.NEXT_PUBLIC_TXRAY_MEMPOOL_WS_URL ||
+  "wss://mempool.space/api/v1/ws";
 const BASE_RECONNECT_MS = 1_000;
 const MAX_RECONNECT_MS = 15_000;
 const REST_RECONCILE_MS = 45_000;

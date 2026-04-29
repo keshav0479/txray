@@ -34,12 +34,10 @@ function execFileAsync(
 }
 
 export function getWorkspaceRoot(): string {
-  const cwd = /* turbopackIgnore: true */ process.cwd();
+  const cwd = /*turbopackIgnore: true*/ process.cwd();
   // In local Next dev route handlers, cwd is txray/web. In the standalone
   // Docker runtime it is /app, so do not walk above that into /.
-  return path.basename(cwd) === "web"
-    ? path.resolve(/* turbopackIgnore: true */ process.cwd(), "..")
-    : cwd;
+  return path.basename(cwd) === "web" ? path.dirname(cwd) : cwd;
 }
 
 export async function resolveTxrayBinary(): Promise<string> {
@@ -58,13 +56,13 @@ export async function resolveTxrayBinary(): Promise<string> {
 
   const workspaceRoot = getWorkspaceRoot();
   const releaseBin = path.join(
-    /* turbopackIgnore: true */ workspaceRoot,
+    /*turbopackIgnore: true*/ workspaceRoot,
     "target",
     "release",
     "txray",
   );
   const debugBin = path.join(
-    /* turbopackIgnore: true */ workspaceRoot,
+    /*turbopackIgnore: true*/ workspaceRoot,
     "target",
     "debug",
     "txray",

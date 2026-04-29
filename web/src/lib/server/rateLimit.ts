@@ -92,7 +92,7 @@ const LIGHT: LimitConfig = { limit: 120, windowMs: 60_000 }; // 120 req/min
 
 export function checkHeavyLimit(request: Request): Response | null {
   const ip = getRateLimitKey(request);
-  if (!consume(ip, HEAVY)) {
+  if (!consume(`heavy:${ip}`, HEAVY)) {
     return new Response(
       JSON.stringify({
         ok: false,
@@ -112,7 +112,7 @@ export function checkHeavyLimit(request: Request): Response | null {
 
 export function checkLightLimit(request: Request): Response | null {
   const ip = getRateLimitKey(request);
-  if (!consume(ip, LIGHT)) {
+  if (!consume(`light:${ip}`, LIGHT)) {
     return new Response(
       JSON.stringify({
         ok: false,

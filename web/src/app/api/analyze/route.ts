@@ -19,55 +19,29 @@ const DEMO_FIXTURES: Record<string, { blk: string; rev: string }> = {
   "05051": { blk: "blk05051.dat", rev: "rev05051.dat" },
 };
 
-async function firstExistingPath(candidates: string[]): Promise<string | null> {
-  for (const candidate of candidates) {
-    try {
-      await access(candidate, constants.R_OK);
-      return candidate;
-    } catch {
-      // continue
-    }
-  }
-  return null;
-}
-
 async function resolveDemoFixturePaths(
   id: string,
 ): Promise<{ blkPath: string; revPath: string; xorPath: string } | null> {
   const fixture = DEMO_FIXTURES[id];
   if (!fixture) return null;
 
-  const blocksCandidateDirs = [
-    path.join(
-      /* turbopackIgnore: true */ process.cwd(),
-      "public",
-      "fixtures",
-      "blocks",
-    ),
-    path.join(/* turbopackIgnore: true */ process.cwd(), "fixtures", "blocks"),
-  ];
+  const dir =
+    process.env.TXRAY_DEMO_BLOCKS_DIR ||
+    path.join(process.cwd(), "public", "fixtures", "blocks");
+  const blkPath = path.join(dir, fixture.blk);
+  const revPath = path.join(dir, fixture.rev);
+  const xorPath = path.join(dir, "xor.dat");
 
-  for (const dir of blocksCandidateDirs) {
-    const blkPath = path.join(dir, fixture.blk);
-    const revPath = path.join(dir, fixture.rev);
-    const xorPath = path.join(dir, "xor.dat");
-
-    const found = await firstExistingPath([blkPath, revPath, xorPath]);
-    if (!found) continue;
-
-    try {
-      await Promise.all([
-        access(blkPath, constants.R_OK),
-        access(revPath, constants.R_OK),
-        access(xorPath, constants.R_OK),
-      ]);
-      return { blkPath, revPath, xorPath };
-    } catch {
-      // try next directory
-    }
+  try {
+    await Promise.all([
+      access(blkPath, constants.R_OK),
+      access(revPath, constants.R_OK),
+      access(xorPath, constants.R_OK),
+    ]);
+    return { blkPath, revPath, xorPath };
+  } catch {
+    return null;
   }
-
-  return null;
 }
 
 async function parseTxFixtureJson(

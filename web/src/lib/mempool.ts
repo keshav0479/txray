@@ -1,7 +1,9 @@
 // mempool.space REST API client
 // all endpoints are CORS-enabled, no auth required
 
-const BASE = "https://mempool.space/api";
+const BASE = (
+  process.env.NEXT_PUBLIC_TXRAY_MEMPOOL_API || "https://mempool.space/api"
+).replace(/\/+$/, "");
 const IMMUTABLE_TTL_MS = 30 * 60 * 1_000;
 const HOT_TTL_MS = 10 * 1_000;
 const TIP_TTL_MS = 5 * 1_000;
