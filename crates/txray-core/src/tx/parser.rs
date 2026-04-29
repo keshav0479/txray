@@ -2,7 +2,12 @@ use crate::error::TxrayError;
 
 /// Cap a CompactSize u64 value to a safe usize, checking it doesn't exceed remaining data.
 fn safe_count(val: u64, remaining: usize, label: &str) -> Result<usize, TxrayError> {
-    let count = val as usize;
+    let count = usize::try_from(val).map_err(|_| {
+        TxrayError::invalid_tx(format!(
+            "{} count {} does not fit this platform",
+            label, val
+        ))
+    })?;
     // Each element is at least 1 byte, so count can never exceed remaining bytes
     if count > remaining {
         return Err(TxrayError::invalid_tx(format!(
@@ -103,7 +108,13 @@ fn read_compact_size(data: &[u8], offset: &mut usize) -> Result<u64, TxrayError>
 }
 
 fn read_bytes(data: &[u8], offset: &mut usize, n: usize) -> Result<Vec<u8>, TxrayError> {
-    if *offset + n > data.len() {
+    let end = offset.checked_add(n).ok_or_else(|| {
+        TxrayError::invalid_tx(format!(
+            "Offset overflow: need {} bytes at offset {}",
+            n, *offset
+        ))
+    })?;
+    if end > data.len() {
         return Err(TxrayError::invalid_tx(format!(
             "Unexpected end of data: need {} bytes at offset {}, have {}",
             n,
@@ -111,8 +122,8 @@ fn read_bytes(data: &[u8], offset: &mut usize, n: usize) -> Result<Vec<u8>, Txra
             data.len()
         )));
     }
-    let bytes = data[*offset..*offset + n].to_vec();
-    *offset += n;
+    let bytes = data[*offset..end].to_vec();
+    *offset = end;
     Ok(bytes)
 }
 

@@ -3,7 +3,12 @@ use crate::tx::hash::dsha256;
 
 /// Cap a CompactSize u64 value to a safe usize for block parsing.
 fn safe_block_count(val: u64, remaining: usize, label: &str) -> Result<usize, TxrayError> {
-    let count = val as usize;
+    let count = usize::try_from(val).map_err(|_| {
+        TxrayError::invalid_block(format!(
+            "{} count {} does not fit this platform",
+            label, val
+        ))
+    })?;
     if count > remaining {
         return Err(TxrayError::invalid_block(format!(
             "{} count {} exceeds remaining data ({})",

@@ -98,7 +98,12 @@ impl UndoRecord {
 
         // Number of CTxUndo entries (CompactSize) - should equal number of non-coinbase txs
         let num_txs_raw = cursor.read_compact_size()?;
-        let num_txs = num_txs_raw as usize;
+        let num_txs = usize::try_from(num_txs_raw).map_err(|_| {
+            TxrayError::invalid_undo(format!(
+                "Undo tx count {} does not fit this platform",
+                num_txs_raw
+            ))
+        })?;
 
         // Guard: count can't exceed remaining data (each entry is >= 1 byte)
         if num_txs > cursor.data.len().saturating_sub(cursor.pos) {
@@ -122,7 +127,12 @@ impl UndoRecord {
             // Each CTxUndo is a vector<Coin> (vprevout) serialized with VectorFormatter
             // So there's a CompactSize for the number of prevouts in THIS tx
             let num_prevouts_raw = cursor.read_compact_size()?;
-            let num_prevouts = num_prevouts_raw as usize;
+            let num_prevouts = usize::try_from(num_prevouts_raw).map_err(|_| {
+                TxrayError::invalid_undo(format!(
+                    "Undo prevout count {} does not fit this platform",
+                    num_prevouts_raw
+                ))
+            })?;
 
             // Guard: count can't exceed remaining data
             if num_prevouts > cursor.data.len().saturating_sub(cursor.pos) {
@@ -171,11 +181,15 @@ impl<'a> UndoCursor<'a> {
     }
 
     fn read_bytes(&mut self, n: usize) -> Result<&'a [u8], TxrayError> {
-        if self.pos + n > self.data.len() {
+        let end = self
+            .pos
+            .checked_add(n)
+            .ok_or_else(|| TxrayError::invalid_undo("Undo cursor offset overflow"))?;
+        if end > self.data.len() {
             return Err(TxrayError::invalid_undo("Unexpected end of undo data"));
         }
-        let slice = &self.data[self.pos..self.pos + n];
-        self.pos += n;
+        let slice = &self.data[self.pos..end];
+        self.pos = end;
         Ok(slice)
     }
 
@@ -248,7 +262,13 @@ impl<'a> UndoCursor<'a> {
 
     /// Read a compressed script from undo data
     fn read_compressed_script(&mut self) -> Result<Vec<u8>, TxrayError> {
-        let n_size = self.read_core_varint()? as usize;
+        let n_size_raw = self.read_core_varint()?;
+        let n_size = usize::try_from(n_size_raw).map_err(|_| {
+            TxrayError::invalid_undo(format!(
+                "Compressed script size {} does not fit this platform",
+                n_size_raw
+            ))
+        })?;
 
         match n_size {
             0 => {
