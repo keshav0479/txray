@@ -404,13 +404,17 @@ export default function HomePage() {
             <div className="absolute inset-0 bg-white/5 blur-xl rounded-full" />
 
             <div className="relative group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400 group-focus-within:text-amber-500 transition-colors z-10 pointer-events-none" />
+              <Search className="absolute left-3.5 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-stone-400 group-focus-within:text-amber-500 transition-colors z-10 pointer-events-none" />
               <input
                 id="hero-search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Enter a txid, block height, or block hash..."
-                className="w-full bg-stone-800/40 hover:bg-stone-800/60 backdrop-blur-3xl border border-white/20 hover:border-white/30 rounded-2xl pl-12 pr-4 sm:pr-28 py-4 text-white placeholder:text-stone-400 focus:outline-none focus:border-amber-500/60 focus:ring-4 focus:ring-amber-500/20 focus:bg-stone-900/90 search-input transition-all shadow-[0_8px_30px_rgb(0,0,0,0.5)]"
+                spellCheck={false}
+                autoCorrect="off"
+                autoCapitalize="none"
+                autoComplete="off"
+                className={`w-full min-w-0 bg-stone-800/40 hover:bg-stone-800/60 backdrop-blur-3xl border border-white/20 hover:border-white/30 rounded-2xl pl-11 sm:pl-12 ${searchQuery.trim() ? "pr-14 sm:pr-28" : "pr-4 sm:pr-28"} py-4 text-base text-white placeholder:text-stone-500 sm:placeholder:text-stone-400 focus:outline-none focus:border-amber-500/60 focus:ring-4 focus:ring-amber-500/20 focus:bg-stone-900/90 search-input transition-all shadow-[0_8px_30px_rgb(0,0,0,0.5)]`}
               />
 
               {!searchQuery.trim() && (
@@ -424,9 +428,11 @@ export default function HomePage() {
               {searchQuery.trim() && (
                 <button
                   type="submit"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-1.5 rounded-xl bg-transparent text-amber-500 border-2 border-amber-500/50 text-sm font-semibold hover:bg-amber-500/10 hover:border-amber-500/80 transition-colors shadow-sm"
+                  className="absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 inline-flex h-9 w-9 sm:h-auto sm:w-auto items-center justify-center sm:px-4 sm:py-1.5 rounded-xl bg-transparent text-amber-500 border-2 border-amber-500/50 text-sm font-semibold hover:bg-amber-500/10 hover:border-amber-500/80 transition-colors shadow-sm"
                 >
-                  Explore
+                  <span className="hidden sm:inline">Explore</span>
+                  <ArrowRight className="w-4 h-4 sm:hidden" />
+                  <span className="sr-only sm:hidden">Explore</span>
                 </button>
               )}
             </div>

@@ -297,7 +297,13 @@ export default function UnifiedTxPage({
       {/* Content */}
       <div className="flex-1">
         {activeTab === "structure" && structure && (
-          <AnalysisView data={structure} hideTerminal />
+          <AnalysisView
+            data={structure}
+            confirmationState={
+              mempool.status.confirmed ? "confirmed" : "unconfirmed"
+            }
+            hideTerminal
+          />
         )}
 
         {activeTab === "structure" && !structure && (

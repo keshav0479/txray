@@ -6,6 +6,7 @@ import { AnimatedTransactionFlow } from "@/components/lens/AnimatedTransactionFl
 import { StoryCard } from "@/components/shared/StoryCard";
 import { HexTerminal } from "@/components/lens/HexTerminal";
 import { Tooltip } from "@/components/ui/Tooltip";
+import { useMempool } from "@/context/MempoolContext";
 import {
   Eye,
   ArrowRightLeft,
@@ -14,31 +15,52 @@ import {
   Zap,
   Scale,
 } from "lucide-react";
-import type { AnalyzedTx } from "@/lib/layout";
+import type { AnalyzedTx, Warning } from "@/lib/layout";
+
+type ConfirmationState = "confirmed" | "unconfirmed" | "unknown";
+type DisplayWarning = Warning & { context?: string };
 
 interface AnalysisViewProps {
   data: AnalyzedTx;
   onReset?: () => void;
   onBack?: () => void;
   hideTerminal?: boolean;
+  confirmationState?: ConfirmationState;
 }
 
 // Hoisted outside component to avoid new array identity each render
 const CARD_IDS = ["card-0", "card-1", "card-2", "card-3"];
 
-export function AnalysisView({ data, onReset, onBack, hideTerminal }: AnalysisViewProps) {
-  // Track which card is in view
-  const activeCardId = useScrollSpy(CARD_IDS, "-40% 0px -40% 0px");
+function formatFeeRate(value: number) {
+  if (!Number.isFinite(value)) return "0";
+  if (value >= 10) return Math.round(value).toString();
+  return value.toFixed(1).replace(/\.0$/, "");
+}
 
-  // Beginner-friendly warning explanations
+function explainWarning(
+  warning: DisplayWarning,
+  confirmationState: ConfirmationState,
+) {
+  if (warning.code === "RBF_SIGNALING") {
+    if (confirmationState === "confirmed") {
+      return "This transaction signaled Replace-By-Fee before confirmation. Now that it is confirmed, the replacement window is closed.";
+    }
+    if (confirmationState === "unconfirmed") {
+      return "This transaction signals Replace-By-Fee, so the sender can still replace it with a higher-fee version until it confirms.";
+    }
+    return "This transaction signals Replace-By-Fee. If it is still unconfirmed, the sender may be able to fee-bump or replace it.";
+  }
+
   const warningExplanations: Record<string, string> = {
     HIGH_FEE:
-      "The sender paid an unusually high fee for this transaction. They may have overpaid the miner accidentally.",
-    RBF_SIGNALING:
-      "The sender originally marked this transaction as replaceable (RBF). However, since it's now confirmed in this block, the replacement window has closed. This is just informational -- the transaction is final.",
+      confirmationState === "unconfirmed"
+        ? "The fee crosses txray's high-fee guardrail. Compare it with the current fast-fee estimate before deciding if that urgency is worth it."
+        : "The fee crosses txray's static high-fee guardrail. For large or historical transactions this can be informational, not automatically a mistake.",
+    CURRENT_MARKET_HIGH_FEE:
+      "This unconfirmed transaction is paying much more than the current fast-fee estimate. It may confirm quickly, but it is expensive relative to today's mempool.",
     DUST_OUTPUT:
       "One or more outputs are so tiny that they cost more in fees to spend than they're actually worth.",
-    UNKNOWN_SCRIPT:
+    UNKNOWN_OUTPUT_SCRIPT:
       "This transaction uses a non-standard or unrecognized locking script, which could indicate experimental or custom usage.",
     MULTISIG:
       "This transaction involves a multi-signature setup, requiring multiple private keys to authorize spending.",
@@ -47,6 +69,24 @@ export function AnalysisView({ data, onReset, onBack, hideTerminal }: AnalysisVi
     LOCKTIME:
       "This transaction has a timelock, meaning it cannot be confirmed until a specific block height or point in time.",
   };
+
+  return (
+    warningExplanations[warning.code] ||
+    warning.message ||
+    "Something unusual was detected in this transaction."
+  );
+}
+
+export function AnalysisView({
+  data,
+  onReset,
+  onBack,
+  hideTerminal,
+  confirmationState = "unknown",
+}: AnalysisViewProps) {
+  // Track which card is in view
+  const activeCardId = useScrollSpy(CARD_IDS, "-40% 0px -40% 0px");
+  const { fees } = useMempool();
 
   // --- Transaction Type Detection ---
   const isCoinbase =
@@ -59,6 +99,37 @@ export function AnalysisView({ data, onReset, onBack, hideTerminal }: AnalysisVi
 
   const totalOutputBtc = (data.total_output_sats / 100_000_000).toFixed(4);
   const feeBtc = (data.fee_sats / 100_000_000).toFixed(8);
+  const feeRate = data.fee_rate_sat_vb;
+  const currentFastFee = fees?.fastestFee ?? null;
+  const coreWarnings = data.warnings ?? [];
+  const displayedCoreWarnings = coreWarnings.map((warning) =>
+    warning.code === "HIGH_FEE" &&
+    confirmationState === "unconfirmed" &&
+    currentFastFee !== null
+      ? {
+          ...warning,
+          context: `${formatFeeRate(feeRate)} sat/vB vs ${formatFeeRate(currentFastFee)} sat/vB fast fee`,
+        }
+      : warning,
+  );
+  const hasCoreHighFeeWarning = coreWarnings.some((w) => w.code === "HIGH_FEE");
+  const feeLooksHighAgainstCurrentMarket =
+    !isCoinbase &&
+    !hasCoreHighFeeWarning &&
+    confirmationState === "unconfirmed" &&
+    currentFastFee !== null &&
+    feeRate >= Math.max(10, currentFastFee * 3);
+  const displayedWarnings: DisplayWarning[] = [
+    ...displayedCoreWarnings,
+    ...(feeLooksHighAgainstCurrentMarket
+      ? [
+          {
+            code: "CURRENT_MARKET_HIGH_FEE",
+            context: `${formatFeeRate(feeRate)} sat/vB vs ${formatFeeRate(currentFastFee)} sat/vB fast fee`,
+          },
+        ]
+      : []),
+  ];
 
   return (
     <div className="w-full bg-transparent text-white animate-in fade-in duration-1000">
@@ -463,9 +534,9 @@ export function AnalysisView({ data, onReset, onBack, hideTerminal }: AnalysisVi
                 patterns that might indicate a mistake or security risk.
               </p>
 
-              {data.warnings && data.warnings.length > 0 ? (
+              {displayedWarnings.length > 0 ? (
                 <div className="space-y-3">
-                  {data.warnings.map((w, i) => (
+                  {displayedWarnings.map((w, i) => (
                     <div
                       key={i}
                       className="flex items-start gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400"
@@ -475,9 +546,13 @@ export function AnalysisView({ data, onReset, onBack, hideTerminal }: AnalysisVi
                         <p className="font-medium text-amber-300 mb-1">
                           {w.code.replace(/_/g, " ")}
                         </p>
+                        {"context" in w && typeof w.context === "string" && (
+                          <p className="text-xs text-amber-300/80 font-mono mb-1">
+                            {w.context}
+                          </p>
+                        )}
                         <p className="text-sm text-amber-400/70 leading-relaxed">
-                          {warningExplanations[w.code] ||
-                            "Something unusual was detected in this transaction."}
+                          {explainWarning(w, confirmationState)}
                         </p>
                       </div>
                     </div>

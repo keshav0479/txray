@@ -256,7 +256,7 @@ export default function LensPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex-1 max-w-4xl mx-auto px-6 pt-24 pb-16 w-full relative z-10"
+            className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 pt-24 pb-16 w-full relative z-10"
           >
             {/* Hero section */}
               <motion.div
@@ -279,7 +279,7 @@ export default function LensPage() {
 
               {/* Tab Bar */}
               <div className="mb-10">
-                <div className="flex rounded-2xl bg-stone-950/60 backdrop-blur-xl border border-white/8 p-1">
+                <div className="grid grid-cols-4 rounded-2xl bg-stone-950/60 backdrop-blur-xl border border-white/8 p-1">
                   {[
                     {
                       id: "search" as const,
@@ -307,14 +307,16 @@ export default function LensPage() {
                         setActiveTab(tab.id);
                         setErrorMsg(null);
                       }}
-                      className={`flex flex-1 items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-5 py-2.5 rounded-xl text-sm font-medium transition-all outline-none focus:outline-none border ${
+                      className={`min-w-0 flex flex-1 items-center justify-center gap-1 sm:gap-2 px-1 sm:px-5 py-2.5 rounded-xl text-sm font-medium transition-all outline-none focus:outline-none border ${
                         activeTab === tab.id
                           ? "bg-lens-500/15 text-lens-400 border-lens-500/20"
                           : "border-transparent text-stone-500 hover:text-stone-300"
                       }`}
                     >
-                      <tab.icon className="w-4 h-4 shrink-0" />
-                      <span className="sm:hidden">{tab.shortLabel}</span>
+                      <tab.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                      <span className="sm:hidden min-w-0 truncate text-[11px]">
+                        {tab.shortLabel}
+                      </span>
                       <span className="hidden sm:inline">{tab.label}</span>
                     </button>
                   ))}
@@ -330,7 +332,7 @@ export default function LensPage() {
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -15 }}
-                      className="rounded-3xl border border-white/8 bg-stone-950/50 backdrop-blur-xl p-8"
+                      className="rounded-3xl border border-white/8 bg-stone-950/50 backdrop-blur-xl p-5 sm:p-8"
                     >
                       <div className="text-center mb-6">
                         <Search className="w-10 h-10 text-lens-500 mx-auto mb-3 opacity-80" />
@@ -355,7 +357,11 @@ export default function LensPage() {
                               e.key === "Enter" && handleSearch()
                             }
                             placeholder="txid or block height..."
-                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-stone-600 focus:outline-none focus:border-lens-500/30 transition-colors font-mono"
+                            spellCheck={false}
+                            autoCorrect="off"
+                            autoCapitalize="none"
+                            autoComplete="off"
+                            className="w-full min-w-0 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-base sm:text-sm text-white placeholder-stone-600 focus:outline-none focus:border-lens-500/30 transition-colors font-mono"
                           />
                           <div className="flex flex-wrap items-center gap-2 mt-2 ml-1">
                             <span className="text-[10px] text-stone-500 uppercase tracking-widest mr-1">
@@ -419,7 +425,7 @@ export default function LensPage() {
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -15 }}
-                      className="rounded-3xl border border-white/8 bg-stone-950/50 backdrop-blur-xl p-8"
+                      className="rounded-3xl border border-white/8 bg-stone-950/50 backdrop-blur-xl p-5 sm:p-8"
                     >
                       <div className="text-center mb-6">
                         <Upload className="w-10 h-10 text-lens-500 mx-auto mb-3 opacity-80" />
@@ -509,7 +515,7 @@ export default function LensPage() {
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -15 }}
-                      className="rounded-3xl border border-white/8 bg-stone-950/50 backdrop-blur-xl p-8"
+                      className="rounded-3xl border border-white/8 bg-stone-950/50 backdrop-blur-xl p-5 sm:p-8"
                     >
                       <div className="text-center mb-6">
                         <Code2 className="w-10 h-10 text-lens-500 mx-auto mb-3 opacity-80" />
@@ -571,7 +577,7 @@ export default function LensPage() {
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -15 }}
-                      className="rounded-3xl border border-white/8 bg-stone-950/50 backdrop-blur-xl p-8"
+                      className="rounded-3xl border border-white/8 bg-stone-950/50 backdrop-blur-xl p-5 sm:p-8"
                     >
                       <div className="text-center mb-6">
                         <FileJson className="w-10 h-10 text-lens-500 mx-auto mb-3 opacity-80" />
@@ -657,6 +663,7 @@ export default function LensPage() {
                 data={selectedTx}
                 onReset={reset}
                 onBack={() => setSelectedTx(null)}
+                confirmationState="confirmed"
               />
             ) : "transactions" in analysisData ? (
               <BlockOverview

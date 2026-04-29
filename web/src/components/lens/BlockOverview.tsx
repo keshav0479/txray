@@ -132,14 +132,14 @@ export function BlockOverview({
   const scriptAnalogies = SCRIPT_ANALOGIES;
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-6 py-12 min-h-screen animate-in fade-in duration-1000 text-white relative z-10">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 min-h-screen animate-in fade-in duration-1000 text-white relative z-10">
       {/* Top Bar */}
-      <div className="mb-8 flex justify-between items-center">
-        <div className="flex items-center gap-3">
+      <div className="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <div className="flex items-center gap-3 min-w-0">
           <div className="p-2.5 rounded-xl bg-lens-500/10 border border-lens-500/20 text-lens-400">
             <Blocks className="w-6 h-6" />
           </div>
-          <div>
+          <div className="min-w-0">
             <h1 className="text-2xl font-bold tracking-tight">
               Block Overview
             </h1>
@@ -150,7 +150,7 @@ export function BlockOverview({
         </div>
         <button
           onClick={onReset}
-          className="text-sm font-medium text-zinc-400 hover:text-white border border-white/10 hover:border-white/20 bg-black/40 backdrop-blur-xl px-4 py-2 rounded-full transition-all"
+          className="self-start sm:self-auto text-sm font-medium text-zinc-400 hover:text-white border border-white/10 hover:border-white/20 bg-black/40 backdrop-blur-xl px-4 py-2 rounded-full transition-all"
         >
           {resetLabel}
         </button>
@@ -330,19 +330,19 @@ export function BlockOverview({
 
       {/* Transaction Table */}
       <div>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3">
-          <h2 className="text-xl font-semibold">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-4 gap-3">
+          <h2 className="text-xl font-semibold min-w-0">
             Transactions{" "}
-            <span className="text-zinc-500 text-sm font-normal ml-2">
+            <span className="block sm:inline text-zinc-500 text-sm font-normal sm:ml-2">
               {searchQuery
                 ? `${effectiveTotalTxs} matches`
                 : `Showing ${(safePage - 1) * itemsPerPage + 1} - ${Math.min(safePage * itemsPerPage, effectiveTotalTxs)}`}
             </span>
           </h2>
 
-          <div className="flex items-center gap-3">
+          <div className="w-full lg:w-auto flex flex-col sm:flex-row sm:items-center gap-3">
             {/* Search Bar */}
-            <div className="relative">
+            <div className="relative w-full sm:w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
               <input
                 type="text"
@@ -352,12 +352,16 @@ export function BlockOverview({
                   setSearchQuery(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="pl-9 pr-3 py-2 rounded-lg bg-black/40 border border-white/10 text-sm font-mono text-white placeholder:text-zinc-600 focus:outline-none focus:border-lens-500/50 focus:ring-1 focus:ring-lens-500/20 w-56 transition-all"
+                spellCheck={false}
+                autoCorrect="off"
+                autoCapitalize="none"
+                autoComplete="off"
+                className="w-full min-w-0 pl-9 pr-3 py-2 rounded-lg bg-black/40 border border-white/10 text-base sm:text-sm font-mono text-white placeholder:text-zinc-600 focus:outline-none focus:border-lens-500/50 focus:ring-1 focus:ring-lens-500/20 transition-all"
               />
             </div>
 
             {/* Pagination */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 shrink-0">
               <button
                 onClick={() => {
                   setCurrentPage((p) => {
@@ -413,7 +417,7 @@ export function BlockOverview({
         </div>
 
         <div className="w-full rounded-2xl border border-surface-border bg-surface-card/50 overflow-hidden backdrop-blur-sm shadow-xl">
-          <div className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-surface-border bg-black/60 text-xs font-bold tracking-wider text-zinc-500 uppercase">
+          <div className="grid grid-cols-12 gap-3 sm:gap-4 px-4 sm:px-6 py-4 border-b border-surface-border bg-black/60 text-xs font-bold tracking-wider text-zinc-500 uppercase">
             <div className="col-span-1 hidden md:block">#</div>
             <div className="col-span-6 md:col-span-4">TXID</div>
             <button
@@ -446,7 +450,7 @@ export function BlockOverview({
                 <button
                   key={tx.txid || idx}
                   onClick={() => onSelectTx(tx)}
-                  className={`w-full grid grid-cols-12 gap-4 px-6 py-4 transition-all items-center text-left hover:cursor-pointer
+                  className={`w-full grid grid-cols-12 gap-3 sm:gap-4 px-4 sm:px-6 py-4 transition-all items-center text-left hover:cursor-pointer
                     ${isCoinbaseTx ? "hover:bg-amber-500/10" : hasWarnings ? "hover:bg-red-500/10" : "hover:bg-lens-500/10"}
                   `}
                 >
